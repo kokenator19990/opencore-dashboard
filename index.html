@@ -595,11 +595,16 @@ window.enterDashboard = function() {
       </svg>
     </div>
     <div class="header-meta">
+      <a href="BDOPENCORE_FINAL.xlsx" download style="text-decoration:none;">
+        <button class="feedback-btn" style="border:none;cursor:pointer;opacity:0.75;font-size:0.62rem;letter-spacing:1.5px;">
+          ↓ EXCEL
+        </button>
+      </a>
       <button class="feedback-btn" id="comment-header-btn" onclick="openCommentModal()" style="position:relative;border:none;cursor:pointer;">
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:01</span>
+      <span class="badge">ACT: 17/03/2026 17:17</span>
     </div>
   </div>
 </header>
@@ -782,7 +787,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:01", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 5, "reuniones_db": 0, "alta": 97, "media": 79, "baja": 56, "pct_email": 90.5, "email_base": 1989, "canales": {"LinkedIn Persona": 107, "Email Directo": 59, "Sin datos directos": 44, "LinkedIn Empresa + Email": 12, "LinkedIn Empresa": 10}, "cat_enviados": {"Industrial": 19, "Minería": 12, "Seguridad/EPP": 6, "Logística": 5, "Repuestos": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58]};
+const DATA = {"updated": "17/03/2026 17:17", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 13, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": []};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1024,23 +1029,40 @@ function checkCommentDot() {
 }
 
 // ── Comment wall (inline) ─────────────────────────────────────────────────
+const NOTAS_EXCEL = [];
+
 function loadComments() {
-  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
-  const el   = document.getElementById('comments-list');
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-state">Sin comentarios aún.</div>';
-    return;
-  }
-  el.innerHTML = list.slice().reverse().map((c, ri) => {
+  const list  = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
+  const el    = document.getElementById('comments-list');
+  const today = new Date().toLocaleDateString('es-CL');
+
+  // Items localStorage
+  const localItems = list.slice().reverse().map((c, ri) => {
     const idx = list.length - 1 - ri;
     const textEscaped = c.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const isNew = c.day === new Date().toLocaleDateString('es-CL');
+    const isNew = c.day === today;
     return '<div class="comment-item" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
       + '<div style="flex:1"><div class="comment-text">' + textEscaped + '</div>'
       + '<div class="comment-meta">' + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.6rem;">NUEVO HOY</span>' : '') + '</div></div>'
       + '<button class="comment-del" onclick="deleteComment(' + idx + ')">BORRAR</button>'
       + '</div>';
-  }).join('');
+  });
+
+  // Items Excel (sin botón borrar, etiqueta EXCEL)
+  const excelItems = NOTAS_EXCEL.map(n => {
+    const textEscaped = n.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<div class="comment-item" style="border-left-color:#E5FF00;opacity:0.85;">'
+      + '<div style="flex:1"><div class="comment-text">' + textEscaped + '</div>'
+      + '<div class="comment-meta">' + (n.fecha || '') + ' &nbsp;·&nbsp; <span style="color:#E5FF00;font-size:0.6rem;">EXCEL</span></div></div>'
+      + '</div>';
+  });
+
+  const allItems = [...localItems, ...excelItems];
+  if (!allItems.length) {
+    el.innerHTML = '<div class="empty-state">Sin comentarios aún.</div>';
+    return;
+  }
+  el.innerHTML = allItems.join('');
 }
 
 window.deleteComment = function(i) {
