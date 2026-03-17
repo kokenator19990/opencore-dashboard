@@ -486,6 +486,7 @@ html { overflow-x: hidden; max-width: 100vw; }
   .header { padding: 1.1rem 1rem 0.9rem; }
   .header-inner { gap: 0.75rem; align-items: center; }
   .header-meta { gap: 0.5rem; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+  .header-inner > div:first-child { margin-top: 6px; }
   .badge { display: none; }
   .feedback-btn { font-size: 0.72rem; padding: 9px 13px; letter-spacing: 0.8px; }
   #comment-header-btn { font-size: 0.72rem; }
@@ -957,9 +958,81 @@ html { overflow-x: hidden; max-width: 100vw; }
 // ── Splash enter ──────────────────────────────────────────────────────────
 window.enterDashboard = function() {
   const splash = document.getElementById('splash');
-  splash.style.opacity   = '0';
-  splash.style.visibility = 'hidden';
   splash.style.pointerEvents = 'none';
+
+  // Geometric burst overlay
+  const burst = document.createElement('canvas');
+  burst.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:10;pointer-events:none;';
+  burst.width = window.innerWidth;
+  burst.height = window.innerHeight;
+  splash.appendChild(burst);
+  const bc = burst.getContext('2d');
+  const cx = burst.width / 2, cy = burst.height / 2;
+
+  const shapes = [];
+  const N = 18;
+  for (let i = 0; i < N; i++) {
+    const angle = (i / N) * Math.PI * 2;
+    const sides = [3, 4, 6, 8][i % 4];
+    shapes.push({
+      angle, sides,
+      r: 0,
+      maxR: Math.max(burst.width, burst.height) * 0.72 * (0.6 + Math.random() * 0.5),
+      speed: 8 + Math.random() * 14,
+      alpha: 0.55 + Math.random() * 0.3,
+      color: i % 3 === 0 ? '0,229,255' : i % 3 === 1 ? '178,0,255' : '255,255,255',
+      lineW: 0.8 + Math.random() * 1.2,
+      rotOffset: Math.random() * Math.PI
+    });
+  }
+
+  let t = 0;
+  function drawBurst() {
+    bc.clearRect(0, 0, burst.width, burst.height);
+    let allDone = true;
+    shapes.forEach(function(s) {
+      s.r += s.speed;
+      if (s.r < s.maxR) allDone = false;
+      const progress = Math.min(s.r / s.maxR, 1);
+      const alpha = s.alpha * (1 - progress * progress);
+      if (alpha < 0.01) return;
+      bc.save();
+      bc.translate(cx + Math.cos(s.angle) * s.r * 0.35, cy + Math.sin(s.angle) * s.r * 0.35);
+      bc.rotate(s.rotOffset + progress * Math.PI * 0.4);
+      const size = s.r * 0.18 + 10;
+      bc.beginPath();
+      for (let k = 0; k <= s.sides; k++) {
+        const a = (k / s.sides) * Math.PI * 2 - Math.PI / 2;
+        const px = Math.cos(a) * size, py = Math.sin(a) * size;
+        k === 0 ? bc.moveTo(px, py) : bc.lineTo(px, py);
+      }
+      bc.strokeStyle = 'rgba(' + s.color + ',' + alpha + ')';
+      bc.lineWidth = s.lineW;
+      bc.stroke();
+      bc.restore();
+    });
+    // radial blur rings
+    [0.25, 0.5, 0.75].forEach(function(frac) {
+      const rr = frac * Math.max(burst.width, burst.height) * 0.6 * Math.min(t / 30, 1);
+      const a = Math.max(0, 0.15 - t / 200);
+      bc.beginPath();
+      bc.arc(cx, cy, rr, 0, Math.PI * 2);
+      bc.strokeStyle = 'rgba(0,229,255,' + a + ')';
+      bc.lineWidth = 1;
+      bc.stroke();
+    });
+    t++;
+    if (!allDone && t < 80) requestAnimationFrame(drawBurst);
+  }
+  drawBurst();
+
+  // Fade out splash after burst starts
+  setTimeout(function() {
+    splash.style.transition = 'opacity 0.7s ease, filter 0.7s ease';
+    splash.style.filter = 'blur(8px)';
+    splash.style.opacity = '0';
+    splash.style.visibility = 'hidden';
+  }, 180);
   setTimeout(function() {
     splash.style.display = 'none';
     window._stopNucleus && window._stopNucleus();
@@ -995,7 +1068,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 20:54</span>
+      <span class="badge">ACT: 17/03/2026 20:55</span>
     </div>
   </div>
 </header>
@@ -1288,7 +1361,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 20:54", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 20:55", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
