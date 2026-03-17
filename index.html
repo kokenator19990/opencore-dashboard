@@ -630,10 +630,30 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:27</span>
+      <span class="badge">ACT: 17/03/2026 17:35</span>
     </div>
   </div>
 </header>
+
+<!-- COMMENT TOAST ALERT -->
+<div id="comment-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;
+  background:rgba(10,10,15,0.96);border:1px solid rgba(0,229,255,0.4);
+  box-shadow:0 0 24px rgba(0,229,255,0.2),0 8px 32px rgba(0,0,0,0.6);
+  padding:0.9rem 1.1rem;max-width:320px;gap:0.75rem;
+  align-items:flex-start;backdrop-filter:blur(12px);">
+  <div style="flex:1;cursor:pointer;" onclick="goToComments()">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;
+      letter-spacing:2px;color:var(--accent-cyan);margin-bottom:0.3rem;">
+      ● NUEVO COMENTARIO
+    </div>
+    <div id="toast-text" style="font-size:0.8rem;color:rgba(255,255,255,0.8);line-height:1.4;"></div>
+    <div style="font-size:0.6rem;color:var(--text-dim);margin-top:0.35rem;letter-spacing:1px;">
+      CLICK PARA VER →
+    </div>
+  </div>
+  <button onclick="dismissToast()" style="background:none;border:none;color:var(--text-dim);
+    cursor:pointer;font-size:1rem;padding:0;line-height:1;flex-shrink:0;margin-top:-2px;">✕</button>
+</div>
 
 <main class="container">
 
@@ -795,7 +815,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:27", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 20, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}]};
+const DATA = {"updated": "17/03/2026 17:35", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -833,23 +853,22 @@ function animateRing(pct) {
   }, 120);
 }
 
-// ── Canal counters + total contactadas ───────────────────────────────────
+// ── Canal counters + total contactadas (desde Excel vía DATA) ────────────
 function getTotalContactadas() {
-  return DATA.enviados
-    + parseInt(localStorage.getItem('oc_canal_li')       || 0)
-    + parseInt(localStorage.getItem('oc_canal_llamados') || 0)
-    + parseInt(localStorage.getItem('oc_canal_red')      || 0);
+  // Leemos directamente del Excel sincronizado
+  return (DATA.canal_correo || 0)
+       + (DATA.canal_linkedin || 0)
+       + (DATA.canal_llamadas || 0)
+       + (DATA.canal_referidos || 0);
 }
 function updateCanalBadges() {
-  document.getElementById('canal-correo-val').textContent   = DATA.enviados;
-  document.getElementById('canal-li-val').textContent       = localStorage.getItem('oc_canal_li')       || 0;
-  document.getElementById('canal-llamados-val').textContent = localStorage.getItem('oc_canal_llamados')  || 0;
-  document.getElementById('canal-red-val').textContent      = localStorage.getItem('oc_canal_red')       || 0;
-  // Actualiza el botón CONTACTADAS con suma de todos los canales
-  document.getElementById('nav-contactadas').textContent = getTotalContactadas().toLocaleString();
-  // Actualiza el anillo con % real de contactadas sobre total BD
-  const pct = DATA.total > 0 ? parseFloat((getTotalContactadas() / DATA.total * 100).toFixed(1)) : 0;
-  // Solo actualizar el texto, no re-animar el anillo
+  document.getElementById('canal-correo-val').textContent   = DATA.canal_correo   || 0;
+  document.getElementById('canal-li-val').textContent       = DATA.canal_linkedin  || 0;
+  document.getElementById('canal-llamados-val').textContent = DATA.canal_llamadas  || 0;
+  document.getElementById('canal-red-val').textContent      = DATA.canal_referidos || 0;
+  const total = getTotalContactadas();
+  document.getElementById('nav-contactadas').textContent = total.toLocaleString();
+  const pct = DATA.total > 0 ? parseFloat((total / DATA.total * 100).toFixed(1)) : 0;
   document.getElementById('kpi-cobertura-val').textContent = pct + '%';
 }
 // ── Reuniones counter (read-only desde localStorage) ──────────────────────
@@ -924,10 +943,10 @@ window.showChart = function(type) {
     const canalLabels = ['Correo', 'LinkedIn', 'Llamadas', 'Referidos'];
     const canalColors = ['#00E5FF', '#B200FF', '#E5FF00', '#00FFAA'];
     const canalVals = [
-      DATA.enviados,
-      parseInt(localStorage.getItem('oc_canal_li')      || 0),
-      parseInt(localStorage.getItem('oc_canal_llamados') || 0),
-      parseInt(localStorage.getItem('oc_canal_red')      || 0),
+      DATA.canal_correo   || 0,
+      DATA.canal_linkedin  || 0,
+      DATA.canal_llamadas  || 0,
+      DATA.canal_referidos || 0,
     ];
     activeChart.setOption({
       backgroundColor: 'transparent',
@@ -1007,17 +1026,38 @@ function saveComment(text) {
 }
 
 function checkCommentDot() {
-  const dot  = document.getElementById('comment-dot');
-  const last = localStorage.getItem('oc_last_comment_day');
+  const dot   = document.getElementById('comment-dot');
+  const toast = document.getElementById('comment-toast');
+  const last  = localStorage.getItem('oc_last_comment_day');
   const today = new Date().toLocaleDateString('es-CL');
   const seen  = localStorage.getItem('oc_dot_seen_day');
-  // Mostrar punto si hay comentario hoy y no fue visto hoy
-  if (last === today && seen !== today) {
-    dot.style.display = 'block';
+  const hasNew = (last === today && seen !== today)
+               || (NOTAS_EXCEL.length > 0 && localStorage.getItem('oc_excel_notes_seen') !== String(NOTAS_EXCEL.length));
+  if (hasNew) {
+    dot.style.display   = 'block';
+    toast.style.display = 'flex';
+    const preview = NOTAS_EXCEL.length > 0
+      ? NOTAS_EXCEL[NOTAS_EXCEL.length - 1].texto.slice(0, 60)
+      : (JSON.parse(localStorage.getItem('oc_comments_v2') || '[]').slice(-1)[0]?.text || '').slice(0, 60);
+    document.getElementById('toast-text').textContent = preview || 'Nuevo comentario disponible';
   } else {
-    dot.style.display = 'none';
+    dot.style.display   = 'none';
+    toast.style.display = 'none';
   }
 }
+
+window.dismissToast = function() {
+  const today = new Date().toLocaleDateString('es-CL');
+  localStorage.setItem('oc_dot_seen_day', today);
+  localStorage.setItem('oc_excel_notes_seen', String(NOTAS_EXCEL.length));
+  document.getElementById('comment-toast').style.display = 'none';
+  document.getElementById('comment-dot').style.display   = 'none';
+};
+
+window.goToComments = function() {
+  dismissToast();
+  document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
+};
 
 // ── Comment wall (inline) ─────────────────────────────────────────────────
 const NOTAS_EXCEL = [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}];
