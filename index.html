@@ -160,9 +160,9 @@ body {
   text-transform: uppercase; color: var(--text-dim); margin: 0;
 }
 
-/* ANALYTICS NAV — 3 main buttons */
+/* ANALYTICS NAV — 4 main buttons */
 .analytics-nav {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem; margin-bottom: 2rem;
 }
 .analytics-btn {
@@ -188,9 +188,91 @@ body {
 .analytics-btn.btn-contactos.active::before { background: var(--accent-cyan); opacity: 1; box-shadow: 0 0 15px var(--accent-cyan); }
 .analytics-btn.btn-canal.active::before    { background: var(--accent-yellow); opacity: 1; box-shadow: 0 0 15px var(--accent-yellow); }
 .analytics-btn.btn-reuniones.active::before { background: var(--accent-red); opacity: 1; box-shadow: 0 0 15px var(--accent-red); }
+.analytics-btn.btn-tareas.active::before   { background: #A855F7; opacity: 1; box-shadow: 0 0 15px #A855F7; }
 .analytics-btn.btn-contactos.active { background: rgba(0,229,255,0.03); border-color: rgba(0,229,255,0.25); }
 .analytics-btn.btn-canal.active    { background: rgba(229,255,0,0.02); border-color: rgba(229,255,0,0.2); }
 .analytics-btn.btn-reuniones.active { background: rgba(255,42,42,0.03); border-color: rgba(255,42,42,0.25); }
+.analytics-btn.btn-tareas.active   { background: rgba(168,85,247,0.04); border-color: rgba(168,85,247,0.3); }
+.analytics-btn.btn-tareas:hover .abn-icon,
+.analytics-btn.btn-tareas.active .abn-icon {
+  color: #A855F7;
+  filter: drop-shadow(0 0 6px #A855F7) drop-shadow(0 0 14px rgba(168,85,247,0.5));
+}
+.analytics-btn.btn-tareas.active .abn-value { color: #A855F7; text-shadow: 0 0 20px rgba(168,85,247,0.4); }
+
+/* Dot de notificación en card tareas */
+.tareas-dot {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #A855F7; box-shadow: 0 0 8px #A855F7;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* Sección tareas */
+.tarea-card {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-left: 3px solid #A855F7; padding: 1rem 1.2rem;
+  margin-bottom: 0.75rem; transition: border-color 0.3s;
+}
+.tarea-card.completada { border-left-color: #4ADE80; opacity: 0.65; }
+.tarea-titulo {
+  font-family: var(--font-heading); font-size: 0.9rem;
+  font-weight: 700; letter-spacing: 1px; color: var(--text-main);
+  margin-bottom: 0.3rem;
+}
+.tarea-card.completada .tarea-titulo { text-decoration: line-through; color: var(--text-dim); }
+.tarea-meta { font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.6rem; }
+.tarea-pill {
+  display: inline-block; font-size: 0.55rem; letter-spacing: 1.5px;
+  padding: 2px 8px; border-radius: 2px; font-weight: 700;
+  font-family: var(--font-heading); margin-right: 0.4rem;
+}
+.pill-pendiente { background: rgba(168,85,247,0.15); color: #A855F7; border: 1px solid rgba(168,85,247,0.3); }
+.pill-completada { background: rgba(74,222,128,0.12); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
+.pill-alta { background: rgba(255,42,42,0.1); color: #FF2A6D; border: 1px solid rgba(255,42,42,0.3); }
+.tarea-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.7rem; }
+.tarea-btn {
+  font-family: var(--font-heading); font-size: 0.6rem; letter-spacing: 1.5px;
+  padding: 5px 12px; border: 1px solid; cursor: pointer;
+  background: transparent; transition: all 0.2s; border-radius: 2px;
+}
+.tarea-btn-check { border-color: rgba(74,222,128,0.4); color: #4ADE80; }
+.tarea-btn-check:hover { background: rgba(74,222,128,0.1); }
+.tarea-btn-uncheck { border-color: rgba(168,85,247,0.4); color: #A855F7; }
+.tarea-btn-uncheck:hover { background: rgba(168,85,247,0.1); }
+.tarea-btn-del { border-color: rgba(255,255,255,0.1); color: #555; }
+.tarea-btn-del:hover { border-color: #FF2A6D; color: #FF2A6D; }
+.tarea-comments { margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.7rem; }
+.tarea-comment-item { font-size: 0.7rem; color: #aaa; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.tarea-comment-item:last-child { border-bottom: none; }
+.tarea-comment-date { font-size: 0.6rem; color: #555; margin-left: 0.5rem; }
+.tarea-comment-input-row { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.tarea-comment-input {
+  flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 6px 10px; font-size: 0.72rem;
+  border-radius: 4px; font-family: var(--font-body);
+}
+.tarea-comment-input:focus { outline: none; border-color: rgba(168,85,247,0.4); }
+.tarea-comment-send {
+  font-family: var(--font-heading); font-size: 0.6rem; letter-spacing: 1px;
+  padding: 6px 12px; border: 1px solid rgba(168,85,247,0.4); color: #A855F7;
+  background: transparent; cursor: pointer; border-radius: 4px;
+}
+.tarea-comment-send:hover { background: rgba(168,85,247,0.1); }
+.tarea-add-form { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.tarea-input {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 10px 14px; font-size: 0.82rem;
+  border-radius: 4px; font-family: var(--font-body); width: 100%;
+  box-sizing: border-box;
+}
+.tarea-input:focus { outline: none; border-color: rgba(168,85,247,0.5); box-shadow: 0 0 0 2px rgba(168,85,247,0.08); }
+.tarea-input-row { display: flex; gap: 0.6rem; }
+.tarea-select {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 10px 12px; font-size: 0.78rem;
+  border-radius: 4px; font-family: var(--font-body); cursor: pointer;
+}
 
 .abn-icon {
   width: 32px; height: 32px; margin-bottom: 0.5rem;
@@ -366,7 +448,7 @@ body {
 /* ── TABLET (≤ 1024px) ────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .kpi-grid { grid-template-columns: 160px repeat(3,1fr); }
-  .analytics-nav { gap: 1rem; }
+  .analytics-nav { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 }
 
 /* ── MOBILE (≤ 768px) ────────────────────────────────────────────────── */
@@ -393,8 +475,8 @@ body {
   .kpi-value { font-size: 2.2rem; letter-spacing: -1px; }
   .kpi-label { font-size: 0.6rem; margin-bottom: 0.5rem; }
 
-  /* Analytics nav: vertical stack */
-  .analytics-nav { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+  /* Analytics nav: 2 columns on mobile */
+  .analytics-nav { grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.5rem; }
   .analytics-btn { padding: 1.25rem 1.25rem; }
   .abn-icon { width: 24px; height: 24px; margin-bottom: 0.35rem; }
   .abn-icon svg { width: 24px; height: 24px; }
@@ -536,37 +618,98 @@ body {
   transition:opacity 0.9s ease, visibility 0.9s ease;
 ">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
-  <div style="position:relative;z-index:2;text-align:center;user-select:none;">
-    <!-- Logo texto -->
-    <div style="margin-bottom:2.5rem;">
-      <svg viewBox="0 0 460 80" width="320" height="55" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 18px rgba(0,229,255,0.5))">
-        <circle cx="50" cy="40" r="24" fill="none" stroke="#fff" stroke-width="8"/>
-        <circle cx="50" cy="40" r="10" fill="#00E5FF"/>
-        <path d="M90 18L90 62 M90 18L120 18A14 14 0 0 1 134 32A14 14 0 0 1 120 46L90 46" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="square"/>
-        <path d="M162 18L142 18 M142 18L142 62L162 62 M142 40L158 40" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="square"/>
-        <path d="M178 62L178 18L208 62L208 18" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square"/>
-        <text x="228" y="52" font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="36" fill="#00E5FF" letter-spacing="2">CORE</text>
+
+  <!-- Decorative corner lines -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="0" x2="120" y2="0" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <line x1="0" y1="0" x2="0" y2="80" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <line x1="100%" y1="100%" x2="calc(100% - 120px)" y2="100%" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <line x1="100%" y1="100%" x2="100%" y2="calc(100% - 80px)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+  </svg>
+
+  <div style="position:relative;z-index:2;text-align:center;user-select:none;padding:2rem;max-width:900px;width:100%;">
+
+    <!-- ── LOGO SVG — OPEN + CORE mismo tamaño, efecto 3D ── -->
+    <div style="margin-bottom:3rem;">
+      <svg id="splash-logo-svg" viewBox="0 0 620 100" xmlns="http://www.w3.org/2000/svg"
+        style="width:min(600px,88vw);height:auto;display:block;margin:0 auto;overflow:visible;">
+        <defs>
+          <filter id="glow3d" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- 3D shadow layer — offset behind main letters -->
+        <g transform="translate(5,6)" opacity="0.25" stroke="#003040" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter">
+          <circle cx="48" cy="50" r="32" stroke="#003040" fill="none"/>
+          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
+          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
+          <path d="M218 82L218 18L258 82L258 18"/>
+        </g>
+        <text x="286" y="76" font-family="'Space Grotesk',sans-serif" font-weight="800"
+          font-size="64" fill="#003040" letter-spacing="6" transform="translate(5,6)" opacity="0.25">CORE</text>
+
+        <!-- Main OPEN letters — white -->
+        <g stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter" filter="url(#glow3d)">
+          <circle cx="48" cy="50" r="32" stroke="#fff" fill="none"/>
+          <circle cx="48" cy="50" r="13" fill="#00E5FF" stroke="none"/>
+          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
+          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
+          <path d="M218 82L218 18L258 82L258 18"/>
+        </g>
+
+        <!-- CORE text — cyan, same cap height as OPEN letters (y=18→82 = 64px tall) -->
+        <text x="286" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800"
+          font-size="64" fill="#00E5FF" letter-spacing="6"
+          style="text-shadow:0 0 20px rgba(0,229,255,0.8);"
+          filter="url(#glow3d)">CORE</text>
       </svg>
     </div>
-    <!-- Botón -->
+
+    <!-- Thin separator line -->
+    <div style="width:min(400px,70vw);height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.5),transparent);margin:0 auto 2.8rem;"></div>
+
+    <!-- Botón principal -->
     <button id="splash-btn" onclick="enterDashboard()" style="
       font-family:'Space Grotesk',sans-serif;
-      font-size:0.8rem;font-weight:700;
-      letter-spacing:3px;text-transform:uppercase;
+      font-size:0.85rem;font-weight:700;
+      letter-spacing:4px;text-transform:uppercase;
       color:#00E5FF;
       background:transparent;
-      border:1px solid rgba(0,229,255,0.4);
-      padding:14px 40px;
+      border:1px solid rgba(0,229,255,0.45);
+      padding:18px 56px;
       cursor:pointer;
       transition:all 0.3s ease;
       position:relative;overflow:hidden;
+      white-space:nowrap;
     "
-    onmouseover="this.style.background='rgba(0,229,255,0.08)';this.style.borderColor='#00E5FF';this.style.boxShadow='0 0 30px rgba(0,229,255,0.3)'"
-    onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.4)';this.style.boxShadow='none'"
+    onmouseover="this.style.background='rgba(0,229,255,0.08)';this.style.borderColor='#00E5FF';this.style.boxShadow='0 0 40px rgba(0,229,255,0.25),inset 0 0 20px rgba(0,229,255,0.04)'"
+    onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.45)';this.style.boxShadow='none'"
     >
       VER INDICADORES OPENCORE
     </button>
-    <div style="margin-top:1rem;font-family:'Inter',sans-serif;font-size:0.65rem;letter-spacing:2px;color:rgba(0,229,255,0.35);">DASHBOARD EJECUTIVO</div>
+
+    <div style="margin-top:1.2rem;font-family:'Inter',sans-serif;font-size:0.62rem;letter-spacing:3px;color:rgba(0,229,255,0.3);">DASHBOARD EJECUTIVO</div>
+
+    <!-- Stats preview chips — desktop only -->
+    <div style="display:flex;gap:2rem;justify-content:center;margin-top:3rem;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#fff;line-height:1;">2830</div>
+        <div style="font-size:0.55rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">PROSPECTOS</div>
+      </div>
+      <div style="width:1px;background:rgba(0,229,255,0.12);align-self:stretch;"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#00E5FF;line-height:1;">58</div>
+        <div style="font-size:0.55rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">CONTACTADAS</div>
+      </div>
+      <div style="width:1px;background:rgba(0,229,255,0.12);align-self:stretch;"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#fff;line-height:1;">90.5%</div>
+        <div style="font-size:0.55rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">COBERTURA</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -804,7 +947,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 18:08</span>
+      <span class="badge">ACT: 17/03/2026 18:17</span>
     </div>
   </div>
 </header>
@@ -932,6 +1075,20 @@ window.enterDashboard = function() {
       <div class="abn-sub">Cierres concertados · VER GRÁFICO ↗</div>
     </button>
 
+    <!-- Card 4: Tareas -->
+    <button class="analytics-btn btn-tareas" id="btn-tareas" onclick="goToTareas()">
+      <span class="tareas-dot" id="tareas-dot" style="display:none;"></span>
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </div>
+      <div class="abn-label">TAREAS</div>
+      <div class="abn-value" id="nav-tareas-count">0</div>
+      <div class="abn-sub">Pendientes · VER TAREAS ↓</div>
+    </button>
+
   </section>
 
   <!-- CHART REVEAL PANEL -->
@@ -966,6 +1123,35 @@ window.enterDashboard = function() {
       </div>
     </form>
     <div id="comments-list" class="comments-list"></div>
+  </section>
+
+  <!-- SECCIÓN TAREAS -->
+  <div class="section-title" style="margin-top:3.5rem;" id="seccion-tareas">
+    <h2>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:8px;color:#A855F7;">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+      </svg>
+      TAREAS
+    </h2>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-top:0.4rem;">Asigna y revisa tareas. Marca como completada cuando termines.</p>
+  </div>
+
+  <section class="comment-board" style="border-top-color:rgba(168,85,247,0.4);">
+    <!-- Formulario agregar tarea -->
+    <form class="tarea-add-form" id="tarea-form" onsubmit="addTarea(event)">
+      <input class="tarea-input" id="tarea-titulo" type="text" maxlength="120"
+        placeholder="Título de la tarea (ej: Terminar módulo 4)..." required>
+      <textarea class="tarea-input" id="tarea-desc" rows="2" maxlength="300"
+        placeholder="Descripción adicional (opcional)..." style="resize:vertical;"></textarea>
+      <div class="tarea-input-row">
+        <select class="tarea-select" id="tarea-prioridad" style="flex:1;">
+          <option value="normal">Prioridad normal</option>
+          <option value="alta">Alta prioridad</option>
+        </select>
+        <button type="submit" class="btn-primary" style="flex:2;padding:10px 18px;font-size:0.75rem;">+ ASIGNAR TAREA</button>
+      </div>
+    </form>
+    <div id="tareas-list"></div>
   </section>
 
 </main>
@@ -1045,7 +1231,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:08", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:17", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1554,21 +1740,188 @@ document.getElementById('comment-modal-overlay').addEventListener('click', funct
   if (e.target === this) closeCommentModal();
 });
 
+// ── SISTEMA DE TAREAS ─────────────────────────────────────────────────────
+const TAREAS_URL = 'https://opencore.cl/dashboard/tareas.php';
+let _tareasCache = [];
+
+window.goToTareas = function() {
+  document.getElementById('btn-tareas').classList.add('active');
+  document.getElementById('seccion-tareas').scrollIntoView({behavior:'smooth'});
+  // Marcar visto
+  localStorage.setItem('oc_tareas_seen', String(_tareasCache.filter(t => t.estado === 'pendiente').length));
+  document.getElementById('tareas-dot').style.display = 'none';
+};
+
+async function loadTareas() {
+  try {
+    const res = await fetch(TAREAS_URL + '?t=' + Date.now());
+    if (res.ok) _tareasCache = await res.json();
+  } catch(e) { }
+  renderTareas();
+  checkTareasDot();
+}
+
+async function _saveTareas() {
+  try {
+    await fetch(TAREAS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(_tareasCache)
+    });
+  } catch(e) { alert('Error al guardar tarea. Verifica tu conexión.'); }
+}
+
+function renderTareas() {
+  const el = document.getElementById('tareas-list');
+  const pending   = _tareasCache.filter(t => t.estado !== 'completada');
+  const completed = _tareasCache.filter(t => t.estado === 'completada');
+
+  if (!_tareasCache.length) {
+    el.innerHTML = '<div class="empty-state" style="margin-top:1rem;">Sin tareas asignadas. Crea la primera arriba.</div>';
+    return;
+  }
+
+  // Counter header
+  let html = '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border);">'
+    + '<span style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#A855F7;">'
+    + pending.length + ' PENDIENTE' + (pending.length !== 1 ? 'S' : '') + '</span>'
+    + '<span style="color:var(--border);">|</span>'
+    + '<span style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#4ADE80;">'
+    + completed.length + ' COMPLETADA' + (completed.length !== 1 ? 'S' : '') + '</span>'
+    + '</div>';
+
+  const all = [...pending, ...completed];
+  html += all.map(function(t) {
+    const isCompleted = t.estado === 'completada';
+    const alta = t.prioridad === 'alta';
+    const comments = (t.comentarios || []);
+    const lastComment = comments.length ? comments[comments.length-1] : null;
+
+    // Comments collapsed — show last one as preview, expand button if more
+    let commentsHtml = '';
+    if (comments.length > 0) {
+      commentsHtml += comments.map(c =>
+        '<div class="tarea-comment-item">'
+        + '<span style="color:#A855F7;margin-right:4px;">→</span>'
+        + c.texto.replace(/</g,'&lt;')
+        + '<span class="tarea-comment-date">' + c.fecha + '</span></div>'
+      ).join('');
+    }
+
+    const checkBtn = isCompleted
+      ? '<button class="tarea-btn tarea-btn-uncheck" onclick="toggleTarea('' + t.id + '')">↩ Reabrir</button>'
+      : '<button class="tarea-btn tarea-btn-check" onclick="toggleTarea('' + t.id + '')">✓ Marcar completa</button>';
+
+    return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (alta && !isCompleted ? '" style="border-left-color:#FF2A6D;' : '') + '">'
+      // Header row
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">'
+      + '<div style="flex:1;">'
+      + '<div class="tarea-titulo">'
+      + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.8rem;">↑</span>' : '')
+      + t.titulo.replace(/</g,'&lt;') + '</div>'
+      + (t.desc ? '<div style="font-size:0.7rem;color:#777;margin-top:2px;">' + t.desc.replace(/</g,'&lt;') + '</div>' : '')
+      + '</div>'
+      // Status pill top-right
+      + '<div style="flex-shrink:0;">'
+      + (isCompleted
+          ? '<span class="tarea-pill pill-completada">✓ LISTA</span>'
+          : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>')
+      + '</div></div>'
+      // Meta row
+      + '<div class="tarea-meta" style="margin-top:0.5rem;">'
+      + 'Asignada: ' + t.fecha_creacion
+      + (t.fecha_completada ? ' &nbsp;·&nbsp; Completada: ' + t.fecha_completada : '')
+      + '</div>'
+      // Action buttons
+      + '<div class="tarea-actions">' + checkBtn
+      + '<button class="tarea-btn tarea-btn-del" onclick="deleteTarea('' + t.id + '')" style="margin-left:auto;font-size:0.55rem;opacity:0.5;">✕ eliminar</button>'
+      + '</div>'
+      // Comments thread
+      + '<div class="tarea-comments">'
+      + (commentsHtml || '')
+      + '<div class="tarea-comment-input-row" style="margin-top:' + (comments.length ? '0.8rem' : '0.3rem') + ';">'
+      + '<input class="tarea-comment-input" id="tc-' + t.id + '" placeholder="Comentario de estado..." maxlength="200"'
+      + ' onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTareaComment('' + t.id + '');}">'
+      + '<button class="tarea-comment-send" onclick="addTareaComment('' + t.id + '')">→</button>'
+      + '</div></div>'
+      + '</div>';
+  }).join('');
+
+  el.innerHTML = html;
+}
+
+function checkTareasDot() {
+  const pending = _tareasCache.filter(t => t.estado === 'pendiente').length;
+  document.getElementById('nav-tareas-count').textContent = pending;
+  const seen = parseInt(localStorage.getItem('oc_tareas_seen') || '0');
+  document.getElementById('tareas-dot').style.display = pending > seen ? 'block' : 'none';
+}
+
+window.addTarea = async function(e) {
+  e.preventDefault();
+  const titulo = document.getElementById('tarea-titulo').value.trim();
+  if (!titulo) return;
+  _tareasCache.push({
+    id: Date.now().toString(),
+    titulo: titulo,
+    desc: document.getElementById('tarea-desc').value.trim(),
+    prioridad: document.getElementById('tarea-prioridad').value,
+    estado: 'pendiente',
+    fecha_creacion: new Date().toLocaleDateString('es-CL'),
+    fecha_completada: null,
+    comentarios: []
+  });
+  await _saveTareas();
+  document.getElementById('tarea-titulo').value = '';
+  document.getElementById('tarea-desc').value = '';
+  renderTareas();
+  checkTareasDot();
+};
+
+window.toggleTarea = async function(id) {
+  const t = _tareasCache.find(t => t.id === id);
+  if (!t) return;
+  t.estado = t.estado === 'completada' ? 'pendiente' : 'completada';
+  t.fecha_completada = t.estado === 'completada' ? new Date().toLocaleDateString('es-CL') : null;
+  await _saveTareas();
+  renderTareas();
+  checkTareasDot();
+};
+
+window.addTareaComment = async function(id) {
+  const input = document.getElementById('tc-' + id);
+  const texto = input ? input.value.trim() : '';
+  if (!texto) return;
+  const t = _tareasCache.find(t => t.id === id);
+  if (!t) return;
+  if (!t.comentarios) t.comentarios = [];
+  t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
+  await _saveTareas();
+  renderTareas();
+};
+
+window.deleteTarea = async function(id) {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  _tareasCache = _tareasCache.filter(t => t.id !== id);
+  await _saveTareas();
+  renderTareas();
+  checkTareasDot();
+};
+
 // ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   animateVal('kpi-total-val',    DATA.total,    1500);
   animateVal('kpi-enviados-val', DATA.enviados, 1500);
   animateVal('kpi-alta-val',     DATA.alta,     1500);
-  // Anillo: % contactadas / total BD (incluye todos los canales)
   const pctContactadas = DATA.total > 0 ? parseFloat((getTotalContactadas() / DATA.total * 100).toFixed(1)) : 0;
   animateRing(pctContactadas);
-  // Botón contactadas con total de todos los canales
   const totalC = getTotalContactadas();
   animateVal('nav-contactadas', totalC, 1500);
   updateReunionesBadge();
   updateCanalBadges();
   loadComments();
   checkCommentDot();
+  loadTareas();
 });
 
 window.addEventListener('resize', () => { if (activeChart) activeChart.resize(); });
