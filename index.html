@@ -804,7 +804,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 18:00</span>
+      <span class="badge">ACT: 17/03/2026 18:08</span>
     </div>
   </div>
 </header>
@@ -956,12 +956,25 @@ window.enterDashboard = function() {
         <textarea id="local-comment-text" rows="3" maxlength="500"
           placeholder="Escribe un comentario, actualización o feedback personal..."></textarea>
       </div>
-      <button type="submit" class="btn-primary">PUBLICAR</button>
+      <div id="local-attach-preview" style="display:none;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;"></div>
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <label for="local-file-input" title="Adjuntar imagen" style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid rgba(0,229,255,0.3);border-radius:6px;cursor:pointer;background:rgba(0,229,255,0.05);flex-shrink:0;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.12)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </label>
+        <input type="file" id="local-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="display:none;" onchange="handleLocalFiles(this.files)">
+        <button type="submit" class="btn-primary" style="flex:1;">PUBLICAR</button>
+      </div>
     </form>
     <div id="comments-list" class="comments-list"></div>
   </section>
 
 </main>
+
+<!-- LIGHTBOX DE IMÁGENES -->
+<div id="lightbox-overlay" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center;cursor:zoom-out;backdrop-filter:blur(6px);">
+  <img id="lightbox-img" src="" style="max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:0 0 60px rgba(0,229,255,0.18);transform:scale(0.85);transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1),opacity 0.18s;" alt="">
+  <div style="position:fixed;top:1rem;right:1.2rem;color:#aaa;font-size:2rem;line-height:1;pointer-events:none;">✕</div>
+</div>
 
 <!-- MODAL COMENTARIO RÁPIDO — mobile-first full-screen -->
 <div id="comment-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;justify-content:center;align-items:flex-end;backdrop-filter:blur(8px);">
@@ -1032,7 +1045,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:00", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:08", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1275,6 +1288,25 @@ function checkCommentDot() {
   }
 }
 
+// ── Lightbox ───────────────────────────────────────────────────────────────
+window.openLightbox = function(src) {
+  const ov  = document.getElementById('lightbox-overlay');
+  const img = document.getElementById('lightbox-img');
+  img.src = src;
+  ov.style.display = 'flex';
+  requestAnimationFrame(() => { img.style.transform = 'scale(1)'; img.style.opacity = '1'; });
+  document.body.style.overflow = 'hidden';
+};
+window.closeLightbox = function() {
+  const ov  = document.getElementById('lightbox-overlay');
+  const img = document.getElementById('lightbox-img');
+  img.style.transform = 'scale(0.85)';
+  img.style.opacity   = '0';
+  setTimeout(() => { ov.style.display = 'none'; img.src = ''; }, 200);
+  document.body.style.overflow = '';
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
 window.dismissToast = function() {
   const today = new Date().toLocaleDateString('es-CL');
   localStorage.setItem('oc_dot_seen_day', today);
@@ -1316,9 +1348,7 @@ function renderComments() {
       attachHtml = '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;">'
         + c.files.map(function(f, fi) {
           if (f.type === 'image') {
-            return '<a href="' + f.b64 + '" target="_blank" style="display:inline-block;">'
-              + '<img src="' + f.b64 + '" style="max-height:80px;max-width:140px;border-radius:4px;border:1px solid rgba(0,229,255,0.2);object-fit:cover;cursor:pointer;">'
-              + '</a>';
+            return '<img src="' + f.b64 + '" onclick="openLightbox(this.src)" style="max-height:80px;max-width:140px;border-radius:4px;border:1px solid rgba(0,229,255,0.2);object-fit:cover;cursor:zoom-in;transition:transform 0.15s;">';
           } else {
             return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid #333;border-radius:4px;padding:4px 8px;font-size:0.65rem;color:#aaa;text-decoration:none;">'
               + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
@@ -1366,12 +1396,54 @@ window.deleteComment = async function(i) {
   checkCommentDot();
 };
 
+let _localFiles = [];
+
+window.handleLocalFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1200, 0.75, function(b64) {
+        _localFiles.push({name: file.name, type: 'image', b64: b64});
+        renderLocalPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Archivo demasiado grande (máx 2MB)'); return; }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        _localFiles.push({name: file.name, type: 'file', b64: e.target.result});
+        renderLocalPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('local-file-input').value = '';
+};
+
+function renderLocalPreview() {
+  const prev = document.getElementById('local-attach-preview');
+  if (!_localFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _localFiles.map(function(f, i) {
+    const thumb = f.type === 'image'
+      ? '<img src="' + f.b64 + '" style="height:48px;width:48px;object-fit:cover;border-radius:4px;cursor:zoom-in;" onclick="openLightbox(this.src)">'
+      : '<span style="font-size:0.65rem;color:#aaa;">📄' + f.name.slice(0,16) + '</span>';
+    return '<div style="position:relative;display:inline-flex;align-items:center;">' + thumb
+      + '<button type="button" onclick="removeLocalFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#333;border:none;border-radius:50%;width:16px;height:16px;color:#fff;font-size:9px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;">✕</button></div>';
+  }).join('');
+}
+
+window.removeLocalFile = function(i) {
+  _localFiles.splice(i, 1);
+  renderLocalPreview();
+};
+
 document.getElementById('local-comment-form').addEventListener('submit', function(e) {
   e.preventDefault();
   const text = document.getElementById('local-comment-text').value.trim();
-  if (!text) return;
-  saveComment(text);
+  if (!text && !_localFiles.length) return;
+  saveComment(text, _localFiles.slice());
   document.getElementById('local-comment-text').value = '';
+  _localFiles = [];
+  renderLocalPreview();
 });
 
 // ── Modal de comentario rápido ─────────────────────────────────────────────
