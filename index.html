@@ -951,7 +951,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 18:30</span>
+      <span class="badge">ACT: 17/03/2026 18:34</span>
     </div>
   </div>
 </header>
@@ -1241,7 +1241,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:30", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:34", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1773,12 +1773,25 @@ async function loadTareas() {
 
 async function _saveTareas() {
   try {
-    await fetch(TAREAS_URL, {
+    const res = await fetch(TAREAS_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(_tareasCache)
     });
-  } catch(e) { alert('Error al guardar tarea. Verifica tu conexión.'); }
+    if (!res.ok) throw new Error('server error');
+  } catch(e) {
+    // Mostrar aviso sutil sin alert()
+    let warn = document.getElementById('tareas-save-warn');
+    if (!warn) {
+      warn = document.createElement('div');
+      warn.id = 'tareas-save-warn';
+      warn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.9);font-family:var(--font-heading);font-size:0.65rem;letter-spacing:1.5px;padding:8px 16px;z-index:9999;border-radius:4px;';
+      document.body.appendChild(warn);
+    }
+    warn.textContent = '⚠ Sin conexión al servidor — sube tareas.php al hosting';
+    warn.style.display = 'block';
+    setTimeout(() => { if (warn) warn.style.display = 'none'; }, 4000);
+  }
 }
 
 function renderTareas() {
