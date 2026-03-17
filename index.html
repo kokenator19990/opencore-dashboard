@@ -192,8 +192,23 @@ body {
 .analytics-btn.btn-canal.active    { background: rgba(229,255,0,0.02); border-color: rgba(229,255,0,0.2); }
 .analytics-btn.btn-reuniones.active { background: rgba(255,42,42,0.03); border-color: rgba(255,42,42,0.25); }
 
-.abn-icon { font-size: 1.6rem; margin-bottom: 0.25rem; filter: grayscale(1) opacity(0.6); transition: filter 0.3s; }
-.analytics-btn.active .abn-icon { filter: grayscale(0) opacity(1); }
+.abn-icon {
+  width: 32px; height: 32px; margin-bottom: 0.5rem;
+  color: rgba(0,229,255,0.35);
+  filter: drop-shadow(0 0 0px #00E5FF);
+  transition: color 0.35s, filter 0.35s;
+}
+.abn-icon svg { width: 32px; height: 32px; }
+.analytics-btn:hover .abn-icon,
+.analytics-btn.active .abn-icon {
+  color: #00E5FF;
+  filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 14px rgba(0,229,255,0.5));
+}
+.analytics-btn.btn-reuniones:hover .abn-icon,
+.analytics-btn.btn-reuniones.active .abn-icon {
+  color: #FF2A6D;
+  filter: drop-shadow(0 0 6px #FF2A6D) drop-shadow(0 0 14px rgba(255,42,109,0.5));
+}
 
 .abn-label { font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; color: var(--text-dim); }
 .analytics-btn.active .abn-label { color: var(--text-main); }
@@ -223,13 +238,7 @@ body {
   border-color: rgba(0,229,255,0.25);
   background: rgba(0,229,255,0.04);
 }
-.canal-chip-manual {
-  cursor: pointer; transition: border-color 0.2s, background 0.2s;
-}
-.canal-chip-manual:hover {
-  border-color: rgba(229,255,0,0.3);
-  background: rgba(229,255,0,0.03);
-}
+.canal-chip { transition: border-color 0.3s, background 0.3s; }
 .canal-chip-val {
   font-family: var(--font-heading); font-size: 1.4rem;
   font-weight: 700; line-height: 1; color: var(--text-main);
@@ -621,7 +630,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:21</span>
+      <span class="badge">ACT: 17/03/2026 17:25</span>
     </div>
   </div>
 </header>
@@ -675,7 +684,11 @@ window.enterDashboard = function() {
 
     <!-- Card 1: Total Contactadas -->
     <button class="analytics-btn btn-contactos" id="btn-contactos" onclick="showChart('contactos')">
-      <div class="abn-icon">📞</div>
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      </div>
       <div class="abn-label">TOTAL CONTACTADAS</div>
       <div class="abn-value" id="nav-contactadas">0</div>
       <div class="abn-sub">Todos los canales · VER GRÁFICO ↗</div>
@@ -683,35 +696,46 @@ window.enterDashboard = function() {
 
     <!-- Card 2: Canal de Contacto -->
     <button class="analytics-btn btn-canal" id="btn-canal" onclick="showChart('canal')">
-      <div class="abn-icon">📡</div>
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 6l11 6 11-6"/>
+          <path d="M1 6v12l11 6 11-6V6"/>
+        </svg>
+      </div>
       <div class="abn-label">CANAL DE CONTACTO</div>
-      <div class="canal-grid" onclick="event.stopPropagation()">
-        <div class="canal-chip canal-chip-auto" title="Actualización automática desde logs">
+      <div class="canal-grid">
+        <div class="canal-chip canal-chip-auto">
           <span class="canal-chip-val" id="canal-correo-val">0</span>
           <span class="canal-chip-lbl">CORREO</span>
         </div>
-        <div class="canal-chip canal-chip-manual" onclick="editarCanal('li','LinkedIn')" title="Click para editar">
+        <div class="canal-chip">
           <span class="canal-chip-val" id="canal-li-val">0</span>
           <span class="canal-chip-lbl">LINKEDIN</span>
         </div>
-        <div class="canal-chip canal-chip-manual" onclick="editarCanal('llamados','Llamadas')" title="Click para editar">
+        <div class="canal-chip">
           <span class="canal-chip-val" id="canal-llamados-val">0</span>
           <span class="canal-chip-lbl">LLAMADAS</span>
         </div>
-        <div class="canal-chip canal-chip-manual" onclick="editarCanal('red','Referidos')" title="Click para editar">
+        <div class="canal-chip">
           <span class="canal-chip-val" id="canal-red-val">0</span>
           <span class="canal-chip-lbl">REFERIDOS</span>
         </div>
       </div>
-      <div class="abn-sub">Click en canal manual para editar · VER GRÁFICO ↗</div>
+      <div class="abn-sub">VER GRÁFICO ↗</div>
     </button>
 
     <!-- Card 3: Reuniones -->
     <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="showChart('reuniones')">
-      <div class="abn-icon">🤝</div>
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+      </div>
       <div class="abn-label">REUNIONES</div>
-      <div class="abn-value" id="nav-reuniones" onclick="event.stopPropagation();editarReuniones()" title="Click para editar" style="cursor:pointer;">0</div>
-      <div class="abn-sub">Click en el número para registrar · VER GRÁFICO ↗</div>
+      <div class="abn-value" id="nav-reuniones">0</div>
+      <div class="abn-sub">Cierres concertados · VER GRÁFICO ↗</div>
     </button>
 
   </section>
@@ -771,7 +795,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:21", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 20, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": []};
+const DATA = {"updated": "17/03/2026 17:25", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 20, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": []};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -828,32 +852,11 @@ function updateCanalBadges() {
   // Solo actualizar el texto, no re-animar el anillo
   document.getElementById('kpi-cobertura-val').textContent = pct + '%';
 }
-window.editarCanal = function(canal, nombre) {
-  const key = 'oc_canal_' + canal;
-  const actual = localStorage.getItem(key) || '0';
-  const nuevo = prompt('Contactos por ' + nombre + ':', actual);
-  if (nuevo !== null) {
-    const val = Math.max(0, parseInt(nuevo) || 0);
-    localStorage.setItem(key, val);
-    updateCanalBadges();
-    if (document.getElementById('btn-canal').classList.contains('active')) showChart('canal');
-  }
-};
-
-// ── Reuniones counter ─────────────────────────────────────────────────────
-let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') ?? DATA.reuniones_db ?? 0);
+// ── Reuniones counter (read-only desde localStorage) ──────────────────────
+let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') || DATA.reuniones_db || 0);
 function updateReunionesBadge() {
   document.getElementById('nav-reuniones').textContent = reuniones;
 }
-window.editarReuniones = function() {
-  const nuevo = prompt('Número de reuniones agendadas:', reuniones);
-  if (nuevo !== null) {
-    reuniones = Math.max(0, parseInt(nuevo) || 0);
-    localStorage.setItem('oc_reuniones_count', reuniones);
-    updateReunionesBadge();
-    if (document.getElementById('btn-reuniones').classList.contains('active')) showChart('reuniones');
-  }
-};
 
 // ── Charts ────────────────────────────────────────────────────────────────
 let activeChart = null;
@@ -1117,6 +1120,38 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.addEventListener('resize', () => { if (activeChart) activeChart.resize(); });
+
+// ── Mouse-tilt on analytics cards & KPI cards ─────────────────────────────
+(function() {
+  const TILT = 7; // max degrees
+  function addTilt(el) {
+    el.addEventListener('mousemove', function(e) {
+      const r  = el.getBoundingClientRect();
+      const x  = (e.clientX - r.left) / r.width  - 0.5;
+      const y  = (e.clientY - r.top)  / r.height - 0.5;
+      el.style.transform = `perspective(600px) rotateY(${x * TILT * 2}deg) rotateX(${-y * TILT}deg) translateY(-3px)`;
+      el.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.3s';
+      el.style.boxShadow = `${x * 8}px ${y * 8}px 30px rgba(0,229,255,0.12), 0 12px 40px rgba(0,0,0,0.5)`;
+    });
+    el.addEventListener('mouseleave', function() {
+      el.style.transform = '';
+      el.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s, background 0.3s';
+      el.style.boxShadow = '';
+    });
+  }
+  document.querySelectorAll('.analytics-btn, .kpi-card').forEach(addTilt);
+})();
+
+// ── Cursor glow follower ──────────────────────────────────────────────────
+(function() {
+  const glow = document.createElement('div');
+  glow.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.06) 0%,transparent 70%);transform:translate(-50%,-50%);transition:opacity 0.3s;';
+  document.body.appendChild(glow);
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top  = e.clientY + 'px';
+  });
+})();
 </script>
 </body>
 </html>
