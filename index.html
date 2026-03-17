@@ -335,20 +335,115 @@ body {
   50%      { transform:scale(1.4); opacity:0.6; }
 }
 
-/* RESPONSIVE */
+/* ── QUICK REPLY CHIPS ───────────────────────────────────────────────── */
+.quick-chip {
+  background: rgba(0,229,255,0.06);
+  border: 1px solid rgba(0,229,255,0.2);
+  color: rgba(0,229,255,0.8);
+  font-family: var(--font-sans);
+  font-size: 0.75rem; font-weight: 600;
+  padding: 7px 12px; border-radius: 20px;
+  cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+.quick-chip:hover, .quick-chip:active {
+  background: rgba(0,229,255,0.14);
+  border-color: rgba(0,229,255,0.5);
+}
+
+/* ── TOUCH RIPPLE ─────────────────────────────────────────────────────── */
+.ripple {
+  position:absolute;border-radius:50%;
+  background:rgba(0,229,255,0.18);
+  transform:scale(0);animation:rippleAnim 0.55s linear;
+  pointer-events:none;
+}
+@keyframes rippleAnim {
+  to { transform:scale(4);opacity:0; }
+}
+
+/* ── TABLET (≤ 1024px) ────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-grid { grid-template-columns: 160px repeat(3,1fr); }
+  .analytics-nav { gap: 1rem; }
 }
+
+/* ── MOBILE (≤ 768px) ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .analytics-nav { grid-template-columns: 1fr; }
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
-  .kpi-value { font-size: 2.5rem; }
-  .header { padding: 1rem; }
+  /* Header compact */
+  .header { padding: 0.75rem 1rem; }
+  .header-meta { gap: 0.5rem; }
   .badge { display: none; }
+  .feedback-btn { font-size: 0.65rem; padding: 5px 10px; letter-spacing: 0.5px; }
+
+  /* Container */
+  .container { padding: 1.25rem 0.75rem; }
+
+  /* KPI grid: ring full-width top, then 3 cards in a row */
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin-bottom: 2rem;
+  }
+  .ring-card { grid-column: 1 / -1; flex-direction: row; gap: 1.5rem; justify-content: flex-start; padding: 1.25rem 1.5rem; }
+  .progress-ring { width: 72px; height: 72px; flex-shrink: 0; }
+  .ring-text { font-size: 0.9rem; }
+  .kpi-card { padding: 1rem 1rem; }
+  .kpi-value { font-size: 2.2rem; letter-spacing: -1px; }
+  .kpi-label { font-size: 0.6rem; margin-bottom: 0.5rem; }
+
+  /* Analytics nav: vertical stack */
+  .analytics-nav { grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .analytics-btn { padding: 1.25rem 1.25rem; }
+  .abn-icon { width: 24px; height: 24px; margin-bottom: 0.35rem; }
+  .abn-icon svg { width: 24px; height: 24px; }
+  .abn-value { font-size: 2.5rem; }
+  .canal-grid { gap: 0.35rem; margin: 0.5rem 0 0.25rem; }
+  .canal-chip { padding: 0.4rem 0.5rem; }
+  .canal-chip-val { font-size: 1.2rem; }
+
+  /* Section titles */
+  .section-title h2 { font-size: 0.75rem; }
+
+  /* Chart panel */
+  .chart-reveal-panel { padding: 1rem 0.75rem; }
+  .crp-inner { padding: 1rem; }
+  #active-chart { height: 220px !important; }
+
+  /* Comment modal full-screen on mobile */
+  #comment-modal-overlay > div {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex; flex-direction: column;
+    padding: 1.5rem 1.25rem !important;
+  }
+  #modal-comment-text { flex: 1; font-size: 1rem; resize: none; }
+
+  /* Comments list */
+  .comment-item { padding: 0.85rem; }
+  .comment-text { font-size: 0.85rem; }
+
+  /* Toast */
+  #comment-toast { bottom: 0.75rem; right: 0.75rem; left: 0.75rem; max-width: 100%; }
 }
+
+/* ── PHONE (≤ 480px) ─────────────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .kpi-grid { grid-template-columns: 1fr; }
-  .container { padding: 1.5rem 1rem; }
+  .header-inner > a { transform: scale(0.8); transform-origin: left center; }
+  .kpi-value { font-size: 1.9rem; }
+  .abn-value { font-size: 2.2rem; }
+  .ring-card { gap: 1rem; padding: 1rem; }
+  .progress-ring { width: 60px; height: 60px; }
+  .ring-text { font-size: 0.8rem; }
+  .analytics-btn { padding: 1rem; }
+
+  /* Comment board */
+  #local-comment-text { font-size: 0.9rem; }
+  .btn-primary { width: 100%; padding: 0.85rem; font-size: 0.8rem; }
 }
 </style>
 </head>
@@ -630,7 +725,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:35</span>
+      <span class="badge">ACT: 17/03/2026 17:42</span>
     </div>
   </div>
 </header>
@@ -789,22 +884,43 @@ window.enterDashboard = function() {
 
 </main>
 
-<!-- MODAL COMENTARIO RÁPIDO -->
-<div id="comment-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;justify-content:center;align-items:center;backdrop-filter:blur(8px);">
-  <div style="background:#141414;border:1px solid #333;border-top:2px solid var(--accent-cyan);padding:2.5rem;width:100%;max-width:520px;margin:1rem;box-shadow:0 0 40px rgba(0,229,255,0.1);">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-      <div style="font-family:var(--font-heading);font-weight:700;letter-spacing:2px;font-size:0.9rem;color:var(--accent-cyan);">NUEVO COMENTARIO</div>
-      <button onclick="closeCommentModal()" style="background:none;border:none;color:#888;font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+<!-- MODAL COMENTARIO RÁPIDO — mobile-first full-screen -->
+<div id="comment-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;justify-content:center;align-items:flex-end;backdrop-filter:blur(8px);">
+  <div style="background:#141414;border-top:2px solid var(--accent-cyan);
+    width:100%;max-width:580px;padding:1.5rem 1.25rem 2rem;
+    box-shadow:0 -8px 40px rgba(0,229,255,0.12);
+    border-radius:16px 16px 0 0;
+    display:flex;flex-direction:column;gap:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--font-heading);font-weight:700;letter-spacing:2px;font-size:0.85rem;color:var(--accent-cyan);">+ COMENTARIO</div>
+      <button onclick="closeCommentModal()" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;padding:0;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <textarea id="modal-comment-text" rows="4" maxlength="500"
-      placeholder="Escribe tu comentario, actualización o feedback..."
-      style="width:100%;background:transparent;border:1px solid #333;color:#fff;padding:1rem;font-family:var(--font-sans);font-size:0.9rem;resize:vertical;transition:border-color 0.3s;"
+    <!-- Quick-reply chips -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+      <button class="quick-chip" onclick="quickReply('Muy bien, sigan así 👍')">Muy bien 👍</button>
+      <button class="quick-chip" onclick="quickReply('Enfóquense en LinkedIn')">Enfoque LinkedIn</button>
+      <button class="quick-chip" onclick="quickReply('Aumentar volumen de correos')">+ Correos</button>
+      <button class="quick-chip" onclick="quickReply('Buscar reuniones esta semana')">Buscar reuniones</button>
+    </div>
+    <textarea id="modal-comment-text" rows="3" maxlength="500"
+      placeholder="O escribe tu mensaje aquí..."
+      style="width:100%;background:rgba(255,255,255,0.04);border:1px solid #333;
+        border-radius:8px;color:#fff;padding:0.85rem 1rem;
+        font-family:var(--font-sans);font-size:1rem;resize:none;
+        -webkit-appearance:none;box-sizing:border-box;
+        transition:border-color 0.3s;"
       onfocus="this.style.borderColor='var(--accent-cyan)'"
       onblur="this.style.borderColor='#333'"
     ></textarea>
-    <div style="display:flex;gap:1rem;margin-top:1rem;justify-content:flex-end;">
-      <button onclick="closeCommentModal()" style="background:none;border:1px solid #333;color:#888;padding:8px 18px;font-family:var(--font-sans);font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">CANCELAR</button>
-      <button onclick="submitModalComment()" class="btn-primary" style="padding:8px 22px;">PUBLICAR</button>
+    <div style="display:flex;gap:0.75rem;">
+      <button onclick="closeCommentModal()" style="flex:1;background:none;border:1px solid #333;
+        color:#888;padding:14px;font-family:var(--font-sans);font-size:0.8rem;
+        font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:6px;">
+        CANCELAR
+      </button>
+      <button onclick="submitModalComment()" class="btn-primary" style="flex:2;padding:14px;font-size:0.85rem;border-radius:6px;">
+        PUBLICAR
+      </button>
     </div>
   </div>
 </div>
@@ -815,7 +931,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:35", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 17:42", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1130,7 +1246,11 @@ window.submitModalComment = function() {
   if (!text) return;
   saveComment(text);
   closeCommentModal();
-  // Scroll suave al muro
+  document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
+};
+window.quickReply = function(text) {
+  saveComment(text);
+  closeCommentModal();
   document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
 };
 // Cerrar modal con Escape
@@ -1161,36 +1281,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.addEventListener('resize', () => { if (activeChart) activeChart.resize(); });
 
-// ── Mouse-tilt on analytics cards & KPI cards ─────────────────────────────
+// ── Touch ripple on cards ─────────────────────────────────────────────────
 (function() {
-  const TILT = 7; // max degrees
+  function addRipple(el) {
+    el.style.position = 'relative';
+    el.style.overflow = 'hidden';
+    el.addEventListener('touchstart', function(e) {
+      const r   = el.getBoundingClientRect();
+      const t   = e.touches[0];
+      const rip = document.createElement('span');
+      const size = Math.max(r.width, r.height) * 1.5;
+      rip.className = 'ripple';
+      rip.style.cssText = `width:${size}px;height:${size}px;left:${t.clientX - r.left - size/2}px;top:${t.clientY - r.top - size/2}px;`;
+      el.appendChild(rip);
+      setTimeout(() => rip.remove(), 600);
+    }, {passive:true});
+  }
+  document.querySelectorAll('.analytics-btn, .kpi-card').forEach(addRipple);
+})();
+
+// ── Mouse-tilt (desktop only) + cursor glow ──────────────────────────────
+(function() {
+  const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if (isMobile) return; // skip on touch devices
+
+  const TILT = 7;
   function addTilt(el) {
     el.addEventListener('mousemove', function(e) {
-      const r  = el.getBoundingClientRect();
-      const x  = (e.clientX - r.left) / r.width  - 0.5;
-      const y  = (e.clientY - r.top)  / r.height - 0.5;
-      el.style.transform = `perspective(600px) rotateY(${x * TILT * 2}deg) rotateX(${-y * TILT}deg) translateY(-3px)`;
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      el.style.transform  = `perspective(600px) rotateY(${x*TILT*2}deg) rotateX(${-y*TILT}deg) translateY(-3px)`;
       el.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.3s';
-      el.style.boxShadow = `${x * 8}px ${y * 8}px 30px rgba(0,229,255,0.12), 0 12px 40px rgba(0,0,0,0.5)`;
+      el.style.boxShadow  = `${x*8}px ${y*8}px 30px rgba(0,229,255,0.12),0 12px 40px rgba(0,0,0,0.5)`;
     });
     el.addEventListener('mouseleave', function() {
-      el.style.transform = '';
-      el.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1), box-shadow 0.5s, background 0.3s';
-      el.style.boxShadow = '';
+      el.style.transform  = '';
+      el.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1),box-shadow 0.5s,background 0.3s';
+      el.style.boxShadow  = '';
     });
   }
   document.querySelectorAll('.analytics-btn, .kpi-card').forEach(addTilt);
-})();
 
-// ── Cursor glow follower ──────────────────────────────────────────────────
-(function() {
+  // Cursor glow
   const glow = document.createElement('div');
-  glow.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.06) 0%,transparent 70%);transform:translate(-50%,-50%);transition:opacity 0.3s;';
+  glow.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.06) 0%,transparent 70%);transform:translate(-50%,-50%);';
   document.body.appendChild(glow);
   document.addEventListener('mousemove', e => {
     glow.style.left = e.clientX + 'px';
     glow.style.top  = e.clientY + 'px';
   });
+})();
+
+// ── Device orientation tilt (mobile gyroscope) ────────────────────────────
+(function() {
+  if (!window.DeviceOrientationEvent) return;
+  const cards = document.querySelectorAll('.analytics-btn, .kpi-card');
+  let lastGamma = 0, lastBeta = 0;
+  window.addEventListener('deviceorientation', function(e) {
+    const gamma = Math.max(-20, Math.min(20, e.gamma || 0)); // left-right
+    const beta  = Math.max(-20, Math.min(20, (e.beta || 0) - 40)); // front-back offset
+    lastGamma += (gamma - lastGamma) * 0.1;
+    lastBeta  += (beta  - lastBeta)  * 0.1;
+    cards.forEach(el => {
+      el.style.transform  = `perspective(800px) rotateY(${lastGamma * 0.3}deg) rotateX(${-lastBeta * 0.2}deg)`;
+      el.style.transition = 'transform 0.3s ease-out';
+    });
+  }, {passive:true});
 })();
 </script>
 </body>
