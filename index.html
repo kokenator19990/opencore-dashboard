@@ -599,7 +599,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 16:48</span>
+      <span class="badge">ACT: 17/03/2026 16:55</span>
     </div>
   </div>
 </header>
@@ -663,37 +663,53 @@ window.enterDashboard = function() {
     <button class="analytics-btn btn-canal" id="btn-canal" onclick="showChart('canal')">
       <div class="abn-icon">📡</div>
       <div class="abn-label">CANAL DE CONTACTO</div>
-      <div style="display:flex;gap:1.5rem;margin:0.4rem 0 0.2rem;align-items:flex-end;" onclick="event.stopPropagation()">
-        <div style="text-align:center;">
-          <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--accent-cyan);" id="canal-correo-val">0</div>
-          <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;">CORREO</div>
+      <!-- 2x2 grid de canales -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem 0.5rem;margin:0.6rem 0 0.4rem;" onclick="event.stopPropagation()">
+
+        <!-- Correo (auto) -->
+        <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);padding:0.5rem 0.6rem;display:flex;align-items:center;gap:0.5rem;">
+          <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--accent-cyan);line-height:1;" id="canal-correo-val">0</div>
+          <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;line-height:1.3;">CORREO<br><span style="color:rgba(0,229,255,0.4);font-size:0.5rem;">automático</span></div>
         </div>
-        <div style="text-align:center;">
-          <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;" id="canal-li-val">0</div>
-          <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;">LINKEDIN</div>
-          <div style="display:flex;gap:4px;margin-top:3px;justify-content:center;">
-            <button class="btn-count" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('li',-1)">−</button>
-            <button class="btn-count plus" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('li',1)">+</button>
+
+        <!-- LinkedIn -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
+          <div>
+            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-li-val">0</div>
+            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">LINKEDIN</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('li',1)">+</button>
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('li',-1)">−</button>
           </div>
         </div>
-        <div style="text-align:center;">
-          <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;" id="canal-llamados-val">0</div>
-          <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;">LLAMADOS</div>
-          <div style="display:flex;gap:4px;margin-top:3px;justify-content:center;">
-            <button class="btn-count" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('llamados',-1)">−</button>
-            <button class="btn-count plus" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('llamados',1)">+</button>
+
+        <!-- Llamados -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
+          <div>
+            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-llamados-val">0</div>
+            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">LLAMADAS</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('llamados',1)">+</button>
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('llamados',-1)">−</button>
           </div>
         </div>
-        <div style="text-align:center;">
-          <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:700;" id="canal-red-val">0</div>
-          <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;">RED</div>
-          <div style="display:flex;gap:4px;margin-top:3px;justify-content:center;">
-            <button class="btn-count" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('red',-1)">−</button>
-            <button class="btn-count plus" style="width:22px;height:22px;font-size:0.9rem;" onclick="cambiarCanal('red',1)">+</button>
+
+        <!-- Referidos -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
+          <div>
+            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-red-val">0</div>
+            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">REFERIDOS</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('red',1)">+</button>
+            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('red',-1)">−</button>
           </div>
         </div>
+
       </div>
-      <div class="abn-sub">Contactos por canal · VER GRÁFICO ↗</div>
+      <div class="abn-sub">VER GRÁFICO ↗</div>
     </button>
 
     <!-- Botón 3: Reuniones (contador manual) -->
@@ -766,7 +782,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 16:48", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 5, "reuniones_db": 0, "alta": 97, "media": 79, "baja": 56, "pct_email": 90.5, "email_base": 1989, "canales": {"LinkedIn Persona": 107, "Email Directo": 59, "Sin datos directos": 44, "LinkedIn Empresa + Email": 12, "LinkedIn Empresa": 10}, "cat_enviados": {"Industrial": 19, "Minería": 12, "Seguridad/EPP": 6, "Logística": 5, "Repuestos": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58]};
+const DATA = {"updated": "17/03/2026 16:55", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 5, "reuniones_db": 0, "alta": 97, "media": 79, "baja": 56, "pct_email": 90.5, "email_base": 1989, "canales": {"LinkedIn Persona": 107, "Email Directo": 59, "Sin datos directos": 44, "LinkedIn Empresa + Email": 12, "LinkedIn Empresa": 10}, "cat_enviados": {"Industrial": 19, "Minería": 12, "Seguridad/EPP": 6, "Logística": 5, "Repuestos": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58]};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -909,7 +925,7 @@ window.showChart = function(type) {
 
   else if (type === 'canal') {
     titleEl.textContent = 'CONTACTOS POR CANAL';
-    const canalLabels = ['Correo', 'LinkedIn', 'Llamados', 'Red de Contactos'];
+    const canalLabels = ['Correo', 'LinkedIn', 'Llamadas', 'Referidos'];
     const canalColors = ['#00E5FF', '#B200FF', '#E5FF00', '#00FFAA'];
     const canalVals = [
       DATA.enviados,
