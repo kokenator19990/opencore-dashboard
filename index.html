@@ -977,7 +977,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 19:33</span>
+      <span class="badge">ACT: 17/03/2026 19:35</span>
     </div>
   </div>
 </header>
@@ -1183,10 +1183,10 @@ window.enterDashboard = function() {
       <div style="display:flex;gap:0.6rem;align-items:center;">
         <input class="tarea-input" id="tarea-titulo" type="text" maxlength="120"
           placeholder="Nueva tarea..." required style="flex:1;">
-        <button type="button" id="tarea-prio-btn" title="Alta prioridad"
-          onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,42,45,0.25)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';"
-          style="width:40px;height:40px;flex-shrink:0;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:1rem;color:rgba(255,42,45,0.25);transition:all 0.2s;"
-          data-alta="0" title="Marcar alta prioridad">↑</button>
+        <button type="button" id="tarea-prio-btn"
+          onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.3)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';this.textContent=this.dataset.alta==='1'?'⚡ URGENTE':'⚡ URGENTE';"
+          style="height:40px;flex-shrink:0;padding:0 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:0.65rem;font-family:var(--font-heading);letter-spacing:1px;color:rgba(255,255,255,0.3);transition:all 0.2s;"
+          data-alta="0">⚡ URGENTE</button>
         <button type="submit" class="btn-primary" style="padding:10px 18px;font-size:0.75rem;white-space:nowrap;">+ ASIGNAR</button>
       </div>
     </form>
@@ -1270,7 +1270,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 19:33", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 19:35", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
