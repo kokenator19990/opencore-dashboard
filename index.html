@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 <title>OpenCORE CRM — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -30,7 +30,9 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  max-width: 100vw;
 }
+html { overflow-x: hidden; max-width: 100vw; }
 
 /* ANIMATED GRID */
 .particles-bg {
@@ -458,9 +460,12 @@ body {
 @media (max-width: 768px) {
   /* Header compact */
   .header { padding: 0.75rem 1rem; }
-  .header-meta { gap: 0.5rem; }
+  .header-inner { gap: 0.5rem; }
+  .header-meta { gap: 0.4rem; flex-wrap: nowrap; overflow: hidden; }
   .badge { display: none; }
-  .feedback-btn { font-size: 0.65rem; padding: 5px 10px; letter-spacing: 0.5px; }
+  .feedback-btn { font-size: 0.6rem; padding: 5px 8px; letter-spacing: 0.3px; white-space: nowrap; }
+  #comment-header-btn { font-size: 0.6rem; }
+  #tareas-header-btn { display: none !important; } /* usa KPI card en mobile */
 
   /* Container */
   .container { padding: 1.25rem 0.75rem; }
@@ -931,7 +936,7 @@ window.enterDashboard = function() {
 <!-- HEADER -->
 <header class="header">
   <div class="header-inner">
-    <div>
+    <div onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;flex-shrink:0;" title="Ir al inicio">
       <svg viewBox="0 0 460 120" width="155" height="36" xmlns="http://www.w3.org/2000/svg">
         <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
         <circle cx="50" cy="60" r="15" fill="#00E5FF"/>
@@ -953,7 +958,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 18:44</span>
+      <span class="badge">ACT: 17/03/2026 18:45</span>
     </div>
   </div>
 </header>
@@ -1243,7 +1248,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:44", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:45", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
