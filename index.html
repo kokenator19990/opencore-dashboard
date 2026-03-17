@@ -470,7 +470,7 @@ html { overflow-x: hidden; max-width: 100vw; }
 /* ── MOBILE (≤ 768px) ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   /* Header compact */
-  .header { padding: 0.75rem 1rem; }
+  .header { padding: 1.2rem 1rem 0.75rem; }
   .header-inner { gap: 0.5rem; align-items: flex-start; }
   .header-meta { gap: 0.5rem; flex-wrap: wrap; max-width: calc(100vw - 165px); }
   .badge { display: none; }
@@ -977,7 +977,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 19:30</span>
+      <span class="badge">ACT: 17/03/2026 19:33</span>
     </div>
   </div>
 </header>
@@ -1078,6 +1078,10 @@ window.enterDashboard = function() {
         </svg>
       </div>
       <div class="abn-label">CANAL DE CONTACTO</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;margin-top:0.3rem;">
+        <canvas id="canal-mini-chart" width="80" height="80" style="display:block;"></canvas>
+        <div id="canal-mini-legend" style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;"></div>
+      </div>
       <div class="canal-grid" style="display:none;">
         <div class="canal-chip canal-chip-auto">
           <span class="canal-chip-val" id="canal-correo-val">0</span>
@@ -1266,7 +1270,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 19:30", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 19:33", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1321,6 +1325,52 @@ function updateCanalBadges() {
   document.getElementById('nav-contactadas').textContent = total.toLocaleString();
   const pct = DATA.total > 0 ? parseFloat((total / DATA.total * 100).toFixed(1)) : 0;
   document.getElementById('kpi-cobertura-val').textContent = pct + '%';
+  drawCanalMiniChart();
+}
+function drawCanalMiniChart() {
+  const canvas = document.getElementById('canal-mini-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const segments = [
+    { val: DATA.canal_correo   || 0, color: '#00E5FF', label: 'CORREO' },
+    { val: DATA.canal_linkedin  || 0, color: '#B200FF', label: 'LINKEDIN' },
+    { val: DATA.canal_llamadas  || 0, color: '#E5FF00', label: 'LLAMADAS' },
+    { val: DATA.canal_referidos || 0, color: '#FF2A6D', label: 'REFERIDOS' }
+  ].filter(s => s.val > 0);
+  const total = segments.reduce((a, s) => a + s.val, 0);
+  const cx = 40, cy = 40, r = 34, innerR = 20;
+  ctx.clearRect(0, 0, 80, 80);
+  if (total === 0) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 14; ctx.stroke();
+  } else {
+    let startAngle = -Math.PI / 2;
+    segments.forEach(s => {
+      const slice = (s.val / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+      ctx.arc(cx, cy, innerR, startAngle + slice, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = s.color + 'cc';
+      ctx.fill();
+      startAngle += slice;
+    });
+    // center total
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, cx, cy);
+  }
+  // legend
+  const legend = document.getElementById('canal-mini-legend');
+  if (legend) {
+    legend.innerHTML = segments.map(s =>
+      '<span style="font-size:0.62rem;color:' + s.color + ';display:flex;align-items:center;gap:2px;">'
+      + '<span style="width:6px;height:6px;border-radius:50%;background:' + s.color + ';display:inline-block;"></span>'
+      + s.label + '</span>'
+    ).join('');
+  }
 }
 // ── Reuniones counter (read-only desde localStorage) ──────────────────────
 let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') || DATA.reuniones_db || 0);
