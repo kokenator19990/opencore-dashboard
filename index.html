@@ -305,6 +305,9 @@ body {
 
 .abn-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.1rem; }
 
+/* Alta prioridad: oculta en desktop, visible en mobile */
+.kpi-desktop-hidden { display: none; }
+
 /* Canal grid chips */
 .canal-grid {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -462,7 +465,8 @@ body {
   /* Container */
   .container { padding: 1.25rem 0.75rem; }
 
-  /* KPI grid: ring full-width top, then 3 cards in a row */
+  /* KPI grid: ring full-width top, then 2+2 cards */
+  .kpi-desktop-hidden { display: block; }
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
     gap: 1px;
@@ -947,7 +951,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 18:26</span>
+      <span class="badge">ACT: 17/03/2026 18:30</span>
     </div>
   </div>
 </header>
@@ -1003,8 +1007,8 @@ window.enterDashboard = function() {
       <div class="kpi-sub">Desde 17/03/2026</div>
     </div>
 
-    <!-- Alta prioridad -->
-    <div class="kpi-card">
+    <!-- Alta prioridad — solo mobile -->
+    <div class="kpi-card kpi-desktop-hidden">
       <div class="kpi-label">ALTA PRIORIDAD</div>
       <div class="kpi-value accent-yellow" id="kpi-alta-val">0</div>
       <div class="kpi-sub">Prospectos calificados</div>
@@ -1237,7 +1241,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:26", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:30", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
