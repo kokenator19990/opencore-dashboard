@@ -977,7 +977,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 19:29</span>
+      <span class="badge">ACT: 17/03/2026 19:30</span>
     </div>
   </div>
 </header>
@@ -1078,7 +1078,7 @@ window.enterDashboard = function() {
         </svg>
       </div>
       <div class="abn-label">CANAL DE CONTACTO</div>
-      <div class="canal-grid">
+      <div class="canal-grid" style="display:none;">
         <div class="canal-chip canal-chip-auto">
           <span class="canal-chip-val" id="canal-correo-val">0</span>
           <span class="canal-chip-lbl">CORREO</span>
@@ -1096,7 +1096,6 @@ window.enterDashboard = function() {
           <span class="canal-chip-lbl">REFERIDOS</span>
         </div>
       </div>
-      <div class="abn-sub">VER GRÁFICO ↗</div>
     </button>
 
     <!-- Card 3: Reuniones -->
@@ -1267,7 +1266,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 19:29", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 19:30", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
