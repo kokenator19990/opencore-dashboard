@@ -208,20 +208,37 @@ body {
 
 .abn-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.1rem; }
 
-/* Reuniones controls */
-.reunion-controls {
-  display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem;
+/* Canal grid chips */
+.canal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.45rem; margin: 0.7rem 0 0.3rem; width: 100%;
 }
-.btn-count {
-  background: none; border: 1px solid var(--border);
-  color: var(--text-main); width: 30px; height: 30px;
-  font-size: 1.2rem; font-weight: 700; cursor: pointer;
-  transition: var(--transition);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-heading);
+.canal-chip {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
 }
-.btn-count:hover { border-color: var(--accent-red); color: var(--accent-red); }
-.btn-count.plus:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+.canal-chip-auto {
+  border-color: rgba(0,229,255,0.25);
+  background: rgba(0,229,255,0.04);
+}
+.canal-chip-manual {
+  cursor: pointer; transition: border-color 0.2s, background 0.2s;
+}
+.canal-chip-manual:hover {
+  border-color: rgba(229,255,0,0.3);
+  background: rgba(229,255,0,0.03);
+}
+.canal-chip-val {
+  font-family: var(--font-heading); font-size: 1.4rem;
+  font-weight: 700; line-height: 1; color: var(--text-main);
+}
+.canal-chip-auto .canal-chip-val { color: var(--accent-cyan); }
+.canal-chip-lbl {
+  font-size: 0.55rem; letter-spacing: 1.2px;
+  color: var(--text-dim); text-transform: uppercase;
+}
 
 /* CHART REVEAL PANEL */
 .chart-reveal-panel {
@@ -604,7 +621,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:18</span>
+      <span class="badge">ACT: 17/03/2026 17:21</span>
     </div>
   </div>
 </header>
@@ -656,78 +673,45 @@ window.enterDashboard = function() {
 
   <section class="analytics-nav">
 
-    <!-- Botón 1: Contactadas -->
+    <!-- Card 1: Total Contactadas -->
     <button class="analytics-btn btn-contactos" id="btn-contactos" onclick="showChart('contactos')">
       <div class="abn-icon">📞</div>
       <div class="abn-label">TOTAL CONTACTADAS</div>
       <div class="abn-value" id="nav-contactadas">0</div>
-      <div class="abn-sub">Todos los canales combinados · VER GRÁFICO ↗</div>
+      <div class="abn-sub">Todos los canales · VER GRÁFICO ↗</div>
     </button>
 
-    <!-- Botón 2: Canal -->
+    <!-- Card 2: Canal de Contacto -->
     <button class="analytics-btn btn-canal" id="btn-canal" onclick="showChart('canal')">
       <div class="abn-icon">📡</div>
       <div class="abn-label">CANAL DE CONTACTO</div>
-      <!-- 2x2 grid de canales -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem 0.5rem;margin:0.6rem 0 0.4rem;" onclick="event.stopPropagation()">
-
-        <!-- Correo (auto) -->
-        <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);padding:0.5rem 0.6rem;display:flex;align-items:center;gap:0.5rem;">
-          <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--accent-cyan);line-height:1;" id="canal-correo-val">0</div>
-          <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;line-height:1.3;">CORREO<br><span style="color:rgba(0,229,255,0.4);font-size:0.5rem;">automático</span></div>
+      <div class="canal-grid" onclick="event.stopPropagation()">
+        <div class="canal-chip canal-chip-auto" title="Actualización automática desde logs">
+          <span class="canal-chip-val" id="canal-correo-val">0</span>
+          <span class="canal-chip-lbl">CORREO</span>
         </div>
-
-        <!-- LinkedIn -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
-          <div>
-            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-li-val">0</div>
-            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">LINKEDIN</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('li',1)">+</button>
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('li',-1)">−</button>
-          </div>
+        <div class="canal-chip canal-chip-manual" onclick="editarCanal('li','LinkedIn')" title="Click para editar">
+          <span class="canal-chip-val" id="canal-li-val">0</span>
+          <span class="canal-chip-lbl">LINKEDIN</span>
         </div>
-
-        <!-- Llamados -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
-          <div>
-            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-llamados-val">0</div>
-            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">LLAMADAS</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('llamados',1)">+</button>
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('llamados',-1)">−</button>
-          </div>
+        <div class="canal-chip canal-chip-manual" onclick="editarCanal('llamados','Llamadas')" title="Click para editar">
+          <span class="canal-chip-val" id="canal-llamados-val">0</span>
+          <span class="canal-chip-lbl">LLAMADAS</span>
         </div>
-
-        <!-- Referidos -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:0.5rem 0.6rem;display:flex;align-items:center;justify-content:space-between;gap:0.3rem;">
-          <div>
-            <div style="font-family:var(--font-heading);font-size:1.5rem;font-weight:700;line-height:1;" id="canal-red-val">0</div>
-            <div style="font-size:0.58rem;color:var(--text-dim);letter-spacing:1px;">REFERIDOS</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('red',1)">+</button>
-            <button class="btn-count" style="width:20px;height:20px;font-size:0.85rem;" onclick="cambiarCanal('red',-1)">−</button>
-          </div>
+        <div class="canal-chip canal-chip-manual" onclick="editarCanal('red','Referidos')" title="Click para editar">
+          <span class="canal-chip-val" id="canal-red-val">0</span>
+          <span class="canal-chip-lbl">REFERIDOS</span>
         </div>
-
       </div>
-      <div class="abn-sub">VER GRÁFICO ↗</div>
+      <div class="abn-sub">Click en canal manual para editar · VER GRÁFICO ↗</div>
     </button>
 
-    <!-- Botón 3: Reuniones (contador manual) -->
+    <!-- Card 3: Reuniones -->
     <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="showChart('reuniones')">
       <div class="abn-icon">🤝</div>
       <div class="abn-label">REUNIONES</div>
-      <div class="abn-value" id="nav-reuniones">0</div>
-      <div class="abn-sub">Cierres concertados · VER GRÁFICO ↗</div>
-      <div class="reunion-controls" onclick="event.stopPropagation()">
-        <button class="btn-count" onclick="cambiarReunion(-1)">−</button>
-        <button class="btn-count plus" onclick="cambiarReunion(1)">+</button>
-        <span style="font-size:0.7rem;color:var(--text-dim);letter-spacing:1px;">REGISTRAR</span>
-      </div>
+      <div class="abn-value" id="nav-reuniones" onclick="event.stopPropagation();editarReuniones()" title="Click para editar" style="cursor:pointer;">0</div>
+      <div class="abn-sub">Click en el número para registrar · VER GRÁFICO ↗</div>
     </button>
 
   </section>
@@ -787,7 +771,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:18", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 20, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": []};
+const DATA = {"updated": "17/03/2026 17:21", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 20, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": []};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -844,12 +828,16 @@ function updateCanalBadges() {
   // Solo actualizar el texto, no re-animar el anillo
   document.getElementById('kpi-cobertura-val').textContent = pct + '%';
 }
-window.cambiarCanal = function(canal, delta) {
+window.editarCanal = function(canal, nombre) {
   const key = 'oc_canal_' + canal;
-  const val = Math.max(0, parseInt(localStorage.getItem(key) || 0) + delta);
-  localStorage.setItem(key, val);
-  updateCanalBadges();
-  if (document.getElementById('btn-canal').classList.contains('active')) showChart('canal');
+  const actual = localStorage.getItem(key) || '0';
+  const nuevo = prompt('Contactos por ' + nombre + ':', actual);
+  if (nuevo !== null) {
+    const val = Math.max(0, parseInt(nuevo) || 0);
+    localStorage.setItem(key, val);
+    updateCanalBadges();
+    if (document.getElementById('btn-canal').classList.contains('active')) showChart('canal');
+  }
 };
 
 // ── Reuniones counter ─────────────────────────────────────────────────────
@@ -857,13 +845,13 @@ let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') ?? DATA.reun
 function updateReunionesBadge() {
   document.getElementById('nav-reuniones').textContent = reuniones;
 }
-window.cambiarReunion = function(delta) {
-  reuniones = Math.max(0, reuniones + delta);
-  localStorage.setItem('oc_reuniones_count', reuniones);
-  updateReunionesBadge();
-  // Si el panel de reuniones está abierto, refrescar el gráfico
-  if (document.getElementById('btn-reuniones').classList.contains('active')) {
-    showChart('reuniones');
+window.editarReuniones = function() {
+  const nuevo = prompt('Número de reuniones agendadas:', reuniones);
+  if (nuevo !== null) {
+    reuniones = Math.max(0, parseInt(nuevo) || 0);
+    localStorage.setItem('oc_reuniones_count', reuniones);
+    updateReunionesBadge();
+    if (document.getElementById('btn-reuniones').classList.contains('active')) showChart('reuniones');
   }
 };
 
