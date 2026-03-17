@@ -804,7 +804,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 17:51</span>
+      <span class="badge">ACT: 17/03/2026 18:00</span>
     </div>
   </div>
 </header>
@@ -1032,7 +1032,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 17:51", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:00", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1230,22 +1230,27 @@ window.showChart = function(type) {
 };
 
 // ── Comment helpers ────────────────────────────────────────────────────────
-function saveComment(text, files) {
+const API_URL = 'https://opencore.cl/dashboard/api.php';
+let _commentCache = []; // cache local del servidor
+
+async function saveComment(text, files) {
   files = files || [];
-  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
   const today = new Date().toLocaleDateString('es-CL');
-  list.push({ text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
-  if (list.length > 30) list.splice(0, list.length - 30);
+  _commentCache.push({ text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
+  if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
   try {
-    localStorage.setItem('oc_comments_v2', JSON.stringify(list));
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(_commentCache)
+    });
+    localStorage.setItem('oc_last_comment_day', today);
   } catch(e) {
-    // Storage full — store without attachments
-    list[list.length-1].files = [];
-    localStorage.setItem('oc_comments_v2', JSON.stringify(list));
-    alert('Almacenamiento lleno. Comentario guardado sin adjunto.');
+    _commentCache.pop();
+    alert('Error al guardar. Verifica tu conexión a internet.');
+    return;
   }
-  localStorage.setItem('oc_last_comment_day', today);
-  loadComments();
+  renderComments();
   checkCommentDot();
 }
 
@@ -1262,7 +1267,7 @@ function checkCommentDot() {
     toast.style.display = 'flex';
     const preview = NOTAS_EXCEL.length > 0
       ? NOTAS_EXCEL[NOTAS_EXCEL.length - 1].texto.slice(0, 60)
-      : (JSON.parse(localStorage.getItem('oc_comments_v2') || '[]').slice(-1)[0]?.text || '').slice(0, 60);
+      : (_commentCache.slice(-1)[0]?.text || '').slice(0, 60);
     document.getElementById('toast-text').textContent = preview || 'Nuevo comentario disponible';
   } else {
     dot.style.display   = 'none';
@@ -1286,12 +1291,21 @@ window.goToComments = function() {
 // ── Comment wall (inline) ─────────────────────────────────────────────────
 const NOTAS_EXCEL = [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}];
 
-function loadComments() {
-  const list  = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
+async function loadComments() {
+  try {
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    if (res.ok) _commentCache = await res.json();
+  } catch(e) { /* offline — mantiene cache vacío */ }
+  renderComments();
+  checkCommentDot();
+}
+
+function renderComments() {
+  const list  = _commentCache;
   const el    = document.getElementById('comments-list');
   const today = new Date().toLocaleDateString('es-CL');
 
-  // Items localStorage
+  // Items del servidor
   const localItems = list.slice().reverse().map((c, ri) => {
     const idx = list.length - 1 - ri;
     const textEscaped = (c.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1339,11 +1353,16 @@ function loadComments() {
   el.innerHTML = allItems.join('');
 }
 
-window.deleteComment = function(i) {
-  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
-  list.splice(i, 1);
-  localStorage.setItem('oc_comments_v2', JSON.stringify(list));
-  loadComments();
+window.deleteComment = async function(i) {
+  _commentCache.splice(i, 1);
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(_commentCache)
+    });
+  } catch(e) { }
+  renderComments();
   checkCommentDot();
 };
 
