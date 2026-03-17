@@ -2,817 +2,694 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>OpenCORE — CRM Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenCORE CRM — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
-:root{
-  --bg:#070c18; --bg2:#0d1526; --card:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.07); --border-hi:rgba(79,142,247,0.5);
-  --blue:#4f8ef7; --green:#22d3a5; --amber:#fbbf24; --red:#f87171;
-  --purple:#a78bfa; --cyan:#22d3ee; --orange:#fb923c;
-  --text:#e2e8f0; --muted:#64748b; --r:14px;
+:root {
+  --bg: #0a0a0a;
+  --bg-panel: #141414;
+  --border: #222222;
+  --text-main: #ffffff;
+  --text-dim: #888888;
+  --accent-cyan: #00E5FF;
+  --accent-yellow: #E5FF00;
+  --accent-red: #FF2A2A;
+  --accent-purple: #B200FF;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 24px}
-body::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;
-  background:radial-gradient(circle,rgba(79,142,247,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
-body::after{content:'';position:fixed;bottom:-200px;right:-200px;width:500px;height:500px;
-  background:radial-gradient(circle,rgba(167,139,250,0.05) 0%,transparent 70%);pointer-events:none;z-index:0}
-
-/* ── Header ── */
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative;z-index:1}
-.logo{display:flex;align-items:center;gap:14px}
-.logo-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4f8ef7,#a78bfa);
-  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;
-  box-shadow:0 0 20px rgba(79,142,247,0.4)}
-.logo h1{font-size:20px;font-weight:800;letter-spacing:-0.5px}
-.logo p{font-size:11px;color:var(--muted);margin-top:2px}
-.updated{font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border);
-  padding:6px 16px;border-radius:20px}
-
-/* ── KPI Grid ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:16px;position:relative;z-index:1}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 16px;
-  cursor:pointer;transition:all .25s ease;position:relative;overflow:hidden;user-select:none}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent,var(--ac,#4f8ef7),transparent);opacity:.5;transition:.3s}
-.kpi:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.14);
-  box-shadow:0 8px 30px rgba(0,0,0,0.3),0 0 20px rgba(79,142,247,0.08)}
-.kpi.active{border-color:var(--ac,var(--blue));box-shadow:0 0 0 1px var(--ac,var(--blue)),0 8px 30px rgba(79,142,247,0.15)}
-.kpi.active::before{opacity:1}
-.kpi-label{font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
-.kpi-val{font-size:28px;font-weight:900;letter-spacing:-1px;line-height:1;color:var(--ac,var(--blue))}
-.kpi-sub{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
-.kpi-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px}
-.badge-on{background:rgba(34,211,165,0.15);color:#22d3a5}
-.badge-warn{background:rgba(251,191,36,0.15);color:#fbbf24}
-/* Reuniones special */
-.kpi-reunion-btn{
-  position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;
-  background:linear-gradient(135deg,var(--green),var(--cyan));border:none;color:#fff;
-  font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:.2s;z-index:2;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
-.kpi-reunion-btn:hover{transform:scale(1.2);box-shadow:0 0 12px rgba(34,211,165,0.5)}
 
-/* ── Detail Panel ── */
-.detail-panel{
-  background:var(--bg2);border:1px solid var(--border-hi);border-radius:var(--r);
-  margin-bottom:16px;overflow:hidden;position:relative;z-index:1;
-  max-height:0;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .3s ease,padding .3s;
-  opacity:0;padding:0 24px;
+/* ANIMATED GRID */
+.particles-bg {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
 }
-.detail-panel.open{max-height:600px;opacity:1;padding:24px}
-.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.panel-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}
-.panel-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
-.panel-close{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;
-  padding:4px 12px;font-size:11px;color:var(--muted);cursor:pointer;transition:.2s}
-.panel-close:hover{background:rgba(255,255,255,0.1);color:var(--text)}
-.panel-grid{display:grid;gap:16px}
-.panel-grid-2{grid-template-columns:1fr 1fr}
-.panel-grid-3{grid-template-columns:repeat(3,1fr)}
-
-/* ── Mini stat ── */
-.mini-stat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px}
-.mini-stat-val{font-size:24px;font-weight:800;letter-spacing:-1px}
-.mini-stat-lbl{font-size:10px;color:var(--muted);margin-top:4px;font-weight:500}
-.rate-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.04)}
-.rate-item:last-child{border:none}
-.rate-arrow{color:var(--muted);font-size:11px}
-.rate-val{font-weight:700;font-size:13px}
-
-/* ── Tabla ── */
-.scroll-box{overflow-y:auto;max-height:320px}
-.scroll-box::-webkit-scrollbar{width:4px}
-.scroll-box::-webkit-scrollbar-track{background:transparent}
-.scroll-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
-table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;padding:8px 10px;background:rgba(79,142,247,0.08);color:var(--blue);
-  font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
-  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
-td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
-tr:hover td{background:rgba(255,255,255,0.02)}
-.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:9.5px;font-weight:700}
-.p-alta{background:rgba(248,113,113,.18);color:#f87171}
-.p-media{background:rgba(251,191,36,.18);color:#fbbf24}
-.p-baja{background:rgba(34,211,165,.18);color:#22d3a5}
-.p-cont{background:rgba(79,142,247,.18);color:#4f8ef7}
-.score-bar{display:flex;align-items:center;gap:6px}
-.bar-t{width:50px;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden}
-.bar-f{height:100%;border-radius:2px;background:linear-gradient(90deg,#4f8ef7,#a78bfa)}
-
-/* ── Charts section ── */
-.section{position:relative;z-index:1;margin-bottom:16px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.grid-21{display:grid;grid-template-columns:2fr 1fr;gap:14px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;
-  transition:border-color .2s}
-.card:hover{border-color:rgba(255,255,255,0.11)}
-.card-title{font-size:12px;font-weight:700;margin-bottom:14px;display:flex;align-items:baseline;gap:6px}
-.card-sub{font-size:10px;color:var(--muted);font-weight:400}
-
-/* ── Reunion form ── */
-.form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-top:12px;align-items:end}
-.form-group label{font-size:10px;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.form-group input, .form-group select{
-  width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
-  border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;
-  outline:none;transition:.2s;
+.particles-bg::before {
+  content: "";
+  position: absolute; width: 200%; height: 200%; top: -50%; left: -25%;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(400px) rotateX(65deg);
+  animation: gridScroll 15s linear infinite;
 }
-.form-group input:focus, .form-group select:focus{border-color:var(--blue);background:rgba(79,142,247,0.06)}
-.form-group select option{background:#1a2035}
-.btn-add{background:linear-gradient(135deg,var(--green),var(--cyan));border:none;border-radius:8px;
-  padding:7px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
-  transition:.2s;}
-.btn-add:hover{opacity:.85;transform:translateY(-1px)}
+@keyframes gridScroll {
+  0%   { transform: perspective(400px) rotateX(65deg) translateY(0); }
+  100% { transform: perspective(400px) rotateX(65deg) translateY(60px); }
+}
 
-/* ── Note cards ── */
-.note-card{
-  background:rgba(255,255,255,0.03);
-  border:1px solid var(--border);
-  border-left:3px solid var(--blue);
-  border-radius:10px;padding:12px;
-  transition:border-color .2s, background .2s;
+/* HEADER */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  position: sticky; top: 0;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
 }
-.note-card:hover{background:rgba(255,255,255,0.05)}
-.note-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.note-tipo{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
-.note-fecha{font-size:10px;color:var(--muted);margin-left:auto}
-.note-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:2px 4px;
-  opacity:0;transition:.2s;border-radius:4px}
-.note-card:hover .note-del{opacity:1}
-.note-del:hover{background:rgba(248,113,113,.15);color:#f87171}
-.note-text{font-size:12px;line-height:1.5;color:var(--text)}
-.note-reply{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)}
-.note-actions{margin-top:8px}
-.note-btn{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;
-  padding:3px 10px;font-size:10px;color:var(--muted);cursor:pointer;transition:.2s;font-family:'Inter',sans-serif}
-.note-btn:hover{background:rgba(255,255,255,0.1);color:var(--text)}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.header-meta { display: flex; align-items: center; gap: 1rem; }
+.feedback-btn {
+  font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-cyan);
+  background: rgba(0,229,255,0.05);
+  border: 1px solid rgba(0,229,255,0.3);
+  padding: 6px 14px; border-radius: 4px;
+  text-decoration: none; transition: all 0.3s ease;
+}
+.feedback-btn:hover {
+  background: rgba(0,229,255,0.15);
+  box-shadow: 0 0 15px rgba(0,229,255,0.4);
+}
+.badge {
+  font-size: 0.7rem; font-family: var(--font-heading);
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0,229,255,0.3);
+  padding: 4px 12px; border-radius: 2px;
+}
 
-/* ── Responsive ── */
-@media(max-width:1200px){
-  .kpi-grid{grid-template-columns:repeat(4,1fr)}
-  .grid-3{grid-template-columns:repeat(2,1fr)}
-  .grid-21{grid-template-columns:1fr}
+/* CONTAINER */
+.container {
+  position: relative; z-index: 10;
+  max-width: 1400px; margin: 0 auto;
+  padding: 3rem 1.5rem;
 }
-@media(max-width:1000px){
-  .bottom-grid{grid-template-columns:1fr !important}
+
+/* KPI STRIP */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 160px repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 3.5rem;
 }
-@media(max-width:800px){
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .grid-2,.grid-3,.grid-21{grid-template-columns:1fr}
-  .panel-grid-2,.panel-grid-3{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr 1fr}
+.kpi-card {
+  background: var(--bg);
+  padding: 2rem 1.5rem;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
 }
-@media(max-width:480px){
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  body{padding:12px}
-  .kpi-val{font-size:24px}
+.kpi-card.solid { background: var(--bg-panel); }
+.kpi-card:hover { background: #1a1a1a; }
+.kpi-label {
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 2px; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 0.75rem;
+}
+.kpi-value {
+  font-family: var(--font-heading);
+  font-size: 3.5rem; font-weight: 700;
+  letter-spacing: -3px; line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.kpi-sub {
+  font-size: 0.65rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.accent-cyan   { color: var(--accent-cyan)   !important; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+.accent-yellow { color: var(--accent-yellow) !important; text-shadow: 0 0 10px rgba(229,255,0,0.3); }
+.accent-red    { color: var(--accent-red)    !important; }
+
+/* Ring KPI */
+.ring-card { align-items: center; text-align: center; justify-content: center; gap: 0.5rem; }
+.progress-ring { position: relative; width: 90px; height: 90px; }
+.progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.progress-ring circle { fill: transparent; stroke-width: 6; stroke-linecap: square; }
+.progress-ring .bg { stroke: #2a2a2a; }
+.progress-ring .progress {
+  stroke: var(--accent-cyan);
+  stroke-dasharray: 283; stroke-dashoffset: 283;
+  transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);
+  filter: drop-shadow(0 0 4px rgba(0,229,255,0.5));
+}
+.ring-text {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+}
+
+/* SECTION TITLE */
+.section-title {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.section-title h2 {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 0.85rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-dim); margin: 0;
+}
+
+/* ANALYTICS NAV — 3 main buttons */
+.analytics-nav {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; margin-bottom: 2rem;
+}
+.analytics-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  padding: 2.25rem 2rem;
+  text-align: left; cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  display: flex; flex-direction: column; gap: 0.4rem;
+  color: var(--text-main);
+}
+.analytics-btn::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: var(--text-dim); opacity: 0.3; transition: all 0.3s;
+}
+.analytics-btn:hover {
+  background: rgba(255,255,255,0.02);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.analytics-btn.btn-contactos.active::before { background: var(--accent-cyan); opacity: 1; box-shadow: 0 0 15px var(--accent-cyan); }
+.analytics-btn.btn-canal.active::before    { background: var(--accent-yellow); opacity: 1; box-shadow: 0 0 15px var(--accent-yellow); }
+.analytics-btn.btn-reuniones.active::before { background: var(--accent-red); opacity: 1; box-shadow: 0 0 15px var(--accent-red); }
+.analytics-btn.btn-contactos.active { background: rgba(0,229,255,0.03); border-color: rgba(0,229,255,0.25); }
+.analytics-btn.btn-canal.active    { background: rgba(229,255,0,0.02); border-color: rgba(229,255,0,0.2); }
+.analytics-btn.btn-reuniones.active { background: rgba(255,42,42,0.03); border-color: rgba(255,42,42,0.25); }
+
+.abn-icon { font-size: 1.6rem; margin-bottom: 0.25rem; filter: grayscale(1) opacity(0.6); transition: filter 0.3s; }
+.analytics-btn.active .abn-icon { filter: grayscale(0) opacity(1); }
+
+.abn-label { font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; color: var(--text-dim); }
+.analytics-btn.active .abn-label { color: var(--text-main); }
+
+.abn-value {
+  font-family: var(--font-heading); font-size: 3rem; font-weight: 400;
+  line-height: 1; margin: 0.25rem 0;
+  color: var(--text-main);
+}
+.analytics-btn.btn-contactos.active .abn-value { color: var(--accent-cyan); text-shadow: 0 0 20px rgba(0,229,255,0.4); }
+.analytics-btn.btn-reuniones.active .abn-value { color: var(--accent-red); text-shadow: 0 0 20px rgba(255,42,42,0.4); }
+
+.abn-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+/* Reuniones controls */
+.reunion-controls {
+  display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem;
+}
+.btn-count {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-main); width: 30px; height: 30px;
+  font-size: 1.2rem; font-weight: 700; cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-heading);
+}
+.btn-count:hover { border-color: var(--accent-red); color: var(--accent-red); }
+.btn-count.plus:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+/* CHART REVEAL PANEL */
+.chart-reveal-panel {
+  display: none;
+  background: rgba(10,10,12,0.95);
+  border: 1px solid rgba(0,229,255,0.15);
+  margin-bottom: 3rem; position: relative;
+  box-shadow: 0 0 50px rgba(0,229,255,0.04) inset;
+  animation: fanDown 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  min-height: 430px; border-radius: 4px;
+}
+.chart-reveal-panel.active { display: block; }
+@keyframes fanDown {
+  from { opacity: 0; transform: scaleY(0.9) translateY(-20px); transform-origin: top; }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+.crp-inner { padding: 2rem; display: flex; flex-direction: column; min-height: 430px; }
+.crp-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 1rem; margin-bottom: 1.5rem;
+}
+.crp-title { font-family: var(--font-heading); font-weight: 700; letter-spacing: 2px; color: var(--accent-cyan); font-size: 0.95rem; }
+.crp-close { cursor: pointer; color: var(--text-dim); font-size: 1.2rem; transition: color 0.3s; }
+.crp-close:hover { color: var(--accent-red); }
+#active-chart { min-height: 350px !important; width: 100% !important; flex-grow: 1; }
+
+/* COMMENT WALL */
+.comment-board { margin-bottom: 3rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group textarea {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); color: var(--text-main);
+  padding: 1rem; font-family: var(--font-sans); font-size: 0.9rem;
+  resize: vertical; transition: var(--transition);
+}
+.form-group textarea:focus {
+  outline: none; border-color: var(--accent-cyan);
+  box-shadow: inset 4px 0 0 var(--accent-cyan);
+}
+.btn-primary {
+  background: var(--text-main); color: var(--bg);
+  border: none; font-family: var(--font-sans);
+  padding: 10px 20px; font-size: 0.75rem; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+  transition: background 0.3s;
+}
+.btn-primary:hover { background: var(--accent-cyan); }
+.comments-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.comment-item {
+  border: 1px solid var(--border); padding: 1.25rem 1.5rem;
+  background: var(--bg-panel); border-left: 2px solid var(--accent-yellow);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+}
+.comment-text { font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; }
+.comment-meta { font-size: 0.65rem; color: var(--text-dim); margin-top: 0.5rem; letter-spacing: 1px; text-transform: uppercase; }
+.comment-del {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 0.65rem; font-weight: 700; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0;
+}
+.comment-del:hover { color: var(--accent-red); }
+.empty-state {
+  padding: 3rem; text-align: center; color: var(--text-dim);
+  font-size: 0.85rem; border: 1px dashed var(--border); letter-spacing: 1px;
+}
+
+/* FOOTER */
+.footer {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 4rem 2rem; margin-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.logo-mark {
+  width: 12px; height: 12px; background: var(--text-main);
+  transform: rotate(45deg); box-shadow: 0 0 15px rgba(255,255,255,0.5);
+}
+.footer p {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; color: var(--text-dim);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .analytics-nav { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-value { font-size: 2.5rem; }
+  .header { padding: 1rem; }
+  .badge { display: none; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .container { padding: 1.5rem 1rem; }
 }
 </style>
 </head>
 <body>
+<div class="particles-bg"></div>
 
-<!-- Header -->
-<div class="header">
-  <div class="logo">
-    <div class="logo-mark">OC</div>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
     <div>
-      <h1>OpenCORE</h1>
-      <p>CRM Dashboard — Prospección Activa</p>
+      <svg viewBox="0 0 460 120" width="155" height="36" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
+        <circle cx="50" cy="60" r="15" fill="#00E5FF"/>
+        <path d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"/>
+        <path d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"/>
+        <path d="M270 95L270 25L315 95L315 25" fill="none" stroke="#fff" stroke-width="12" stroke-linejoin="miter" stroke-linecap="square"/>
+        <text x="345" y="70" font-family="'Space Grotesk',sans-serif" font-weight="700" font-size="42" fill="#00E5FF" letter-spacing="2">CORE</text>
+      </svg>
+    </div>
+    <div class="header-meta">
+      <a href="#muro-comentarios" class="feedback-btn" onclick="closeChart()">+ Comentario</a>
+      <span class="badge">ACT: 17/03/2026 16:30</span>
     </div>
   </div>
-  <div class="updated">&#128337; Actualizado: 17/03/2026 16:13</div>
-</div>
+</header>
 
-<!-- KPI Cards -->
-<div class="kpi-grid">
-  <div class="kpi" style="--ac:#4f8ef7" onclick="togglePanel('total')">
-    <div class="kpi-label">Total Prospectos</div>
-    <div class="kpi-val" id="k0">0</div>
-    <div class="kpi-sub">VIP + IM + Base</div>
-  </div>
-  <div class="kpi" style="--ac:#22d3ee" onclick="togglePanel('emails')">
-    <div class="kpi-label">Emails Enviados</div>
-    <div class="kpi-val" id="k1">0</div>
-    <div class="kpi-sub">de 1989 disponibles</div>
-    <div class="kpi-badge badge-on">&#9679; Activo hoy</div>
-  </div>
-  <div class="kpi" style="--ac:#22d3a5" onclick="togglePanel('contactadas')">
-    <div class="kpi-label">Contactadas</div>
-    <div class="kpi-val" id="k2">0</div>
-    <div class="kpi-sub">respondieron / estado activo</div>
-  </div>
-  <div class="kpi" style="--ac:#f87171" onclick="togglePanel('reuniones')">
-    <button class="kpi-reunion-btn" onclick="event.stopPropagation();openAddReunion()" title="Registrar reunión">+</button>
-    <div class="kpi-label">Reuniones Cerradas</div>
-    <div class="kpi-val" id="k3">0</div>
-    <div class="kpi-sub">haz clic + para registrar</div>
-  </div>
-  <div class="kpi" style="--ac:#a78bfa" onclick="togglePanel('prioridad')">
-    <div class="kpi-label">Alta Prioridad</div>
-    <div class="kpi-val" id="k4">0</div>
-    <div class="kpi-sub">Intelig. Mercado</div>
-  </div>
-  <div class="kpi" style="--ac:#fbbf24" onclick="togglePanel('score')">
-    <div class="kpi-label">Score Promedio</div>
-    <div class="kpi-val" id="k5">0</div>
-    <div class="kpi-sub">de 10 · Intelig. Mercado</div>
-  </div>
-  <div class="kpi" style="--ac:#fb923c" onclick="togglePanel('cobertura')">
-    <div class="kpi-label">Cobertura Email</div>
-    <div class="kpi-val" id="k6">0</div>
-    <div class="kpi-sub">% base con email válido</div>
-  </div>
-</div>
+<main class="container">
 
-<!-- Detail Panel -->
-<div class="detail-panel" id="detail-panel">
-  <div class="panel-header">
-    <div class="panel-title"><div class="panel-dot" id="panel-dot"></div><span id="panel-title">Detalle</span></div>
-    <button class="panel-close" onclick="closePanel()">&#10005; Cerrar</button>
-  </div>
-  <div id="panel-body"></div>
-</div>
+  <!-- KPI STRIP: 4 indicadores rápidos -->
+  <section class="kpi-grid">
 
-<!-- Charts Row 1 -->
-<div class="section grid-3">
-  <div class="card"><div class="card-title">Distribución por Segmento</div><div id="c-seg"></div></div>
-  <div class="card"><div class="card-title">Prioridad <span class="card-sub">Intelig. Mercado</span></div><div id="c-prio"></div></div>
-  <div class="card"><div class="card-title">Cobertura de Datos <span class="card-sub">IM</span></div><div id="c-cob"></div></div>
-</div>
-
-<!-- Charts Row 2 -->
-<div class="section grid-21">
-  <div class="card"><div class="card-title">Categorías Operacionales <span class="card-sub">Top 10</span></div><div id="c-cat"></div></div>
-  <div class="card"><div class="card-title">Emails por Día</div><div id="c-time"></div></div>
-</div>
-
-<!-- Charts Row 3 -->
-<div class="section grid-2">
-  <div class="card"><div class="card-title">Distribución Geográfica <span class="card-sub">Top 10</span></div><div id="c-city"></div></div>
-  <div class="card"><div class="card-title">Canal de Contacto Recomendado</div><div id="c-canal"></div></div>
-</div>
-
-<!-- Bottom: Tabla + Notas side by side -->
-<div class="section" style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start">
-
-<!-- Top Prospectos -->
-<div class="card">
-  <div class="card-title">Top Prospectos por Score <span class="card-sub">Inteligencia de Mercado</span></div>
-  <div class="scroll-box"><table>
-    <thead><tr><th>#</th><th>Empresa</th><th>Categoría</th><th>Score</th><th>Prioridad</th><th>Contacto Sniper</th><th>Canal</th></tr></thead>
-    <tbody id="t-pros"></tbody>
-  </table></div>
-</div>
-
-<!-- Notes Panel -->
-<div class="card" style="display:flex;flex-direction:column;gap:0">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div style="font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px">
-      &#128276; Notas &amp; Actividad
-      <span id="notif-badge" style="display:none;background:#fbbf24;color:#000;font-size:9px;font-weight:800;
-        padding:2px 6px;border-radius:10px;min-width:18px;text-align:center"></span>
-    </div>
-    <button onclick="markSeen()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:10px" title="Marcar como visto">&#10003; Visto</button>
-  </div>
-
-  <!-- Nueva nota -->
-  <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
-    <textarea id="new-note-text" placeholder="Escribe una nota, actividad o recordatorio..." rows="2"
-      style="width:100%;background:transparent;border:none;color:var(--text);font-family:'Inter',sans-serif;
-      font-size:12px;resize:none;outline:none;line-height:1.5"></textarea>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-      <select id="new-note-tipo" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);
-        border-radius:6px;padding:4px 8px;color:var(--text);font-size:11px;font-family:'Inter',sans-serif;outline:none">
-        <option>Nota</option><option>Actividad</option>
-        <option>Recordatorio</option><option>Alerta</option><option>Logro</option>
-      </select>
-      <button onclick="addNewNote()" style="background:linear-gradient(135deg,#4f8ef7,#a78bfa);border:none;
-        border-radius:8px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer">
-        + Agregar
-      </button>
-    </div>
-  </div>
-
-  <!-- Feed -->
-  <div id="notes-feed" style="overflow-y:auto;max-height:360px;display:flex;flex-direction:column;gap:8px;
-    padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent"></div>
-</div>
-
-</div><!-- end bottom grid -->
-
-<div style="text-align:center;padding:20px 0;font-size:11px;color:var(--muted);position:relative;z-index:1">
-  OpenCORE Software &nbsp;·&nbsp; jorge@opencore.cl &nbsp;·&nbsp; +56 9 4958 7198 &nbsp;·&nbsp; 17/03/2026 16:13
-</div>
-
-<!-- Add Reunion Modal -->
-<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;backdrop-filter:blur(4px)" onclick="closeModal()">
-  <div onclick="event.stopPropagation()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    background:#0d1526;border:1px solid var(--border-hi);border-radius:16px;padding:28px;width:460px;max-width:95vw">
-    <div style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:18px">&#127942;</span> Registrar Reunión Cerrada
-    </div>
-    <div style="display:grid;gap:12px">
-      <div class="form-group"><label>Empresa</label><input id="m-emp" placeholder="Nombre de la empresa"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group"><label>Fecha</label><input id="m-fecha" type="date"></div>
-        <div class="form-group"><label>Origen / Canal</label>
-          <select id="m-canal">
-            <option>Email outreach</option><option>LinkedIn Persona</option>
-            <option>LinkedIn Empresa</option><option>Referido</option><option>Otro</option>
-          </select>
-        </div>
+    <!-- Ring: cobertura email -->
+    <div class="kpi-card ring-card solid">
+      <div class="progress-ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="45"></circle>
+          <circle class="progress" id="cobertura-ring" cx="50" cy="50" r="45"></circle>
+        </svg>
+        <div class="ring-text" id="kpi-cobertura-val">0%</div>
       </div>
-      <div class="form-group"><label>Notas (opcional)</label><input id="m-nota" placeholder="Resumen de la oportunidad"></div>
+      <div class="kpi-label" style="text-align:center;margin-bottom:0;">COBERTURA EMAIL</div>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
-      <button onclick="closeModal()" class="panel-close">Cancelar</button>
-      <button class="btn-add" onclick="saveReunion()">&#10003; Guardar Reunión</button>
+
+    <!-- Total base -->
+    <div class="kpi-card">
+      <div class="kpi-label">BASE TOTAL</div>
+      <div class="kpi-value" id="kpi-total-val">0</div>
+      <div class="kpi-sub">Prospectos en CRM</div>
     </div>
+
+    <!-- Emails enviados -->
+    <div class="kpi-card solid">
+      <div class="kpi-label">EMAILS ENVIADOS</div>
+      <div class="kpi-value accent-cyan" id="kpi-enviados-val">0</div>
+      <div class="kpi-sub">Desde 17/03/2026</div>
+    </div>
+
+    <!-- Alta prioridad -->
+    <div class="kpi-card">
+      <div class="kpi-label">ALTA PRIORIDAD</div>
+      <div class="kpi-value accent-yellow" id="kpi-alta-val">0</div>
+      <div class="kpi-sub">Prospectos calificados</div>
+    </div>
+
+  </section>
+
+  <!-- ANALYTICS NAV: 3 botones principales -->
+  <div class="section-title">
+    <h2>ANALÍTICA COMERCIAL</h2>
   </div>
-</div>
+
+  <section class="analytics-nav">
+
+    <!-- Botón 1: Contactadas -->
+    <button class="analytics-btn btn-contactos" id="btn-contactos" onclick="showChart('contactos')">
+      <div class="abn-icon">📞</div>
+      <div class="abn-label">CONTACTADAS</div>
+      <div class="abn-value" id="nav-contactadas">0</div>
+      <div class="abn-sub">Empresas alcanzadas por email · VER GRÁFICO ↗</div>
+    </button>
+
+    <!-- Botón 2: Canal -->
+    <button class="analytics-btn btn-canal" id="btn-canal" onclick="showChart('canal')">
+      <div class="abn-icon">📡</div>
+      <div class="abn-label">CANAL DE CONTACTO</div>
+      <div class="abn-sub" style="margin-top:0.5rem;">¿Por dónde llegamos? · VER GRÁFICO ↗</div>
+    </button>
+
+    <!-- Botón 3: Reuniones (contador manual) -->
+    <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="showChart('reuniones')">
+      <div class="abn-icon">🤝</div>
+      <div class="abn-label">REUNIONES</div>
+      <div class="abn-value" id="nav-reuniones">0</div>
+      <div class="abn-sub">Cierres concertados · VER GRÁFICO ↗</div>
+      <div class="reunion-controls" onclick="event.stopPropagation()">
+        <button class="btn-count" onclick="cambiarReunion(-1)">−</button>
+        <button class="btn-count plus" onclick="cambiarReunion(1)">+</button>
+        <span style="font-size:0.7rem;color:var(--text-dim);letter-spacing:1px;">REGISTRAR</span>
+      </div>
+    </button>
+
+  </section>
+
+  <!-- CHART REVEAL PANEL -->
+  <section class="chart-reveal-panel" id="chart-reveal-panel">
+    <div class="crp-inner">
+      <div class="crp-header">
+        <span class="crp-title" id="crp-title">—</span>
+        <span class="crp-close" onclick="closeChart()">✕</span>
+      </div>
+      <div id="active-chart"></div>
+    </div>
+  </section>
+
+  <!-- MURO DE COMENTARIOS -->
+  <div class="section-title" style="margin-top:3rem;" id="muro-comentarios">
+    <h2>MURO DE COMENTARIOS</h2>
+  </div>
+
+  <section class="comment-board">
+    <form id="local-comment-form">
+      <div class="form-group">
+        <textarea id="local-comment-text" rows="3" maxlength="500"
+          placeholder="Escribe un comentario, actualización o feedback personal..."></textarea>
+      </div>
+      <button type="submit" class="btn-primary">PUBLICAR</button>
+    </form>
+    <div id="comments-list" class="comments-list"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="logo-mark"></div>
+  <p>OPENCORE CRM // DASHBOARD EJECUTIVO</p>
+</footer>
 
 <script>
-const D = {"updated": "17/03/2026 16:13", "hoy": "2026-03-17", "seed_notas": [{"id": 1, "fecha": "2026-03-17", "hora": "16:00", "autor": "Jorge", "texto": "Hoy envie 40 emails - buenos resultados iniciales", "tipo": "Actividad", "respuesta": ""}, {"id": 2, "fecha": "2026-03-17", "hora": "16:05", "autor": "Jorge", "texto": "Recordar hacer seguimiento a Mutual de Seguridad manana", "tipo": "Recordatorio", "respuesta": ""}], "total": 2830, "enviados": 45, "contactadas": 5, "reuniones_db": 0, "alta": 97, "score_prom": 5.3, "pct_email": 90.5, "pct_li_p": 46.1, "pct_li_e": 55.2, "email_base": 1989, "segmentos": {"VIP Top": 400, "Intelig. Mercado": 232, "Base Completa": 2198}, "prioridad": {"Alta": 97, "Media": 79, "Baja": 56}, "categorias": {"Industrial / Servicios": 88, "Minería / Metales": 50, "Logística / Transporte": 27, "Energía / Eléctrico": 21, "Seguridad / EPP / Distribución": 10, "Arriendo / Equipos Industriales": 10, "Construcción / Ingeniería": 7, "Selección de Personal": 5, "Tecnología / Software": 4, "Alimentación / Frío / Agro": 3}, "ciudades": {"Santiago": 1798, "Antofagasta": 138, "Viña del Mar": 28, "Concepción": 21, "Iquique": 21, "Coquimbo": 19, "Valparaíso": 18, "Rancagua": 18, "Copiapó": 17, "Calama": 13}, "canales": {"LI Persona + Empresa": 106, "Email directo": 59, "Sin datos directos": 44, "LI Empresa + Email": 12, "LI Empresa": 10, "LI Persona": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [45], "top_prospectos": [{"empresa": "A. Hartrodt Chile S.A.", "categoria": "Logística / Transporte", "score": 8, "prioridad": "Alta", "contacto": "Hector Calderon (Jefe Informática)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Aerocardal Ltda.", "categoria": "Logística / Transporte", "score": 8, "prioridad": "Alta", "contacto": "Javier Arellano (Jefe IT)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "AeroRescate Ambulancias Aéreas", "categoria": "Logística / Transporte", "score": 8, "prioridad": "Alta", "contacto": "David Acevedo Olguín (Director Corporativo)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Adler Steel Chile", "categoria": "Minería / Metales", "score": 8, "prioridad": "Alta", "contacto": "Sabin Capetillo (Jefe Informática)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Andes Solar", "categoria": "Energía / Eléctrico", "score": 8, "prioridad": "Alta", "contacto": "Felipe Aguilera Moore (Jefe de Ingeniería)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Anakena Group", "categoria": "Construcción / Ingeniería", "score": 8, "prioridad": "Alta", "contacto": "Michael Salameh (Jefe de Sistemas Producción)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Ancor Tecmin", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Franco Yáñez (Jefe Automatización e Informática)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Aguasin SpA", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Richard Correa (Gerente Admin (IT Resp))", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Bottai S.A.", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Rodrigo Gimenez Fernandez (Gerente Comercial)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Atlas Renewable Energy", "categoria": "Energía / Eléctrico", "score": 8, "prioridad": "Alta", "contacto": "Francisca Latorre H. (Corporate IT Manager)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Biotec Chile S.A.", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Fabián Deramond (Gerente TI y Transf. Digital)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Bartech", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Raul Lara (Gerente Comercial y Desarrollo)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Artilec Ltda.", "categoria": "Minería / Metales", "score": 8, "prioridad": "Alta", "contacto": "Mayron Araya (Soporte Informática)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "Fertec", "categoria": "Industrial / Servicios", "score": 8, "prioridad": "Alta", "contacto": "Camilo Román Celis (Soporte TI)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}, {"empresa": "GE Mining", "categoria": "Minería / Metales", "score": 8, "prioridad": "Alta", "contacto": "Franco Francino (Digital Mining)", "canal": "LinkedIn Persona (1°) → LinkedIn Empre"}], "emails_log": [{"fecha": "2026-03-17", "hora": "15:39", "empresa": "Mutual de Seguridad C.Ch.C.", "email": "info@mutual.cl", "asunto": "Consulta sobre la operación de Mutual de Seguridad C.Ch", "cat": "Seguridad/EPP"}, {"fecha": "2026-03-17", "hora": "15:40", "empresa": "MV Montajes", "email": "cristian.vera@mvmontajes.cl", "asunto": "Trazabilidad de activos — MV Montajes", "cat": "Arriendo"}, {"fecha": "2026-03-17", "hora": "15:41", "empresa": "Más Loop SpA", "email": "contacto@masloop.cl", "asunto": "Consulta sobre sistemas en Más Loop SpA", "cat": "Automatiz."}, {"fecha": "2026-03-17", "hora": "15:41", "empresa": "Nabusa", "email": "contacto@nabusa.cl", "asunto": "Integración y modernización — Nabusa", "cat": "Automatiz."}, {"fecha": "2026-03-17", "hora": "15:42", "empresa": "Natural Energy", "email": "tienda@naturalenergy.cl", "asunto": "Una pregunta sobre la operación en Natural Energy", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:43", "empresa": "NCL Ingeniería y Construcción SpA", "email": "ncl@ncl.cl", "asunto": "Consulta sobre la operación de NCL Ingeniería y Constru", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:44", "empresa": "Mundoplast SpA", "email": "contacto@mundoplast.cl", "asunto": "Consulta sobre la operación de Mundoplast SpA", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:45", "empresa": "NDU Ingeniería Ltda.", "email": "info@ndu.cl", "asunto": "Una pregunta sobre la operación en NDU Ingeniería Ltda.", "cat": "Energía"}, {"fecha": "2026-03-17", "hora": "15:45", "empresa": "Neotop", "email": "victor.guerra@neotop.cl", "asunto": "Consulta sobre la operación de Neotop", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:46", "empresa": "Neptuno Pumps", "email": "info@neptunopumps.com", "asunto": "Consulta sobre gestión de repuestos en Neptuno Pumps", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:47", "empresa": "Neuronet", "email": "ventas@neuronet.cl", "asunto": "Una pregunta para el equipo de Neuronet", "cat": "TI/Telecom"}, {"fecha": "2026-03-17", "hora": "15:48", "empresa": "New Tech Copper", "email": "gerencia@ntc.cl", "asunto": "Consulta sobre la operación de New Tech Copper", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:48", "empresa": "Neles Chile", "email": "gonzalo.silva@valmet.com", "asunto": "Integración y modernización — Neles Chile", "cat": "Automatiz."}, {"fecha": "2026-03-17", "hora": "15:49", "empresa": "Multotec Chile S.A.", "email": "chile@multotec.com", "asunto": "Gestión de activos y mantenimiento — Multotec Chile S.A", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:50", "empresa": "Multitudine Security", "email": "f.murcia@multitudinesecurity.cl", "asunto": "Consulta sobre proyectos en Multitudine Security", "cat": "Energía"}, {"fecha": "2026-03-17", "hora": "15:51", "empresa": "Multiservice Grúas", "email": "ventas@multiservice.cl", "asunto": "Una pregunta sobre la operación en Multiservice Grúas", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:51", "empresa": "Molyb", "email": "comunicaciones@molyb.cl", "asunto": "Consulta sobre la operación de Molyb", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:52", "empresa": "Molycop", "email": "marcelo.lorca@molycop.cl", "asunto": "Una pregunta sobre la operación en Molycop", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:53", "empresa": "Monitoring SpA", "email": "soporte@monitoring.cl", "asunto": "Integración de sistemas — Monitoring SpA", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:54", "empresa": "Montt Group", "email": "monttgroup@monttgroup.com", "asunto": "Gestión de activos y mantenimiento — Montt Group", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:55", "empresa": "Morgan Empresas", "email": "contacto@morganst.cl", "asunto": "Integración de sistemas — Morgan Empresas", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:55", "empresa": "Morval Chile", "email": "info@morval.cl", "asunto": "Una pregunta para el equipo de Morval Chile", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:56", "empresa": "Motion Metrics", "email": "mm.sales@mail.weir", "asunto": "Consulta sobre operaciones en Motion Metrics", "cat": "Logística"}, {"fecha": "2026-03-17", "hora": "15:57", "empresa": "Mountain Drilling Ltda.", "email": "contacto@mountaindrilling.cl", "asunto": "Una pregunta para el equipo de Mountain Drilling Ltda.", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "15:58", "empresa": "Movitec", "email": "contacto@movitec.cl", "asunto": "Consulta sobre operaciones en Movitec", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "15:58", "empresa": "Movitecnica", "email": "ventas@movitecnica.cl", "asunto": "Consulta sobre gestión de repuestos en Movitecnica", "cat": "Repuestos"}, {"fecha": "2026-03-17", "hora": "15:59", "empresa": "MSP Group", "email": "comercial@mspgroup.cl", "asunto": "Gestión de activos y mantenimiento — MSP Group", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "16:00", "empresa": "MTG Chile", "email": "claudio.machiavello@mtg.es", "asunto": "Consulta sobre operaciones en MTG Chile", "cat": "Logística"}, {"fecha": "2026-03-17", "hora": "16:01", "empresa": "Multiaceros S.A", "email": "ventas@multiaceros.cl", "asunto": "Consulta sobre operaciones en Multiaceros S.A", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:01", "empresa": "Multifibras S.A.", "email": "info@multifibrassa.com", "asunto": "Integración de sistemas — Multifibras S.A.", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:02", "empresa": "NextWay", "email": "ventas@nextway.cl", "asunto": "Una pregunta para el equipo de NextWay", "cat": "Repuestos"}, {"fecha": "2026-03-17", "hora": "16:03", "empresa": "Nexus Logistics", "email": "contacto@nlnexus.com", "asunto": "Una pregunta sobre la operación en Nexus Logistics", "cat": "Logística"}, {"fecha": "2026-03-17", "hora": "16:04", "empresa": "Nortécnica", "email": "contactos@nortecnica.cl", "asunto": "Consulta sobre proyectos en Nortécnica", "cat": "Construcción"}, {"fecha": "2026-03-17", "hora": "16:05", "empresa": "Norval Ltda.", "email": "ventas@norval.cl", "asunto": "Disponibilidad operacional — Norval Ltda.", "cat": "Repuestos"}, {"fecha": "2026-03-17", "hora": "16:05", "empresa": "Nouryon Chemicals Chile", "email": "isaac.morend@nouryon.com", "asunto": "Integración de sistemas — Nouryon Chemicals Chile", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:06", "empresa": "Nova Mineralis", "email": "info@novamineralis.com", "asunto": "Consulta sobre operaciones en Nova Mineralis", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "16:07", "empresa": "Nova Seguridad Ltda.", "email": "canaldigital@novaseguridad.cl", "asunto": "Integración de sistemas de distribución — Nova Segurida", "cat": "Seguridad/EPP"}, {"fecha": "2026-03-17", "hora": "16:08", "empresa": "Novamine", "email": "contacto@novamine.cl", "asunto": "Una pregunta sobre la operación en Novamine", "cat": "Energía"}, {"fecha": "2026-03-17", "hora": "16:08", "empresa": "Novatech SpA", "email": "contacto@novatech.cl", "asunto": "Integración de sistemas — Novatech SpA", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:09", "empresa": "Novoplast", "email": "ventas@novoplast.cl", "asunto": "Una pregunta para el equipo de Novoplast", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:10", "empresa": "Nueva Andimar VIP", "email": "hola@andimar.cl", "asunto": "Consulta sobre operaciones en Nueva Andimar VIP", "cat": "Logística"}, {"fecha": "2026-03-17", "hora": "16:11", "empresa": "Nómade Chile", "email": "contacto@nomadechile.cl", "asunto": "Consulta sobre operaciones en Nómade Chile", "cat": "Minería"}, {"fecha": "2026-03-17", "hora": "16:12", "empresa": "O-Tek International", "email": "info.argentina@o-tek.com.ar", "asunto": "Una pregunta para el equipo de O-Tek International", "cat": "Industrial"}, {"fecha": "2026-03-17", "hora": "16:12", "empresa": "Octopus Mining", "email": "contacto@octodots.ai", "asunto": "Integración de sistemas logísticos — Octopus Mining", "cat": "Logística"}, {"fecha": "2026-03-17", "hora": "16:13", "empresa": "Octopuss", "email": "info@octopuss.cl", "asunto": "Una pregunta sobre la operación en Octopuss", "cat": "Minería"}], "contactadas_list": [{"empresa": "A. Hartrodt Chile S.A.", "estado": "Contactada", "score": 8, "cat": "Logística / Transporte", "canal": "LinkedIn Persona (1°) → LinkedIn Em"}, {"empresa": "A.J. Broom y Cía. S.A.C.", "estado": "Contactada", "score": 4, "cat": "Logística / Transporte", "canal": "LinkedIn Empresa (1°) → Buscar cont"}, {"empresa": "AB Arriendos S.A.", "estado": "Contactada", "score": 4, "cat": "Arriendo / Equipos Indust", "canal": "LinkedIn Empresa (1°) → Buscar cont"}, {"empresa": "Aceros Chilca", "estado": "No Contactada", "score": 4, "cat": "Minería / Metales", "canal": "LinkedIn Empresa (1°) → Buscar cont"}, {"empresa": "Acetogen Gas Chile S.A.", "estado": "Contactada", "score": 4, "cat": "Seguridad / EPP / Distrib", "canal": "LinkedIn Empresa (1°) + Email (1°)"}], "score_dist": [0, 1, 2, 53, 61, 12, 6, 48, 49, 0, 0], "cat_enviados": {"Seguridad/EPP": 2, "Arriendo": 1, "Automatiz.": 3, "Minería": 10, "Industrial": 16, "Energía": 3, "TI/Telecom": 1, "Logística": 5, "Repuestos": 3, "Construcción": 1}, "funnel": [2830, 1989, 45, 5, 0], "funnel_labels": ["Total Prospectos", "Con Email", "Emails Enviados", "Contactadas", "Reuniones"]};
-const PAL = ['#4f8ef7','#22d3a5','#fbbf24','#f87171','#a78bfa','#22d3ee','#fb923c','#34d399','#e879f9','#38bdf8'];
-const BASE = { chart:{ toolbar:{show:false},animations:{enabled:true,speed:700},background:'transparent' },
-  theme:{mode:'dark'}, grid:{borderColor:'rgba(255,255,255,0.05)'}, tooltip:{theme:'dark'} };
+const DATA = {"updated": "17/03/2026 16:30", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 5, "reuniones_db": 0, "alta": 97, "media": 79, "baja": 56, "pct_email": 90.5, "email_base": 1989, "canales": {"LI Persona": 107, "Email Directo": 59, "Sin datos": 44, "LI Empresa + Email": 12, "LI Empresa": 10}, "cat_enviados": {"Industrial": 19, "Minería": 12, "Seguridad/EPP": 6, "Logística": 5, "Repuestos": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58]};
 
-// ── Counters ──────────────────────────────────────────────────────────────────
-function cnt(id, val, dec=0, suf='') {
-  const el=document.getElementById(id); if(!el) return;
-  const dur=1200, steps=50, inc=val/steps;
-  let c=0, i=setInterval(()=>{ c=Math.min(c+inc,val);
-    el.textContent=dec?c.toFixed(dec)+suf:Math.floor(c)+suf; if(c>=val) clearInterval(i); },dur/steps);
-}
-function updateReunionesKPI(){ const n=getReuniones().length+D.reuniones_db; document.getElementById('k3').textContent=n; }
-window.addEventListener('load',()=>{
-  cnt('k0',D.total); cnt('k1',D.enviados); cnt('k2',D.contactadas);
-  cnt('k4',D.alta); cnt('k5',D.score_prom,1); cnt('k6',D.pct_email,1,'%');
-  setTimeout(()=>updateReunionesKPI(),400);
-  renderMainCharts(); buildTopTable();
-});
-
-// ── Reuniones localStorage ────────────────────────────────────────────────────
-function getReuniones(){ return JSON.parse(localStorage.getItem('oc_reuniones')||'[]'); }
-function openAddReunion(){
-  document.getElementById('m-fecha').value=new Date().toISOString().split('T')[0];
-  document.getElementById('modal-overlay').style.display='block';
-}
-function closeModal(){ document.getElementById('modal-overlay').style.display='none'; }
-function saveReunion(){
-  const emp=document.getElementById('m-emp').value.trim();
-  if(!emp){ alert('Ingresa el nombre de la empresa'); return; }
-  const r={ empresa:emp, fecha:document.getElementById('m-fecha').value,
-    canal:document.getElementById('m-canal').value, nota:document.getElementById('m-nota').value.trim() };
-  const list=getReuniones(); list.push(r);
-  localStorage.setItem('oc_reuniones',JSON.stringify(list));
-  closeModal(); updateReunionesKPI();
-  if(currentPanel==='reuniones') renderPanel('reuniones');
-  document.getElementById('m-emp').value=''; document.getElementById('m-nota').value='';
+// ── Counters ───────────────────────────────────────────────────────────────
+function animateVal(id, end, dur) {
+  const el = document.getElementById(id);
+  if (!el || end === 0) { if(el) el.textContent = 0; return; }
+  let startTs = null;
+  const step = ts => {
+    if (!startTs) startTs = ts;
+    const p = Math.min((ts - startTs) / dur, 1);
+    el.textContent = Math.floor(p * end).toLocaleString();
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = end.toLocaleString();
+  };
+  requestAnimationFrame(step);
 }
 
-// ── Panel system ──────────────────────────────────────────────────────────────
-let currentPanel=null, panelCharts={};
-const PANEL_COLORS = { total:'#4f8ef7',emails:'#22d3ee',contactadas:'#22d3a5',
-  reuniones:'#f87171',prioridad:'#a78bfa',score:'#fbbf24',cobertura:'#fb923c' };
-
-function togglePanel(type){
-  const cards = document.querySelectorAll('.kpi');
-  const idx = {'total':0,'emails':1,'contactadas':2,'reuniones':3,'prioridad':4,'score':5,'cobertura':6};
-  if(currentPanel===type){ closePanel(); return; }
-  currentPanel=type;
-  cards.forEach((c,i)=>{ c.classList.toggle('active', i===idx[type]); });
-  document.getElementById('panel-dot').style.background = PANEL_COLORS[type]||'#4f8ef7';
-  renderPanel(type);
-  const p=document.getElementById('detail-panel');
-  p.classList.add('open');
-  setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
-}
-function closePanel(){
-  document.querySelectorAll('.kpi').forEach(c=>c.classList.remove('active'));
-  document.getElementById('detail-panel').classList.remove('open');
-  currentPanel=null;
-  Object.values(panelCharts).forEach(c=>{ try{c.destroy()}catch(e){} });
-  panelCharts={};
-}
-function renderPanel(type){
-  Object.values(panelCharts).forEach(c=>{ try{c.destroy()}catch(e){} });
-  panelCharts={};
-  const titles={ total:'Total Prospectos — Distribución', emails:'Emails Enviados — Detalle',
-    contactadas:'Contactadas — Quién y por qué canal', reuniones:'Reuniones & Conversión — Embudo',
-    prioridad:'Alta Prioridad — Top Empresas', score:'Score de Conversión — Distribución', cobertura:'Cobertura de Datos' };
-  document.getElementById('panel-title').textContent = titles[type]||type;
-  const fn = { total:panelTotal, emails:panelEmails, contactadas:panelContactadas,
-    reuniones:panelReuniones, prioridad:panelPrioridad, score:panelScore, cobertura:panelCobertura };
-  (fn[type]||(() => document.getElementById('panel-body').innerHTML=''))();
+// ── Ring ──────────────────────────────────────────────────────────────────
+function animateRing(pct) {
+  const circ = 283;
+  const circle = document.getElementById('cobertura-ring');
+  const text   = document.getElementById('kpi-cobertura-val');
+  circle.style.strokeDasharray  = circ + ' ' + circ;
+  circle.style.strokeDashoffset = circ;
+  setTimeout(() => {
+    circle.style.strokeDashoffset = circ - (pct / 100) * circ;
+    let startTs = null;
+    const step = ts => {
+      if (!startTs) startTs = ts;
+      const p = Math.min((ts - startTs) / 2000, 1);
+      text.textContent = (p * pct).toFixed(1) + '%';
+      if (p < 1) requestAnimationFrame(step);
+      else text.textContent = pct + '%';
+    };
+    requestAnimationFrame(step);
+  }, 120);
 }
 
-// ── Panel: Total ──────────────────────────────────────────────────────────────
-function panelTotal(){
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-grid panel-grid-3" style="margin-bottom:16px">
-      ${['VIP Top','Intelig. Mercado','Base Completa'].map((k,i)=>
-        `<div class="mini-stat"><div class="mini-stat-val" style="color:${['#a78bfa','#4f8ef7','#22d3ee'][i]}">${D.segmentos[k]?.toLocaleString()||0}</div><div class="mini-stat-lbl">${k}</div></div>`
-      ).join('')}
-    </div>
-    <div id="p-total-chart"></div>`;
-  panelCharts.seg = new ApexCharts(document.getElementById('p-total-chart'),{
-    ...BASE, chart:{...BASE.chart,type:'bar',height:180},
-    series:[{name:'Empresas',data:Object.values(D.segmentos)}],
-    xaxis:{categories:Object.keys(D.segmentos),labels:{style:{fontSize:'11px',colors:'#94a3b8'}}},
-    colors:['#a78bfa','#4f8ef7','#22d3ee'], plotOptions:{bar:{borderRadius:6,columnWidth:'45%',distributed:true}},
-    legend:{show:false}, dataLabels:{enabled:true,style:{fontSize:'11px'}}
-  }); panelCharts.seg.render();
+// ── Reuniones counter ─────────────────────────────────────────────────────
+let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') ?? DATA.reuniones_db ?? 0);
+function updateReunionesBadge() {
+  document.getElementById('nav-reuniones').textContent = reuniones;
 }
-
-// ── Panel: Emails ─────────────────────────────────────────────────────────────
-function panelEmails(){
-  const catC = D.cat_enviados||{};
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-grid panel-grid-2" style="margin-bottom:14px">
-      <div><div id="p-email-cat"></div></div>
-      <div class="scroll-box" style="max-height:220px">
-        <table><thead><tr><th>Hora</th><th>Empresa</th><th>Email</th><th>Asunto</th><th>Cat.</th></tr></thead>
-        <tbody>${D.emails_log.map(e=>`<tr>
-          <td style="color:var(--muted)">${e.hora}</td>
-          <td style="font-weight:600">${e.empresa}</td>
-          <td style="color:var(--muted);font-size:10px">${e.email}</td>
-          <td style="font-size:10px;color:#94a3b8">${e.asunto}</td>
-          <td><span class="pill p-cont">${e.cat}</span></td>
-        </tr>`).join('')}</tbody></table>
-      </div>
-    </div>`;
-  panelCharts.ecat = new ApexCharts(document.getElementById('p-email-cat'),{
-    ...BASE, chart:{...BASE.chart,type:'donut',height:220},
-    series:Object.values(catC), labels:Object.keys(catC), colors:PAL,
-    plotOptions:{pie:{donut:{size:'60%',labels:{show:true,total:{show:true,label:'Enviados',color:'#e2e8f0',fontSize:'11px',fontWeight:700}}}}},
-    legend:{position:'bottom',fontSize:'10px'}, dataLabels:{enabled:false}
-  }); panelCharts.ecat.render();
-}
-
-// ── Panel: Contactadas ────────────────────────────────────────────────────────
-function panelContactadas(){
-  const list = D.contactadas_list;
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-grid panel-grid-2">
-      <div id="p-cont-canal"></div>
-      <div class="scroll-box">
-        <table><thead><tr><th>Empresa</th><th>Estado</th><th>Score</th><th>Canal</th></tr></thead>
-        <tbody>${list.length?list.map(c=>`<tr>
-          <td style="font-weight:600">${c.empresa}</td>
-          <td><span class="pill p-cont">${c.estado}</span></td>
-          <td><div class="score-bar"><b style="color:var(--blue)">${c.score}</b>
-            <div class="bar-t"><div class="bar-f" style="width:${c.score*10}%"></div></div></div></td>
-          <td style="font-size:10px;color:var(--muted)">${c.canal}</td>
-        </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">Sin contactadas registradas aún</td></tr>'}</tbody></table>
-      </div>
-    </div>`;
-  const canalD = {};
-  list.forEach(c=>{ const ch=c.canal.split('(')[0].trim(); canalD[ch]=(canalD[ch]||0)+1; });
-  const keys=Object.keys(canalD); const vals=Object.values(canalD);
-  panelCharts.ccn = new ApexCharts(document.getElementById('p-cont-canal'),{
-    ...BASE, chart:{...BASE.chart,type:keys.length?'donut':'bar',height:220},
-    series:vals.length?vals:[0], labels:keys.length?keys:['Sin datos'], colors:PAL,
-    plotOptions:{pie:{donut:{size:'60%'}}}, legend:{position:'bottom',fontSize:'10px'},
-    dataLabels:{enabled:false},
-    noData:{text:'Sin datos de contacto aún',style:{color:'#64748b'}}
-  }); panelCharts.ccn.render();
-}
-
-// ── Panel: Reuniones + Funnel ──────────────────────────────────────────────────
-function panelReuniones(){
-  const rList = getReuniones();
-  const totalR = rList.length + D.reuniones_db;
-  const funnel = [D.funnel[0],D.funnel[1],D.funnel[2],D.funnel[3],totalR];
-  const labels = D.funnel_labels;
-  const rates = [];
-  for(let i=0;i<funnel.length-1;i++){
-    const r=funnel[i]>0?(funnel[i+1]/funnel[i]*100).toFixed(1):'0.0';
-    rates.push(`${labels[i]} → ${labels[i+1]}: <b style="color:var(--green)">${r}%</b>`);
+window.cambiarReunion = function(delta) {
+  reuniones = Math.max(0, reuniones + delta);
+  localStorage.setItem('oc_reuniones_count', reuniones);
+  updateReunionesBadge();
+  // Si el panel de reuniones está abierto, refrescar el gráfico
+  if (document.getElementById('btn-reuniones').classList.contains('active')) {
+    showChart('reuniones');
   }
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-grid panel-grid-2">
-      <div><div id="p-funnel"></div></div>
-      <div>
-        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Tasas de Conversión</div>
-        ${rates.map(r=>`<div class="rate-item"><span style="font-size:11px;color:#94a3b8">${r}</span></div>`).join('')}
-        <div style="margin-top:16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Reuniones Registradas</div>
-        <div style="max-height:160px;overflow-y:auto">
-          ${rList.length?rList.map((r,i)=>`
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-              <div><div style="font-weight:600;font-size:12px">${r.empresa}</div>
-                <div style="font-size:10px;color:var(--muted)">${r.canal} · ${r.fecha}</div>
-                ${r.nota?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">${r.nota}</div>`:''}
-              </div>
-              <button onclick="deleteReunion(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px" title="Eliminar">&#10005;</button>
-            </div>`).join('') : `<div style="color:var(--muted);font-size:11px;padding:10px 0">Sin reuniones registradas. Haz clic en + para agregar.</div>`}
-        </div>
-      </div>
-    </div>`;
-  panelCharts.fun = new ApexCharts(document.getElementById('p-funnel'),{
-    ...BASE, chart:{...BASE.chart,type:'bar',height:280},
-    series:[{name:'Cantidad',data:funnel}],
-    xaxis:{categories:labels,labels:{style:{fontSize:'9px',colors:'#94a3b8'},rotate:-20}},
-    yaxis:{labels:{style:{fontSize:'10px',colors:'#94a3b8'}}},
-    plotOptions:{bar:{borderRadius:5,columnWidth:'55%',distributed:true}},
-    colors:['#4f8ef7','#22d3ee','#a78bfa','#22d3a5','#f87171'],
-    legend:{show:false},
-    dataLabels:{enabled:true,style:{fontSize:'11px',fontWeight:700}}
-  }); panelCharts.fun.render();
-}
-function deleteReunion(i){
-  if(!confirm('¿Eliminar esta reunión?')) return;
-  const list=getReuniones(); list.splice(i,1);
-  localStorage.setItem('oc_reuniones',JSON.stringify(list));
-  updateReunionesKPI(); renderPanel('reuniones');
-}
-
-// ── Panel: Prioridad ──────────────────────────────────────────────────────────
-function panelPrioridad(){
-  document.getElementById('panel-body').innerHTML = `
-    <div class="panel-grid panel-grid-2">
-      <div id="p-prio-chart"></div>
-      <div class="scroll-box">
-        <table><thead><tr><th>#</th><th>Empresa</th><th>Score</th><th>Prioridad</th><th>Contacto</th></tr></thead>
-        <tbody>${D.top_prospectos.filter(p=>p.prioridad==='Alta').slice(0,12).map((p,i)=>`<tr>
-          <td style="color:var(--muted)">${i+1}</td>
-          <td style="font-weight:600;font-size:11px">${p.empresa}</td>
-          <td><div class="score-bar"><b style="color:var(--blue)">${p.score}</b>
-            <div class="bar-t"><div class="bar-f" style="width:${p.score*10}%"></div></div></div></td>
-          <td><span class="pill p-alta">Alta</span></td>
-          <td style="font-size:10px;color:var(--muted)">${p.contacto.split('(')[0].trim()}</td>
-        </tr>`).join('')}</tbody></table>
-      </div>
-    </div>`;
-  panelCharts.prio = new ApexCharts(document.getElementById('p-prio-chart'),{
-    ...BASE, chart:{...BASE.chart,type:'donut',height:260},
-    series:[D.prioridad.Alta||0,D.prioridad.Media||0,D.prioridad.Baja||0],
-    labels:['Alta','Media','Baja'], colors:['#f87171','#fbbf24','#22d3a5'],
-    plotOptions:{pie:{donut:{size:'65%',labels:{show:true,total:{show:true,label:'Total IM',color:'#e2e8f0',fontSize:'11px',fontWeight:700}}}}},
-    legend:{position:'bottom',fontSize:'11px'}, dataLabels:{enabled:true,style:{fontSize:'10px'}}
-  }); panelCharts.prio.render();
-}
-
-// ── Panel: Score ──────────────────────────────────────────────────────────────
-function panelScore(){
-  document.getElementById('panel-body').innerHTML=`<div id="p-score-chart"></div>`;
-  panelCharts.sc = new ApexCharts(document.getElementById('p-score-chart'),{
-    ...BASE, chart:{...BASE.chart,type:'bar',height:260},
-    series:[{name:'Empresas',data:D.score_dist.slice(1)}],
-    xaxis:{categories:['1','2','3','4','5','6','7','8','9','10'],title:{text:'Score',style:{color:'#64748b'}},
-      labels:{style:{fontSize:'11px',colors:'#94a3b8'}}},
-    yaxis:{labels:{style:{fontSize:'10px',colors:'#94a3b8'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'70%',distributed:true}},
-    colors:['#374151','#374151','#374151','#374151','#4f8ef7','#4f8ef7','#22d3a5','#22d3a5','#f87171','#f87171'],
-    legend:{show:false}, dataLabels:{enabled:true,style:{fontSize:'10px'}}
-  }); panelCharts.sc.render();
-}
-
-// ── Panel: Cobertura ──────────────────────────────────────────────────────────
-function panelCobertura(){
-  document.getElementById('panel-body').innerHTML=`
-    <div class="panel-grid panel-grid-3" style="margin-bottom:16px">
-      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--cyan)">${D.pct_email}%</div><div class="mini-stat-lbl">Email (Base)</div></div>
-      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--blue)">${D.pct_li_p}%</div><div class="mini-stat-lbl">LinkedIn Persona (IM)</div></div>
-      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--purple)">${D.pct_li_e}%</div><div class="mini-stat-lbl">LinkedIn Empresa (IM)</div></div>
-    </div><div id="p-cob-chart"></div>`;
-  panelCharts.cob = new ApexCharts(document.getElementById('p-cob-chart'),{
-    ...BASE, chart:{...BASE.chart,type:'radialBar',height:220},
-    series:[D.pct_email,D.pct_li_p,D.pct_li_e],
-    labels:['Email','LI Persona','LI Empresa'], colors:['#22d3ee','#4f8ef7','#a78bfa'],
-    plotOptions:{radialBar:{hollow:{size:'20%'},track:{background:'rgba(255,255,255,0.05)'},
-      dataLabels:{name:{fontSize:'10px'},value:{fontSize:'12px',fontWeight:700}}}},
-    legend:{show:true,position:'bottom',fontSize:'11px'}
-  }); panelCharts.cob.render();
-}
-
-// ── Main Charts ───────────────────────────────────────────────────────────────
-function renderMainCharts(){
-  new ApexCharts(document.getElementById('c-seg'),{
-    ...BASE, chart:{...BASE.chart,type:'donut',height:210},
-    series:Object.values(D.segmentos), labels:Object.keys(D.segmentos), colors:['#a78bfa','#4f8ef7','#22d3ee'],
-    plotOptions:{pie:{donut:{size:'65%',labels:{show:true,total:{show:true,label:'Total',color:'#e2e8f0',fontSize:'11px',fontWeight:700}}}}},
-    legend:{position:'bottom',fontSize:'10px'}, dataLabels:{enabled:false}
-  }).render();
-  new ApexCharts(document.getElementById('c-prio'),{
-    ...BASE, chart:{...BASE.chart,type:'donut',height:210},
-    series:[D.prioridad.Alta||0,D.prioridad.Media||0,D.prioridad.Baja||0],
-    labels:['Alta','Media','Baja'], colors:['#f87171','#fbbf24','#22d3a5'],
-    plotOptions:{pie:{donut:{size:'65%',labels:{show:true,total:{show:true,label:'IM',color:'#e2e8f0',fontSize:'11px',fontWeight:700}}}}},
-    legend:{position:'bottom',fontSize:'10px'}, dataLabels:{enabled:false}
-  }).render();
-  new ApexCharts(document.getElementById('c-cob'),{
-    ...BASE, chart:{...BASE.chart,type:'radialBar',height:210},
-    series:[D.pct_email,D.pct_li_p,D.pct_li_e], labels:['Email','LI Persona','LI Empresa'],
-    colors:['#22d3ee','#4f8ef7','#a78bfa'],
-    plotOptions:{radialBar:{hollow:{size:'20%'},track:{background:'rgba(255,255,255,0.05)'},
-      dataLabels:{name:{fontSize:'9px'},value:{fontSize:'11px',fontWeight:700}}}},
-    legend:{show:true,position:'bottom',fontSize:'10px'}
-  }).render();
-  new ApexCharts(document.getElementById('c-cat'),{
-    ...BASE, chart:{...BASE.chart,type:'bar',height:270},
-    series:[{name:'Empresas',data:Object.values(D.categorias)}],
-    xaxis:{categories:Object.keys(D.categorias),labels:{style:{fontSize:'10px',colors:'#94a3b8'}}},
-    plotOptions:{bar:{horizontal:true,borderRadius:4,barHeight:'60%',distributed:true,dataLabels:{position:'right'}}},
-    colors:PAL, legend:{show:false}, dataLabels:{enabled:true,style:{fontSize:'10px'},offsetX:4}
-  }).render();
-  new ApexCharts(document.getElementById('c-time'),{
-    ...BASE, chart:{...BASE.chart,type:'area',height:270},
-    series:[{name:'Enviados',data:D.timeline_vals}],
-    xaxis:{categories:D.timeline_labels,labels:{style:{fontSize:'10px',colors:'#94a3b8'}}},
-    colors:['#22d3ee'],
-    fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},
-    stroke:{curve:'smooth',width:2}, markers:{size:5},
-    dataLabels:{enabled:true,style:{fontSize:'11px',fontWeight:700},offsetY:-4}
-  }).render();
-  new ApexCharts(document.getElementById('c-city'),{
-    ...BASE, chart:{...BASE.chart,type:'bar',height:270},
-    series:[{name:'Empresas',data:Object.values(D.ciudades)}],
-    xaxis:{categories:Object.keys(D.ciudades),labels:{style:{fontSize:'10px',colors:'#94a3b8'}}},
-    plotOptions:{bar:{borderRadius:4,columnWidth:'55%',distributed:true}},
-    colors:PAL, legend:{show:false}, dataLabels:{enabled:false}
-  }).render();
-  new ApexCharts(document.getElementById('c-canal'),{
-    ...BASE, chart:{...BASE.chart,type:'donut',height:270},
-    series:Object.values(D.canales), labels:Object.keys(D.canales), colors:PAL,
-    plotOptions:{pie:{donut:{size:'60%'}}},
-    legend:{position:'bottom',fontSize:'10px'}, dataLabels:{enabled:false}
-  }).render();
-}
-
-// ── Top prospectos tabla ──────────────────────────────────────────────────────
-function buildTopTable(){
-  const tb=document.getElementById('t-pros');
-  tb.innerHTML=D.top_prospectos.map((p,i)=>{
-    const pc=p.prioridad==='Alta'?'p-alta':p.prioridad==='Media'?'p-media':'p-baja';
-    return `<tr>
-      <td style="color:var(--muted);font-weight:600">${i+1}</td>
-      <td style="font-weight:700">${p.empresa}</td>
-      <td style="color:#94a3b8;font-size:10px">${p.categoria}</td>
-      <td><div class="score-bar"><b style="color:var(--blue)">${p.score}</b>
-        <div class="bar-t"><div class="bar-f" style="width:${p.score*10}%"></div></div></div></td>
-      <td><span class="pill ${pc}">${p.prioridad}</span></td>
-      <td style="color:#94a3b8;font-size:10px">${p.contacto.split('(')[0].trim()}</td>
-      <td style="color:var(--muted);font-size:10px">${p.canal}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SISTEMA DE NOTAS
-// ════════════════════════════════════════════════════════════════════════════
-const SEED = D.seed_notas || [];
-const TIPO_COLORS = {
-  'Actividad':    ['rgba(79,142,247,.15)','#4f8ef7'],
-  'Recordatorio': ['rgba(251,191,36,.15)','#fbbf24'],
-  'Nota':         ['rgba(167,139,250,.15)','#a78bfa'],
-  'Alerta':       ['rgba(248,113,113,.15)','#f87171'],
-  'Logro':        ['rgba(34,211,165,.15)','#22d3a5'],
 };
 
-function getNotes(){
-  const local = JSON.parse(localStorage.getItem('oc_notes_v2')||'[]');
-  const seedIds = new Set(SEED.map(s=>s.id));
-  const all = [...SEED];
-  local.forEach(n=>{ if(!seedIds.has(n.id)) all.push(n); });
-  return all.sort((a,b)=>{
-    const da=new Date((a.fecha||'2000-01-01')+'T'+(a.hora||'00:00'));
-    const db=new Date((b.fecha||'2000-01-01')+'T'+(b.hora||'00:00'));
-    return db-da;
-  });
-}
-function saveLocalNote(n){
-  const local=JSON.parse(localStorage.getItem('oc_notes_v2')||'[]');
-  local.push(n); localStorage.setItem('oc_notes_v2',JSON.stringify(local));
-}
-function deleteNote(id){
-  const local=JSON.parse(localStorage.getItem('oc_notes_v2')||'[]');
-  const filtered=local.filter(n=>n.id!==id);
-  localStorage.setItem('oc_notes_v2',JSON.stringify(filtered));
-  // Also mark seed note as deleted
-  const del=JSON.parse(localStorage.getItem('oc_notes_deleted')||'[]');
-  del.push(id); localStorage.setItem('oc_notes_deleted',JSON.stringify(del));
-  renderNotes();
-}
-function addReply(id, text){
-  const notes=getNotes(); const note=notes.find(n=>n.id===id);
-  if(!note) return;
-  // Update in local storage
-  const local=JSON.parse(localStorage.getItem('oc_notes_v2')||'[]');
-  const idx=local.findIndex(n=>n.id===id);
-  if(idx>=0){ local[idx].respuesta=text; local[idx].respondida='Sí';
-  } else { local.push({...note, respuesta:text, respondida:'Sí'}); }
-  localStorage.setItem('oc_notes_v2',JSON.stringify(local));
-  renderNotes();
-}
-function getUnread(){
-  const seen=localStorage.getItem('oc_notes_seen_date');
-  const hoy=D.hoy;
-  if(seen===hoy) return 0;
-  return getNotes().filter(n=>n.fecha===hoy).length;
-}
-function markSeen(){
-  localStorage.setItem('oc_notes_seen_date',D.hoy);
-  document.getElementById('notif-badge').style.display='none';
-}
+// ── Charts ────────────────────────────────────────────────────────────────
+let activeChart = null;
+const NEON = ['#00E5FF','#B200FF','#E5FF00','#FF2A6D','#00FFAA','#FF6B00','#4488FF','#FF88AA'];
 
-function renderNotes(){
-  const deleted=JSON.parse(localStorage.getItem('oc_notes_deleted')||'[]');
-  const notes=getNotes().filter(n=>!deleted.includes(n.id));
-  const feed=document.getElementById('notes-feed');
-  if(!notes.length){
-    feed.innerHTML=`<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:12px">Sin notas aún.<br>Agrega tu primera nota &#128071;</div>`;
+window.closeChart = function() {
+  document.getElementById('chart-reveal-panel').classList.remove('active');
+  document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
+  if (activeChart) { activeChart.dispose(); activeChart = null; }
+};
+
+window.showChart = function(type) {
+  document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + type);
+  if (btn) btn.classList.add('active');
+
+  const panel = document.getElementById('chart-reveal-panel');
+  panel.classList.add('active');
+
+  if (activeChart) { activeChart.dispose(); activeChart = null; }
+  const dom = document.getElementById('active-chart');
+  activeChart = echarts.init(dom, 'dark');
+
+  const titleEl = document.getElementById('crp-title');
+
+  if (type === 'contactos') {
+    titleEl.textContent = 'EMPRESAS CONTACTADAS POR RUBRO';
+    const cats = Object.keys(DATA.cat_enviados);
+    const vals = Object.values(DATA.cat_enviados);
+    if (cats.length === 0) {
+      activeChart.setOption({ backgroundColor:'transparent', title:{ text:'SIN DATOS AÚN', subtext:'Los datos aparecerán una vez enviados los correos', left:'center', top:'center', textStyle:{color:'#888',fontFamily:'Space Grotesk',fontSize:16}, subtextStyle:{color:'#555',fontFamily:'Inter',fontSize:12} } });
+      return;
+    }
+    activeChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(0,229,255,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+      grid: { left:'3%', right:'4%', bottom:'8%', top:'8%', containLabel:true },
+      xAxis: {
+        type:'category', data:cats,
+        axisLabel:{ color:'#00E5FF', fontFamily:'Space Grotesk', fontSize:11, fontWeight:'bold', rotate: cats.length>6 ? 25 : 0, interval:0 },
+        axisLine:{ lineStyle:{ color:'rgba(0,229,255,0.2)' } }
+      },
+      yAxis: {
+        type:'value',
+        splitLine:{ lineStyle:{ color:'rgba(0,229,255,0.05)', type:'dashed' } },
+        axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:11 }
+      },
+      series: [{
+        type:'bar', barWidth:'55%', data:vals,
+        itemStyle:{
+          borderRadius:[6,6,0,0],
+          color: function(p) {
+            const c = NEON[p.dataIndex % NEON.length];
+            return new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:c},{offset:1,color:c+'18'}]);
+          },
+          shadowBlur:15
+        },
+        label:{ show:true, position:'top', color:'#00E5FF', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:13 }
+      }]
+    });
+  }
+
+  else if (type === 'canal') {
+    titleEl.textContent = 'CANAL DE CONTACTO — DISTRIBUCIÓN';
+    const canales = Object.keys(DATA.canales);
+    const canVals = Object.values(DATA.canales);
+    if (canales.length === 0) {
+      activeChart.setOption({ backgroundColor:'transparent', title:{ text:'SIN DATOS', subtext:'Ejecuta el script de outreach para generar datos', left:'center', top:'center', textStyle:{color:'#888',fontFamily:'Space Grotesk',fontSize:16}, subtextStyle:{color:'#555',fontFamily:'Inter',fontSize:12} } });
+      return;
+    }
+    activeChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(229,255,0,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+      grid: { left:'3%', right:'4%', bottom:'8%', top:'5%', containLabel:true },
+      xAxis: {
+        type:'category', data:canales,
+        axisLabel:{ color:'#E5FF00', fontFamily:'Space Grotesk', fontSize:10, fontWeight:'bold', rotate:18, interval:0 },
+        axisLine:{ lineStyle:{ color:'rgba(229,255,0,0.2)' } }
+      },
+      yAxis: {
+        type:'value',
+        splitLine:{ lineStyle:{ color:'rgba(229,255,0,0.05)', type:'dashed' } },
+        axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:11 }
+      },
+      series: [{
+        type:'bar', barWidth:'50%', data:canVals,
+        itemStyle:{
+          borderRadius:[6,6,0,0],
+          color: function(p) {
+            return new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#E5FF00'},{offset:1,color:'#E5FF0018'}]);
+          },
+          shadowBlur:15, shadowColor:'rgba(229,255,0,0.3)'
+        },
+        label:{ show:true, position:'top', color:'#E5FF00', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:13 }
+      }]
+    });
+  }
+
+  else if (type === 'reuniones') {
+    titleEl.textContent = 'REUNIONES CONCERTADAS';
+    const totalR   = reuniones;
+    const restante = Math.max(0, DATA.enviados - totalR);
+    if (totalR > 0) {
+      activeChart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger:'item', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(255,42,42,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'}, formatter: '{b}: {c} ({d}%)' },
+        legend: { bottom:'2%', left:'center', textStyle:{color:'#888',fontFamily:'Inter',fontSize:11}, itemGap:20, icon:'circle' },
+        series: [{
+          name:'Campana', type:'pie',
+          radius:['50%','78%'], center:['50%','46%'],
+          itemStyle:{ borderRadius:10, borderColor:'#141414', borderWidth:3 },
+          label:{ show:false },
+          data:[
+            { value:totalR,   name:'Reuniones logradas',  itemStyle:{ color:'#FF2A2A', shadowColor:'rgba(255,42,42,0.5)', shadowBlur:15 } },
+            { value:restante, name:'Sin reunión aún',     itemStyle:{ color:'rgba(255,255,255,0.04)' } }
+          ]
+        }]
+      });
+    } else {
+      activeChart.setOption({
+        backgroundColor:'transparent',
+        title:{
+          text:'SIN REUNIONES REGISTRADAS',
+          subtext:'Usa los botones  −  +  de la tarjeta para registrar avances',
+          left:'center', top:'center',
+          textStyle:{ color:'#A0AEC0', fontFamily:'Space Grotesk', fontSize:16, fontWeight:'bold' },
+          subtextStyle:{ color:'rgba(160,174,192,0.45)', fontFamily:'Inter', fontSize:13 }
+        }
+      });
+    }
+  }
+};
+
+// ── Comment wall ──────────────────────────────────────────────────────────
+function loadComments() {
+  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
+  const el   = document.getElementById('comments-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state">Sin comentarios aún. ¡Escribe el primero!</div>';
     return;
   }
-  feed.innerHTML=notes.map(n=>{
-    const [bg,ac]=TIPO_COLORS[n.tipo]||TIPO_COLORS['Nota'];
-    const isHoy=n.fecha===D.hoy;
-    return `
-    <div class="note-card" style="border-left-color:${ac}" id="nc-${n.id}">
-      <div class="note-top">
-        <span class="note-tipo" style="background:${bg};color:${ac}">${n.tipo||'Nota'}</span>
-        <span class="note-fecha">${isHoy?'Hoy '+n.hora:n.fecha+' '+n.hora}</span>
-        <button class="note-del" onclick="deleteNote(${n.id})" title="Eliminar">&#10005;</button>
-      </div>
-      <div class="note-text">${n.texto}</div>
-      ${n.respuesta ? `<div class="note-reply"><span style="color:var(--green);font-size:10px;font-weight:600">&#8627; Respuesta:</span><span style="font-size:11px;color:var(--text);margin-left:6px">${n.respuesta}</span></div>` : ''}
-      <div class="note-actions">
-        <button class="note-btn" onclick="toggleReplyBox(${n.id})">&#8629; Responder</button>
-      </div>
-      <div class="reply-box" id="rb-${n.id}" style="display:none">
-        <textarea id="rt-${n.id}" placeholder="Escribe tu respuesta..." rows="2"
-          style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;
-          padding:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:11px;resize:none;outline:none;margin-top:8px"></textarea>
-        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px">
-          <button class="note-btn" onclick="toggleReplyBox(${n.id})">Cancelar</button>
-          <button class="note-btn" style="background:rgba(34,211,165,.15);color:var(--green)"
-            onclick="addReply(${n.id},document.getElementById('rt-${n.id}').value)">Guardar</button>
-        </div>
-      </div>
-    </div>`;
+  el.innerHTML = list.slice().reverse().map((c, ri) => {
+    const idx = list.length - 1 - ri;
+    const textEscaped = c.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<div class="comment-item">'
+      + '<div><div class="comment-text">' + textEscaped + '</div>'
+      + '<div class="comment-meta">' + c.date + '</div></div>'
+      + '<button class="comment-del" onclick="deleteComment(' + idx + ')">BORRAR</button>'
+      + '</div>';
   }).join('');
 }
-function toggleReplyBox(id){
-  const rb=document.getElementById('rb-'+id);
-  rb.style.display=rb.style.display==='none'?'block':'none';
-}
 
-function addNewNote(){
-  const text=document.getElementById('new-note-text').value.trim();
-  const tipo=document.getElementById('new-note-tipo').value;
-  if(!text) return;
-  const now=new Date();
-  const n={
-    id: Date.now(), fecha:D.hoy,
-    hora:now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0'),
-    autor:'Jorge', texto:text, tipo:tipo, respuesta:'', respondida:'No'
-  };
-  saveLocalNote(n);
-  document.getElementById('new-note-text').value='';
-  renderNotes();
-  markSeen();
-  // Update badge
-  const badge=document.getElementById('notif-badge');
-  badge.style.display='none';
-}
+window.deleteComment = function(i) {
+  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
+  list.splice(i, 1);
+  localStorage.setItem('oc_comments_v2', JSON.stringify(list));
+  loadComments();
+};
 
-// ── Notificación al cargar ────────────────────────────────────────────────────
-function checkNotifications(){
-  const unread=getUnread();
-  const badge=document.getElementById('notif-badge');
-  if(unread>0){
-    badge.textContent=unread;
-    badge.style.display='flex';
-    // Toast notification
-    showToast(`${unread} nota${unread>1?'s':''} nueva${unread>1?'s':''} hoy &#128276;`,'#fbbf24');
-  }
-}
-function showToast(msg, color){
-  const t=document.createElement('div');
-  t.innerHTML=msg;
-  Object.assign(t.style,{
-    position:'fixed',bottom:'24px',right:'24px',
-    background:color||'var(--blue)',color:'#fff',
-    padding:'12px 20px',borderRadius:'10px',
-    fontSize:'13px',fontWeight:'600',zIndex:'999',
-    boxShadow:'0 8px 24px rgba(0,0,0,.4)',
-    transition:'opacity .4s',cursor:'pointer',
-  });
-  document.body.appendChild(t);
-  t.onclick=()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); };
-  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),400); },4000);
-}
-
-window.addEventListener('load',()=>{
-  setTimeout(()=>{ checkNotifications(); renderNotes(); }, 800);
+document.getElementById('local-comment-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const text = document.getElementById('local-comment-text').value.trim();
+  if (!text) return;
+  const list = JSON.parse(localStorage.getItem('oc_comments_v2') || '[]');
+  list.push({ text: text, date: new Date().toLocaleString('es-CL') });
+  if (list.length > 30) list.splice(0, list.length - 30);
+  localStorage.setItem('oc_comments_v2', JSON.stringify(list));
+  document.getElementById('local-comment-text').value = '';
+  loadComments();
 });
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  animateVal('kpi-total-val',    DATA.total,    1500);
+  animateVal('kpi-enviados-val', DATA.enviados, 1500);
+  animateVal('kpi-alta-val',     DATA.alta,     1500);
+  animateVal('nav-contactadas',  DATA.enviados, 1500);
+  animateRing(DATA.pct_email);
+  updateReunionesBadge();
+  loadComments();
+});
+
+window.addEventListener('resize', () => { if (activeChart) activeChart.resize(); });
 </script>
 </body>
 </html>
