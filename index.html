@@ -279,6 +279,8 @@ html { overflow-x: hidden; max-width: 100vw; }
   border-radius: 4px; font-family: var(--font-sans); width: 100%;
   box-sizing: border-box;
 }
+.tarea-form-actions { display: flex; gap: 0.6rem; align-items: center; }
+.tarea-submit-btn { padding: 10px 18px; font-size: 0.75rem; white-space: nowrap; margin-left: auto; }
 .tarea-input:focus { outline: none; border-color: rgba(168,85,247,0.5); box-shadow: 0 0 0 2px rgba(168,85,247,0.08); }
 .tarea-input-row { display: flex; gap: 0.6rem; }
 .tarea-select {
@@ -476,6 +478,10 @@ html { overflow-x: hidden; max-width: 100vw; }
   .badge { display: none; }
   .feedback-btn { font-size: 0.72rem; padding: 9px 13px; letter-spacing: 0.8px; }
   #comment-header-btn { font-size: 0.72rem; }
+  /* Tarea form — input grande, botones compactos abajo */
+  .tarea-input { font-size: 1.05rem; padding: 14px 14px; }
+  .tarea-submit-btn { font-size: 0.68rem; padding: 10px 12px; }
+  #tarea-prio-btn { font-size: 0.6rem; padding: 0 8px; }
   /* Tareas: nueva línea completa bajo los botones */
   #tareas-header-btn {
     order: 10; width: 100%; text-align: center; margin-top: 2px;
@@ -977,7 +983,7 @@ window.enterDashboard = function() {
       </button>
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 19:35</span>
+      <span class="badge">ACT: 17/03/2026 19:37</span>
     </div>
   </div>
 </header>
@@ -1180,14 +1186,14 @@ window.enterDashboard = function() {
   <section class="comment-board" style="border-top-color:rgba(168,85,247,0.4);">
     <!-- Formulario agregar tarea — simple -->
     <form class="tarea-add-form" id="tarea-form" onsubmit="addTarea(event)">
-      <div style="display:flex;gap:0.6rem;align-items:center;">
-        <input class="tarea-input" id="tarea-titulo" type="text" maxlength="120"
-          placeholder="Nueva tarea..." required style="flex:1;">
+      <input class="tarea-input" id="tarea-titulo" type="text" maxlength="120"
+        placeholder="Nueva tarea..." required>
+      <div class="tarea-form-actions">
         <button type="button" id="tarea-prio-btn"
-          onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.3)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';this.textContent=this.dataset.alta==='1'?'⚡ URGENTE':'⚡ URGENTE';"
-          style="height:40px;flex-shrink:0;padding:0 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:0.65rem;font-family:var(--font-heading);letter-spacing:1px;color:rgba(255,255,255,0.3);transition:all 0.2s;"
+          onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.3)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';"
+          style="height:38px;flex-shrink:0;padding:0 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:0.65rem;font-family:var(--font-heading);letter-spacing:1px;color:rgba(255,255,255,0.3);transition:all 0.2s;"
           data-alta="0">⚡ URGENTE</button>
-        <button type="submit" class="btn-primary" style="padding:10px 18px;font-size:0.75rem;white-space:nowrap;">+ ASIGNAR</button>
+        <button type="submit" class="btn-primary tarea-submit-btn">+ ASIGNAR</button>
       </div>
     </form>
     <div id="tareas-list"></div>
@@ -1270,7 +1276,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 19:35", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 19:37", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
