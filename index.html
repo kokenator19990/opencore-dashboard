@@ -947,7 +947,7 @@ window.enterDashboard = function() {
         + AGREGAR COMENTARIO
         <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       </button>
-      <span class="badge">ACT: 17/03/2026 18:23</span>
+      <span class="badge">ACT: 17/03/2026 18:26</span>
     </div>
   </div>
 </header>
@@ -1237,7 +1237,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 18:23", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 18:26", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1815,40 +1815,31 @@ function renderTareas() {
     }
 
     const checkBtn = isCompleted
-      ? '<button class="tarea-btn tarea-btn-uncheck" onclick="toggleTarea('' + t.id + '')">↩ Reabrir</button>'
-      : '<button class="tarea-btn tarea-btn-check" onclick="toggleTarea('' + t.id + '')">✓ Marcar completa</button>';
+      ? '<button class="tarea-btn tarea-btn-uncheck" data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">↩ Reabrir</button>'
+      : '<button class="tarea-btn tarea-btn-check" data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">✓ Marcar completa</button>';
 
     return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (alta && !isCompleted ? '" style="border-left-color:#FF2A6D;' : '') + '">'
-      // Header row
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">'
       + '<div style="flex:1;">'
       + '<div class="tarea-titulo">'
       + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.8rem;">↑</span>' : '')
       + t.titulo.replace(/</g,'&lt;') + '</div>'
-      + (t.desc ? '<div style="font-size:0.7rem;color:#777;margin-top:2px;">' + t.desc.replace(/</g,'&lt;') + '</div>' : '')
       + '</div>'
-      // Status pill top-right
       + '<div style="flex-shrink:0;">'
-      + (isCompleted
-          ? '<span class="tarea-pill pill-completada">✓ LISTA</span>'
-          : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>')
+      + (isCompleted ? '<span class="tarea-pill pill-completada">✓ LISTA</span>' : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>')
       + '</div></div>'
-      // Meta row
       + '<div class="tarea-meta" style="margin-top:0.5rem;">'
       + 'Asignada: ' + t.fecha_creacion
       + (t.fecha_completada ? ' &nbsp;·&nbsp; Completada: ' + t.fecha_completada : '')
       + '</div>'
-      // Action buttons
       + '<div class="tarea-actions">' + checkBtn
-      + '<button class="tarea-btn tarea-btn-del" onclick="deleteTarea('' + t.id + '')" style="margin-left:auto;font-size:0.55rem;opacity:0.5;">✕ eliminar</button>'
+      + '<button class="tarea-btn tarea-btn-del" data-id="' + t.id + '" onclick="deleteTarea(this.dataset.id)" style="margin-left:auto;font-size:0.55rem;opacity:0.5;">✕ eliminar</button>'
       + '</div>'
-      // Comments thread
       + '<div class="tarea-comments">'
       + (commentsHtml || '')
       + '<div class="tarea-comment-input-row" style="margin-top:' + (comments.length ? '0.8rem' : '0.3rem') + ';">'
-      + '<input class="tarea-comment-input" id="tc-' + t.id + '" placeholder="Comentario de estado..." maxlength="200"'
-      + ' onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTareaComment('' + t.id + '');}">'
-      + '<button class="tarea-comment-send" onclick="addTareaComment('' + t.id + '')">→</button>'
+      + '<input class="tarea-comment-input" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Comentario de estado..." maxlength="200">'
+      + '<button class="tarea-comment-send" data-id="' + t.id + '" onclick="addTareaComment(this.dataset.id)">→</button>'
       + '</div></div>'
       + '</div>';
   }).join('');
@@ -1903,13 +1894,22 @@ window.addTareaComment = async function(id) {
   const input = document.getElementById('tc-' + id);
   const texto = input ? input.value.trim() : '';
   if (!texto) return;
-  const t = _tareasCache.find(t => t.id === id);
+  const t = _tareasCache.find(function(x){ return x.id === id; });
   if (!t) return;
   if (!t.comentarios) t.comentarios = [];
   t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
   await _saveTareas();
   renderTareas();
 };
+
+// Enter key on tarea comment inputs
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.classList.contains('tarea-comment-input')) {
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    if (id) addTareaComment(id);
+  }
+});
 
 window.deleteTarea = async function(id) {
   if (!confirm('¿Eliminar esta tarea?')) return;
