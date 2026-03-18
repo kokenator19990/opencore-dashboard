@@ -383,6 +383,10 @@ html { overflow-x: hidden; max-width: 100vw; }
   from { opacity: 0; transform: scaleY(0.9) translateY(-20px); transform-origin: top; }
   to   { opacity: 1; transform: scaleY(1) translateY(0); }
 }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
 .crp-inner { padding: 2rem; display: flex; flex-direction: column; min-height: 430px; }
 .crp-header {
   display: flex; justify-content: space-between; align-items: center;
@@ -1079,7 +1083,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:12</span>
+      <span class="badge">ACT: 17/03/2026 21:15</span>
     </div>
   </div>
 </header>
@@ -1365,7 +1369,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:12", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:15", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2199,8 +2203,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-window.deleteTarea = async function(id) {
-  if (!confirm('¿Eliminar esta tarea?')) return;
+window._deleteTareaConfirmed = async function(id) {
   _tareasCache = _tareasCache.filter(t => t.id !== id);
   await _saveTareas();
   renderTareas();
@@ -2359,6 +2362,101 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
       el.style.transition = 'transform 0.3s ease-out';
     });
   }, {passive:true});
+})();
+
+// ══════════════════════════════════════════════════════
+//   AUDIO + HAPTICS + CONFIRM DIALOG
+// ══════════════════════════════════════════════════════
+(function() {
+
+  // ── Audio engine (Web Audio API) ───────────────────
+  let _ac = null;
+  function getAC() {
+    if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ac.state === 'suspended') _ac.resume();
+    return _ac;
+  }
+  function playTone(freq, dur, vol, type) {
+    try {
+      const ac = getAC();
+      const osc  = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, ac.currentTime);
+      gain.gain.setValueAtTime(vol || 0.1, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime + dur + 0.02);
+    } catch(e) {}
+  }
+
+  // ── Haptics ────────────────────────────────────────
+  function haptic(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch(e) {}
+  }
+
+  // ── Sound presets ──────────────────────────────────
+  window._sndClick = function() {
+    haptic(10);
+    playTone(52, 0.13, 0.10);                          // deep bass thud
+  };
+  window._sndSplash = function() {
+    haptic(20);
+    playTone(38, 0.22, 0.14);                          // very deep pulse
+    setTimeout(function() { playTone(68, 0.16, 0.09); }, 110); // subtle overtone
+  };
+  window._sndDelete = function() {
+    haptic(18);
+    playTone(40, 0.18, 0.13);
+    setTimeout(function() { playTone(30, 0.22, 0.1); }, 90);   // ominous low drop
+  };
+
+  // ── Splash button ──────────────────────────────────
+  const splashBtn = document.getElementById('splash-btn');
+  if (splashBtn) {
+    splashBtn.addEventListener('click', function() { window._sndSplash(); }, true);
+  }
+
+  // ── Global click sound + haptic ───────────────────
+  // Fires on any interactive element EXCEPT splash (already handled)
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('button, .analytics-btn, .kpi-card, .kpi-action-card');
+    if (!el || el.id === 'splash-btn') return;
+    window._sndClick();
+  }, true);
+
+  // ── Custom confirm dialog ─────────────────────────
+  window.confirmDialog = function(msg, label, onYes) {
+    window._sndDelete();
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);';
+    ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:1.8rem 1.5rem 2rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
+      + '<div style="font-family:'Space Grotesk',sans-serif;font-size:0.82rem;letter-spacing:1.5px;color:#ccc;margin-bottom:1.4rem;text-align:center;text-transform:uppercase;">' + msg + '</div>'
+      + '<div style="display:flex;gap:0.75rem;">'
+      + '<button id="_cdCancel" style="flex:1;padding:13px;border:1px solid #2a2a2a;background:transparent;color:#666;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.72rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">Cancelar</button>'
+      + '<button id="_cdConfirm" style="flex:1;padding:13px;border:none;background:#FF2A6D;color:#fff;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">' + (label || 'Eliminar') + '</button>'
+      + '</div></div>';
+    document.body.appendChild(ov);
+    const close = function() { ov.style.opacity = '0'; setTimeout(function() { ov.remove(); }, 200); };
+    ov.querySelector('#_cdCancel').onclick  = close;
+    ov.querySelector('#_cdConfirm').onclick = function() { close(); onYes(); };
+    ov.onclick = function(e) { if (e.target === ov) close(); };
+  };
+
+  // ── Wire up delete functions with confirm ─────────
+  window.deleteComment = (function(orig) {
+    return function(i) {
+      window.confirmDialog('¿Eliminar este comentario?', 'Eliminar', function() { orig(i); });
+    };
+  })(window.deleteComment);
+
+  window.deleteTarea = function(id) {
+    window.confirmDialog('¿Eliminar esta tarea?', 'Eliminar', function() {
+      window._deleteTareaConfirmed(id);
+    });
+  };
+
 })();
 </script>
 </body>
