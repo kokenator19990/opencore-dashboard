@@ -1120,7 +1120,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 22:31</span>
+      <span class="badge">ACT: 17/03/2026 22:48</span>
     </div>
   </div>
 </header>
@@ -1406,7 +1406,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 22:31", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 22:48", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2632,6 +2632,119 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
   function navTo(id) { var el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
   function clickBtn(id) { var b=document.getElementById(id); if(b) b.click(); }
 
+  // ── PARSER DE INTENCIÓN: TAREAS ───────────────────────────────────────────
+  function _tryTarea(t) {
+    // Capa 1: prefijos de cortesía / modalidad
+    var s = t
+      .replace(/^(?:oye|mira|che|a ver|vamos?|bueno|ok|bien|entonces|ahora|rapidito?|urgente|porfavor|por favor|pfv|anda|espera|oiga|venga|escucha|fijate)\s+/, '')
+      .replace(/^(?:quiero?|quisiera|me gustaria|necesito|deberia|podemos?|me puedes?|me podrias?|podrias?|puedes?|pudieras?|hay que|tienes que|tenes que|tengo que|voy a|vamos a|necesitamos|hagamos?|haga|te pido(?:\s+que)?|me ayudas? a|seria bueno)\s+/, '')
+      .replace(/^(?:que|si puedes?)\s+(?:me\s+|nos\s+|le\s+)?/, '');
+
+    // Capa 2: verbo de acción — infinitivo, imperativo, subjuntivo, gerundio, con pronombre enclítico
+    var VT = /^(?:pongas?|ponga|crees?|cree|agregues?|agregue|asignes?|asigne|anotes?|anote|guardes?|guarde|metas?|meta|registres?|registre|subas?|suba|escribas?|escriba|hagas?|haga|generes?|genere|ingreses?|ingrese|cargues?|cargue|coloques?|coloque|insertes?|inserte|establezcas?|establezca|ponle|poner?|pon|dales?|dale|darle|darles?|dar|anadir?|anade|agregar?|agrega|crear?|crea|nuevas?|nueva|asignar?|asigna|meter?|mete|registrar?|registra|apuntar?|apunta|anotar?|anota|guardar?|guarda|subir?|sube|incluir?|incluye|escribir?|escribe|haz|hacer?|genera(?:r)?|ingresa(?:r)?|carga(?:r)?|coloca(?:r)?|inserta(?:r)?|establece(?:r)?|fija(?:r)?|marca(?:r)?|introduce|introduci(?:r)?|agenda(?:r)?|agendas?|cargame|ingresar?)(?:le|me|nos|les|te)?(?:\s+|$)/;
+    var after = s.replace(VT, '');
+    if (after === s) return false; // sin verbo → no es comando de tarea
+    s = after;
+
+    // Capa 3: artículo / determinante opcional
+    s = s.replace(/^(?:una?|un|la|el|los|las|esta?|ese?|esa|aquel(?:la)?|dicha?|nueva|otro|otra|siguiente|proxima?)\s+/, '');
+
+    // Capa 4: keyword "tarea" (y sinónimos)
+    if (!/^(?:tarea[s]?|pendiente[s]?|actividad|encargo|encomienda)/.test(s)) return false;
+    s = s.replace(/^(?:tarea[s]?|pendiente[s]?|actividad|encargo|encomienda)\s*/, '').trim();
+
+    // Sin contenido → solo navegar y enfocar campo
+    if (!s) {
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      setTimeout(function() { var i=document.getElementById('tarea-titulo'); if(i) i.focus(); }, 430);
+      vShow('✏ Escribe o dicta la tarea', 3500);
+      return true;
+    }
+
+    // Solo persona sin contenido → navegar + pre-rellenar "Nombre: "
+    var soloP = s.match(/^(?:para|al?|a|con|de)\s+(\w+)$/);
+    if (soloP) {
+      var pn = soloP[1].charAt(0).toUpperCase()+soloP[1].slice(1)+': ';
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      setTimeout(function(pf) { return function() {
+        var i=document.getElementById('tarea-titulo');
+        if(i) { i.value=pf; i.focus(); i.setSelectionRange(pf.length,pf.length); }
+      }; }(pn), 430);
+      vShow('✏ Para '+soloP[1].charAt(0).toUpperCase()+soloP[1].slice(1)+', di la tarea', 3500);
+      return true;
+    }
+
+    // Persona + contenido → "a Jorge: revisar" / "a Jorge que llame" / "para María, enviar correo"
+    var mp = s.match(/^(?:para|al?|a|con|de)(?:\s+(?:don|dona?|sr|sra|ing|lic|dr|señor|señora))?\s+(\w+)(?:\s*[,:\-]\s*|\s+(?:(?:para\s+)?que\s+)|\s+(?:lo que es\s+)?|\s+)(.+)/);
+    var titulo;
+    if (mp && mp[2] && mp[2].trim().length > 1) {
+      titulo = mp[1].charAt(0).toUpperCase()+mp[1].slice(1)+': '+mp[2].trim();
+    } else {
+      titulo = s;
+    }
+    titulo = titulo.charAt(0).toUpperCase()+titulo.slice(1);
+    if (titulo.length < 3) return false;
+
+    if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+    setTimeout(function(tt) { return function() {
+      var inp=document.getElementById('tarea-titulo'); if(!inp) return;
+      inp.value=tt;
+      var form=document.getElementById('tarea-form');
+      if(form) form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    }; }(titulo), 450);
+    vShow('✓ Tarea creada: '+titulo, 4000);
+    return true;
+  }
+
+  // ── PARSER DE INTENCIÓN: COMENTARIOS ─────────────────────────────────────
+  function _tryComentario(t) {
+    var s = t
+      .replace(/^(?:oye|mira|che|a ver|vamos?|bueno|ok|entonces|porfavor|por favor|pfv|anda|espera)\s+/, '')
+      .replace(/^(?:quiero?|quisiera|necesito|deberia|podemos?|me puedes?|podrias?|puedes?|hay que|tienes que|tengo que|voy a|te pido(?:\s+que)?)\s+/, '')
+      .replace(/^(?:que|si puedes?)\s+(?:me\s+|nos\s+|le\s+)?/, '');
+
+    // Anotar/apuntar/nota solo (sin keyword "comentario") → directo
+    var mAnota = s.match(/^(?:anotar?|anota|apuntar?|apunta|guardar?|guarda|fijar?|fija|nota)\s*[:·\-]\s*(.+)/);
+    if (mAnota && mAnota[1] && mAnota[1].trim().length > 2) {
+      var tx = mAnota[1].trim().charAt(0).toUpperCase()+mAnota[1].trim().slice(1);
+      if (typeof openCommentModal==='function') openCommentModal();
+      setTimeout(function(txt) { return function() {
+        var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+        inp.value=txt; if(typeof submitModalComment==='function') submitModalComment();
+      }; }(tx), 400);
+      vShow('✓ Comentario enviado', 3500); return true;
+    }
+
+    // Verbo de acción para comentario
+    var VC = /^(?:pongas?|ponga|dejes?|deje|escribas?|escriba|agregues?|agregue|crees?|cree|publiques?|publique|envies?|envie|anotes?|anote|apuntes?|apunte|guardes?|guarde|comentes?|comente|registres?|registre|metas?|meta|ponle|poner?|pon|dejar?|deja|escribir?|escribe|agregar?|agrega|crear?|crea|nuevos?|nueva|anadir?|anade|meter?|mete|registrar?|registra|comentar?|comenta|publicar?|publica|enviar?|envia|notar?|nota)(?:le|me|nos)?(?:\s+|$)/;
+    var after = s.replace(VC, '');
+    if (after === s) return false;
+    s = after;
+
+    // Artículo
+    s = s.replace(/^(?:una?|un|el|la|este?|ese?|nuevo?|nueva)\s+/, '');
+
+    // Keyword comentario (y sinónimos)
+    if (!/^(?:comentarios?|nota[s]?|observacion(?:es)?|anotacion(?:es)?|mensaje[s]?|novedad|muro|publicacion)/.test(s)) return false;
+    s = s.replace(/^(?:comentarios?|nota[s]?|observacion(?:es)?|anotacion(?:es)?|mensaje[s]?|novedad|muro|publicacion)\s*/, '').replace(/^[:·\-]?\s*/, '').trim();
+
+    // Sin texto → abrir modal
+    if (!s) {
+      if (typeof openCommentModal==='function') openCommentModal();
+      vShow('✏ Escribe o dicta el comentario', 3500); return true;
+    }
+
+    // Con texto → auto-enviar
+    var texto = s.charAt(0).toUpperCase()+s.slice(1);
+    if (typeof openCommentModal==='function') openCommentModal();
+    setTimeout(function(tx) { return function() {
+      var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+      inp.value=tx; if(typeof submitModalComment==='function') submitModalComment();
+    }; }(texto), 400);
+    vShow('✓ Comentario enviado', 3500);
+    return true;
+  }
+
   function processVoice(raw) {
     var t = n(raw);
     vShow('"' + raw + '"', false);
@@ -2648,14 +2761,18 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
       vShow('↓ Descargando Excel...', 3000); return;
     }
 
-    // ── VER TAREAS ────────────────────────────────────────────────────────
-    if (/tarea(s)?/.test(t) && !/agrega|crear|nueva|asignar|borrar|elimina|pon(le)?|dale|meter|registra|apunta|anota|guarda|quiero/.test(t)) {
+    // ── CREAR TAREA / COMENTARIO (parser robusto) ─────────────────────────
+    if (_tryTarea(t)) return;
+    if (_tryComentario(t)) return;
+
+    // ── VER TAREAS (solo navegación, sin verbo de acción) ─────────────────
+    if (/tarea[s]?/.test(t) && !/borrar|elimina/.test(t)) {
       if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
       vShow('✓ Tareas', 2000); return;
     }
 
-    // ── VER COMENTARIOS ───────────────────────────────────────────────────
-    if (/comentario(s)?|muro/.test(t) && !/agrega|crear|nuevo|borrar|elimina|pon(le)?|dale|meter|registra|apunta|anota|guarda|dejar?|escribi|comentar/.test(t)) {
+    // ── VER COMENTARIOS (solo navegación) ─────────────────────────────────
+    if (/comentario[s]?|muro/.test(t) && !/borrar|elimina/.test(t)) {
       if (typeof goToComments==='function') goToComments(); else navTo('muro-comentarios');
       vShow('✓ Comentarios', 2000); return;
     }
@@ -2676,76 +2793,6 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
     if (/canal/.test(t) && !/tarea|comentario/.test(t)) {
       clickBtn('btn-canal'); navTo('analytics-section');
       vShow('✓ Canal de contacto', 2000); return;
-    }
-
-    // ── CREAR TAREA ───────────────────────────────────────────────────────
-    // Prefijo de verbos reconocidos (normalizado, sin tildes)
-    var _VT = '(?:quiero?\s+)?(?:ponle|poner?|pon|dales?|dale|anadir?|anade|anadir|agregar?|agrega|crear?|crea|nuevas?|nueva|asignar?|asigna|meter?|mete|registrar?|registra|apuntar?|apunta|anotar?|anota|guardar?|guarda|subir?|sube)(?:le|me)?\s+(?:una?\s+)?';
-    // Solo keyword → navegar y enfocar campo
-    if (new RegExp('^' + _VT + 'tarea[s]?$').test(t) || t === 'tarea' || t === 'tareas') {
-      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
-      setTimeout(function() { var i=document.getElementById('tarea-titulo'); if(i) i.focus(); }, 430);
-      vShow('✏ Escribe o dicta la tarea', 3500); return;
-    }
-    // Con persona asignada → "ponle tarea a Jorge: revisar informe"
-    var mTP = t.match(new RegExp(_VT + 'tarea[s]?\s+(?:para|a|al?)\s+(\w+)\s*[,:\s]+(.+)'));
-    if (!mTP) mTP = t.match(/(?:asigna(?:le)?|dale)\s+(?:una?\s+)?tarea\s+(?:a|al?)\s+(\w+)[,:\s]+(.+)/);
-    if (mTP && mTP[2] && mTP[2].trim().length > 2) {
-      var titulo = mTP[1].charAt(0).toUpperCase()+mTP[1].slice(1)+': '+mTP[2].trim();
-      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
-      setTimeout(function(tt) { return function() {
-        var inp = document.getElementById('tarea-titulo');
-        if (!inp) return;
-        inp.value = tt.charAt(0).toUpperCase()+tt.slice(1);
-        var form = document.getElementById('tarea-form');
-        if (form) form.dispatchEvent(new Event('submit', {bubbles:true,cancelable:true}));
-      }; }(titulo), 450);
-      vShow('✓ Tarea creada: '+titulo, 4000); return;
-    }
-    // Con texto directo → "crear tarea revisar correos"
-    var mTD = t.match(new RegExp(_VT + 'tarea[s]?\s+(.+)'));
-    if (!mTD) mTD = t.match(/^tarea[s]?\s+(.+)/);
-    if (mTD && mTD[1] && mTD[1].trim().length > 2) {
-      var titulo = mTD[1].trim();
-      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
-      setTimeout(function(tt) { return function() {
-        var inp = document.getElementById('tarea-titulo');
-        if (!inp) return;
-        inp.value = tt.charAt(0).toUpperCase()+tt.slice(1);
-        var form = document.getElementById('tarea-form');
-        if (form) form.dispatchEvent(new Event('submit', {bubbles:true,cancelable:true}));
-      }; }(titulo), 450);
-      vShow('✓ Tarea creada: '+titulo, 4000); return;
-    }
-
-    // ── CREAR COMENTARIO ──────────────────────────────────────────────────
-    // Solo keyword → abrir modal y enfocar
-    var _VC = '(?:quiero?\s+)?(?:agregar?|agrega|anadir?|anade|crear?|crea|nuevos?|nueva|poner?|pon|ponle|dejar?|deja|escribir?|escribe|meter?|mete|registrar?|registra|comentar?)(?:le|me)?\s+(?:una?\s+)?';
-    if (new RegExp('^' + _VC + 'comentarios?$').test(t) || t === 'comentario' || t === 'comentar') {
-      if (typeof openCommentModal==='function') openCommentModal();
-      vShow('✏ Escribe o dicta el comentario', 3500); return;
-    }
-    // Con texto → auto-enviar
-    var comentRx = [
-      new RegExp(_VC + 'comentarios?\s*[:·\-]?\s*(.+)'),
-      /comentarios?\s*[:·\-]\s*(.+)/,
-      /(?:anotar?|anota|apuntar?|apunta|nota|guardar?|guarda)\s*[:·\-]?\s*(.+)/
-    ];
-    for (var i=0; i<comentRx.length; i++) {
-      var m = t.match(comentRx[i]);
-      if (m) {
-        var texto = m[1].trim();
-        if (texto.length > 2) {
-          if (typeof openCommentModal==='function') openCommentModal();
-          setTimeout(function(tx) { return function() {
-            var inp = document.getElementById('modal-comment-text');
-            if (!inp) return;
-            inp.value = tx.charAt(0).toUpperCase()+tx.slice(1);
-            if (typeof submitModalComment==='function') submitModalComment();
-          }; }(texto), 400);
-          vShow('✓ Comentario enviado', 3500); return;
-        }
-      }
     }
 
     // ── RESPONDER ÚLTIMO COMENTARIO ───────────────────────────────────────
