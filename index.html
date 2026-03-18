@@ -1082,7 +1082,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:25</span>
+      <span class="badge">ACT: 17/03/2026 21:32</span>
     </div>
   </div>
 </header>
@@ -1368,7 +1368,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:25", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:32", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2446,10 +2446,10 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
     const ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);';
     ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:1.8rem 1.5rem 2rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
-      + '<div style="font-family:'Space Grotesk',sans-serif;font-size:0.82rem;letter-spacing:1.5px;color:#ccc;margin-bottom:1.4rem;text-align:center;text-transform:uppercase;">' + msg + '</div>'
+      + '<div style="font-family:inherit;font-size:0.82rem;letter-spacing:1.5px;color:#ccc;margin-bottom:1.4rem;text-align:center;text-transform:uppercase;">' + msg + '</div>'
       + '<div style="display:flex;gap:0.75rem;">'
-      + '<button id="_cdCancel" style="flex:1;padding:13px;border:1px solid #2a2a2a;background:transparent;color:#666;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.72rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">Cancelar</button>'
-      + '<button id="_cdConfirm" style="flex:1;padding:13px;border:none;background:#FF2A6D;color:#fff;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">' + (label || 'Eliminar') + '</button>'
+      + '<button id="_cdCancel" style="flex:1;padding:13px;border:1px solid #2a2a2a;background:transparent;color:#666;border-radius:10px;font-family:inherit;font-size:0.72rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">Cancelar</button>'
+      + '<button id="_cdConfirm" style="flex:1;padding:13px;border:none;background:#FF2A6D;color:#fff;border-radius:10px;font-family:inherit;font-size:0.72rem;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">' + (label || 'Eliminar') + '</button>'
       + '</div></div>';
     document.body.appendChild(ov);
     const close = function() { ov.style.opacity = '0'; setTimeout(function() { ov.remove(); }, 200); };
