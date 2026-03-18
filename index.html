@@ -1137,7 +1137,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 23:39</span>
+      <span class="badge">ACT: 17/03/2026 23:46</span>
     </div>
   </div>
 </header>
@@ -1405,12 +1405,12 @@ window.enterDashboard = function() {
         accept="image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx"
         style="display:none;" onchange="handleFiles(this.files)">
 
-      <button onclick="closeCommentModal()" style="flex:1;background:none;border:1px solid #333;
+      <button onclick="closeCommentModal()" data-snd-custom style="flex:1;background:none;border:1px solid #333;
         color:#888;padding:14px;font-family:var(--font-sans);font-size:0.86rem;
         font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:6px;min-height:52px;">
         CANCELAR
       </button>
-      <button onclick="submitModalComment()" class="btn-primary" style="flex:2;padding:14px;font-size:0.92rem;border-radius:6px;min-height:52px;">
+      <button onclick="submitModalComment()" data-snd-custom class="btn-primary" style="flex:2;padding:14px;font-size:0.92rem;border-radius:6px;min-height:52px;">
         PUBLICAR
       </button>
     </div>
@@ -1423,7 +1423,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 23:39", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 23:46", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1543,6 +1543,7 @@ window.closeChart = function() {
 };
 
 window.showChart = function(type) {
+  if (window._sndTab) window._sndTab();
   document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('btn-' + type);
   if (btn) btn.classList.add('active');
@@ -1781,6 +1782,7 @@ window.dismissToast = function() {
 };
 
 window.goToComments = function() {
+  if (window._sndNav) window._sndNav();
   dismissToast();
   document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
 };
@@ -1982,6 +1984,7 @@ document.getElementById('local-comment-form').addEventListener('submit', functio
 
 // ── Modal de comentario rápido ─────────────────────────────────────────────
 window.openCommentModal = function() {
+  if (window._sndModalOpen) window._sndModalOpen();
   const overlay = document.getElementById('comment-modal-overlay');
   overlay.style.display = 'flex';
   setTimeout(() => document.getElementById('modal-comment-text').focus(), 50);
@@ -1990,6 +1993,7 @@ window.openCommentModal = function() {
   document.getElementById('comment-dot').style.display = 'none';
 };
 window.closeCommentModal = function() {
+  if (window._sndModalClose) window._sndModalClose();
   document.getElementById('comment-modal-overlay').style.display = 'none';
   document.getElementById('modal-comment-text').value = '';
   _pendingFiles = [];
@@ -2070,6 +2074,7 @@ window.removeFile = function(i) {
 window.submitModalComment = function() {
   const text = document.getElementById('modal-comment-text').value.trim();
   if (!text && !_pendingFiles.length) return;
+  if (window._sndSuccess) window._sndSuccess();
   saveComment(text, _pendingFiles.slice());
   closeCommentModal();
   document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
@@ -2094,6 +2099,7 @@ let _tareasCache = [];
 let _tareasLoaded = false;
 
 window.goToTareas = function() {
+  if (window._sndNav) window._sndNav();
   document.getElementById('btn-tareas').classList.add('active');
   document.getElementById('seccion-tareas').scrollIntoView({behavior:'smooth'});
   const pending = _tareasCache.filter(t => t.estado === 'pendiente').length;
@@ -2189,8 +2195,8 @@ function renderTareas() {
     }
 
     const checkBtn = isCompleted
-      ? '<button class="tarea-btn tarea-btn-uncheck" data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">↩ Reabrir</button>'
-      : '<button class="tarea-btn tarea-btn-check" data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">✓ Marcar completa</button>';
+      ? '<button class="tarea-btn tarea-btn-uncheck" data-snd-custom data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">↩ Reabrir</button>'
+      : '<button class="tarea-btn tarea-btn-check" data-snd-custom data-id="' + t.id + '" onclick="toggleTarea(this.dataset.id)">✓ Marcar completa</button>';
 
     return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (alta && !isCompleted ? '" style="border-left-color:#FF2A6D;' : '') + '">'
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">'
@@ -2288,6 +2294,8 @@ window.toggleTarea = async function(id) {
   const wasCompleted = t.estado === 'completada';
   t.estado = wasCompleted ? 'pendiente' : 'completada';
   t.fecha_completada = t.estado === 'completada' ? new Date().toLocaleDateString('es-CL') : null;
+  if (t.estado === 'completada') { if (window._sndToggleOn) window._sndToggleOn(); }
+  else { if (window._sndToggleOff) window._sndToggleOff(); }
   await _saveTareas();
   if (t.estado === 'completada') pushNotify('OpenCORE — Tarea completada ✓', t.titulo, 'white_check_mark');
   renderTareas();
@@ -2540,6 +2548,50 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
     setTimeout(function() { playTone(160, 0.22, 0.08, 'sine', 55); }, 130);
   };
 
+  // Navegación / scroll a sección: "whoosh" suave descendente
+  window._sndNav = function() {
+    haptic(7);
+    playTone(165, 0.20, 0.065, 'sine', 95);
+  };
+
+  // Cambio de tab analytics: tick ligero
+  window._sndTab = function() {
+    haptic(5);
+    playTone(210, 0.12, 0.060, 'sine', 170);
+  };
+
+  // Apertura de modal: tono que sube — "emerge"
+  window._sndModalOpen = function() {
+    haptic(10);
+    playTone(145, 0.22, 0.07, 'sine', 200);
+  };
+
+  // Cierre de modal: tono que cae — "se cierra"
+  window._sndModalClose = function() {
+    haptic(6);
+    playTone(195, 0.18, 0.06, 'sine', 120);
+  };
+
+  // Guardado exitoso (comentario / tarea): dos notas suaves ascendentes
+  window._sndSuccess = function() {
+    haptic(12);
+    playTone(220, 0.20, 0.07, 'sine');
+    setTimeout(function() { playTone(330, 0.17, 0.05, 'sine'); }, 120);
+  };
+
+  // Tarea marcada completa: acorde positivo ligero
+  window._sndToggleOn = function() {
+    haptic(15);
+    playTone(255, 0.18, 0.07, 'sine', 195);
+    setTimeout(function() { playTone(385, 0.15, 0.045, 'sine'); }, 110);
+  };
+
+  // Tarea reabierta: tono descendente neutro
+  window._sndToggleOff = function() {
+    haptic(8);
+    playTone(200, 0.17, 0.06, 'sine', 135);
+  };
+
   // ── Splash button ──────────────────────────────────
   const splashBtn = document.getElementById('splash-btn');
   if (splashBtn) {
@@ -2549,7 +2601,7 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
   // ── Global click sound + haptic ───────────────────
   // Fires on any interactive element EXCEPT splash (already handled)
   document.addEventListener('click', function(e) {
-    const el = e.target.closest('button, .analytics-btn, .kpi-card, .kpi-action-card');
+    const el = e.target.closest('button:not(.analytics-btn):not([data-snd-custom]), .kpi-card:not(.kpi-action-card)');
     if (!el || el.id === 'splash-btn') return;
     window._sndClick();
   }, true);
