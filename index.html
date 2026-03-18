@@ -1082,7 +1082,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:39</span>
+      <span class="badge">ACT: 17/03/2026 21:41</span>
     </div>
   </div>
 </header>
@@ -1368,7 +1368,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:39", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:41", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1623,9 +1623,11 @@ function askUserName(cb) {
   ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);opacity:0;transition:opacity 0.2s;';
   setTimeout(function() { ov.style.opacity = '1'; }, 10);
   ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
-    + '<div style="font-family:inherit;font-size:0.7rem;letter-spacing:2.5px;color:rgba(0,229,255,0.7);text-align:center;margin-bottom:0.5rem;text-transform:uppercase;">Identificarte</div>'
-    + '<div style="font-family:inherit;font-size:0.78rem;color:#888;text-align:center;margin-bottom:1.4rem;">¿Cuál es tu nombre?<br><span style="font-size:0.65rem;color:#555;">Solo se pregunta una vez en este dispositivo</span></div>'
-    + '<input id="_nameInp" type="text" maxlength="30" autocomplete="name" placeholder="Ej: Jorge, Juan..." style="width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:13px 14px;color:#fff;font-family:inherit;font-size:0.88rem;outline:none;margin-bottom:1rem;transition:border 0.2s;">'
+    + '<div style="font-family:inherit;font-size:0.7rem;letter-spacing:2.5px;color:rgba(0,229,255,0.7);text-align:center;margin-bottom:0.75rem;text-transform:uppercase;">Identificarte</div>'
+    + '<div style="font-family:inherit;font-size:0.88rem;color:#ccc;text-align:center;margin-bottom:0.4rem;">¿Cuál es tu nombre y apellido?</div>'
+    + '<div style="font-family:inherit;font-size:0.72rem;color:#666;text-align:center;margin-bottom:1.4rem;">También puedes usar un apodo</div>'
+    + '<input id="_nameInp" type="text" maxlength="40" autocomplete="name" placeholder="Ej: Jorge Martínez, Juancho..." style="width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:13px 14px;color:#fff;font-family:inherit;font-size:0.88rem;outline:none;margin-bottom:0.75rem;transition:border 0.2s;">'
+    + '<div style="font-family:inherit;font-size:0.63rem;color:#444;text-align:center;margin-bottom:1rem;letter-spacing:0.5px;">Solo se te preguntará una vez en este dispositivo</div>'
     + '<button id="_nameSave" style="width:100%;padding:13px;border:none;background:var(--accent-cyan);color:#000;border-radius:10px;font-family:inherit;font-size:0.72rem;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CONTINUAR →</button>'
     + '</div>';
   document.body.appendChild(ov);
