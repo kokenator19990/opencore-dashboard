@@ -23,7 +23,7 @@
   --bg-panel: #141414;
   --border: #222222;
   --text-main: #ffffff;
-  --text-dim: #aaaaaa;
+  --text-dim: #c8c8c8;
   --accent-cyan: #00E5FF;
   --accent-yellow: #E5FF00;
   --accent-red: #FF2A2A;
@@ -77,7 +77,7 @@ html { overflow-x: hidden; max-width: 100vw; }
   display: flex; justify-content: space-between; align-items: center;
 }
 .header-meta { display: flex; align-items: center; gap: 1.2rem; }
-.header-logo-sub { font-family: var(--font-heading); font-size: 0.52rem; letter-spacing: 3px; color: rgba(0,229,255,0.35); text-transform: uppercase; }
+.header-logo-sub { font-family: var(--font-heading); font-size: 0.52rem; letter-spacing: 3px; color: rgba(0,229,255,0.65); text-transform: uppercase; }
 .feedback-btn {
   font-family: var(--font-heading); font-size: 0.82rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 1.5px;
@@ -256,12 +256,12 @@ html { overflow-x: hidden; max-width: 100vw; }
 .tarea-btn-check:hover { background: rgba(74,222,128,0.1); }
 .tarea-btn-uncheck { border-color: rgba(168,85,247,0.4); color: #A855F7; }
 .tarea-btn-uncheck:hover { background: rgba(168,85,247,0.1); }
-.tarea-btn-del { border-color: rgba(255,255,255,0.1); color: #555; }
+.tarea-btn-del { border-color: rgba(255,255,255,0.1); color: #999; }
 .tarea-btn-del:hover { border-color: #FF2A6D; color: #FF2A6D; }
 .tarea-comments { margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.7rem; }
-.tarea-comment-item { font-size: 0.82rem; color: #cccccc; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.tarea-comment-item { font-size: 0.82rem; color: #e0e0e0; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .tarea-comment-item:last-child { border-bottom: none; }
-.tarea-comment-date { font-size: 0.7rem; color: #888; margin-left: 0.5rem; }
+.tarea-comment-date { font-size: 0.7rem; color: #bbb; margin-left: 0.5rem; }
 .tarea-comment-input-row { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
 .tarea-comment-input {
   flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
@@ -437,7 +437,7 @@ html { overflow-x: hidden; max-width: 100vw; }
 .comment-replies { margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.5rem; }
 .comment-reply-item { padding: 0.55rem 0.75rem; background: rgba(255,255,255,0.025); border-left: 2px solid rgba(0,229,255,0.25); border-radius: 0 10px 10px 0; }
 .comment-reply-text { font-size: 0.88rem; color: #ddd; white-space: pre-wrap; line-height: 1.5; }
-.comment-reply-meta { font-size: 0.62rem; color: #666; margin-top: 0.25rem; letter-spacing: 0.8px; }
+.comment-reply-meta { font-size: 0.62rem; color: #999; margin-top: 0.25rem; letter-spacing: 0.8px; }
 .comment-reply-btn { background: none; border: none; color: var(--text-dim); font-size: 0.62rem; font-family: var(--font-heading); letter-spacing: 1px; cursor: pointer; text-transform: uppercase; margin-top: 0.5rem; padding: 0; display: inline-block; }
 .comment-reply-btn:hover { color: var(--accent-cyan); }
 .reply-input-row { display: none; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
@@ -511,11 +511,11 @@ html { overflow-x: hidden; max-width: 100vw; }
   .header-meta { gap: 0.5rem; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
   .header-inner > div:first-child { margin-top: 6px; }
   .badge { display: none; }
-  .feedback-btn { font-size: 0.72rem; padding: 9px 13px; letter-spacing: 0.8px; }
+  .feedback-btn { font-size: 0.76rem; padding: 9px 13px; letter-spacing: 0.8px; }
   /* Tarea form — input grande, botones compactos abajo */
   .tarea-input { font-size: 1.05rem; padding: 14px 14px; }
-  .tarea-submit-btn { font-size: 0.68rem; padding: 10px 12px; }
-  #tarea-prio-btn { font-size: 0.6rem; padding: 0 8px; }
+  .tarea-submit-btn { font-size: 0.72rem; padding: 10px 12px; }
+  #tarea-prio-btn { font-size: 0.63rem; padding: 0 8px; }
   /* Tareas: nueva línea completa bajo los botones */
   #tareas-header-btn {
     order: 10; width: 100%; text-align: center; margin-top: 2px;
@@ -540,8 +540,8 @@ html { overflow-x: hidden; max-width: 100vw; }
   .ring-text { font-size: 0.8rem; }
   .kpi-card { padding: 1rem 0.75rem; min-height: 100px; justify-content: center; }
   .kpi-value { font-size: 1.9rem; letter-spacing: -1px; }
-  .kpi-label { font-size: 0.58rem; margin-bottom: 0.3rem; }
-  .kpi-sub { font-size: 0.58rem; }
+  .kpi-label { font-size: 0.62rem; margin-bottom: 0.3rem; }
+  .kpi-sub { font-size: 0.62rem; }
 
   /* Analytics nav: 2 columns on mobile */
   .analytics-nav { grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.5rem; }
@@ -554,7 +554,7 @@ html { overflow-x: hidden; max-width: 100vw; }
   .canal-chip-val { font-size: 1.2rem; }
 
   /* Section titles */
-  .section-title h2 { font-size: 0.75rem; }
+  .section-title h2 { font-size: 0.79rem; }
 
   /* Chart panel */
   .chart-reveal-panel { padding: 1rem 0.75rem; }
@@ -575,7 +575,12 @@ html { overflow-x: hidden; max-width: 100vw; }
 
   /* Comments list */
   .comment-item { padding: 0.85rem; }
-  .comment-text { font-size: 0.85rem; }
+  .comment-text { font-size: 0.9rem; }
+  .comment-meta { font-size: 0.72rem; }
+  .tarea-meta { font-size: 0.76rem; }
+  .tarea-comment-item { font-size: 0.86rem; }
+  .abn-label { font-size: 0.93rem; }
+  .abn-sub { font-size: 0.86rem; }
 
   /* Toast */
   #comment-toast { bottom: 0.75rem; right: 0.75rem; left: 0.75rem; max-width: 100%; }
@@ -1082,7 +1087,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:42</span>
+      <span class="badge">ACT: 17/03/2026 21:46</span>
     </div>
   </div>
 </header>
@@ -1368,7 +1373,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:42", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:46", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
