@@ -742,11 +742,13 @@ html { overflow-x: hidden; max-width: 100vw; }
       color:#00E5FF;
       background:transparent;
       border:1px solid rgba(0,229,255,0.45);
-      padding:18px 56px;
+      padding:18px 40px;
+      width:min(420px,88vw);
       cursor:pointer;
       transition:all 0.3s ease;
       position:relative;overflow:hidden;
-      white-space:nowrap;
+      border-radius:10px;
+      display:block;margin:0 auto;
     "
     onmouseover="this.style.background='rgba(0,229,255,0.08)';this.style.borderColor='#00E5FF';this.style.boxShadow='0 0 40px rgba(0,229,255,0.25),inset 0 0 20px rgba(0,229,255,0.04)'"
     onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.45)';this.style.boxShadow='none'"
@@ -1077,7 +1079,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:07</span>
+      <span class="badge">ACT: 17/03/2026 21:08</span>
     </div>
   </div>
 </header>
@@ -1363,7 +1365,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:07", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:08", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
