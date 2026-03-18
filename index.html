@@ -3214,6 +3214,7 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
 
 // ── SISTEMA DE COMANDOS DE VOZ (solo mobile/touch) ────────────────────────
 (function() {
+  return; // TODO: pendiente desarrollo — oculto hasta implementar UI final
   if (!('ontouchstart' in window) && window.innerWidth > 900) return;
 
   // Inyectar FAB + toast si no existen ya
