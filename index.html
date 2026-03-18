@@ -273,8 +273,9 @@ html { overflow-x: hidden; max-width: 100vw; }
 .tarea-btn-del { border-color: rgba(255,255,255,0.1); color: #999; }
 .tarea-btn-del:hover { border-color: #FF2A6D; color: #FF2A6D; }
 .tarea-comments { margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.7rem; }
-.tarea-comment-item { font-size: 0.89rem; color: #e0e0e0; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.tarea-comment-item { font-size: 0.89rem; color: #e0e0e0; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 0.4rem; }
 .tarea-comment-item:last-child { border-bottom: none; }
+.tci-text { flex: 1; }
 .tarea-comment-date { font-size: 0.76rem; color: #bbb; margin-left: 0.5rem; }
 .tarea-comment-input-row { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
 .tarea-comment-input {
@@ -448,6 +449,20 @@ html { overflow-x: hidden; max-width: 100vw; }
   text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0;
 }
 .comment-del:hover { color: var(--accent-red); }
+.comment-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; flex-shrink: 0; }
+.btn-edit-inline {
+  background: none; border: none; color: rgba(255,255,255,0.25); cursor: pointer;
+  font-size: 0.68rem; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.5px;
+  transition: color 0.15s; line-height: 1;
+}
+.btn-edit-inline:hover { color: rgba(0,229,255,0.75); }
+.btn-edit-del { color: rgba(255,80,80,0.35); }
+.btn-edit-del:hover { color: rgba(255,80,80,0.8); }
+.comment-edit-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.25); color: #eee; font-family: var(--font-sans); font-size: 0.92rem; padding: 8px 10px; border-radius: 8px; resize: vertical; min-height: 58px; margin: 6px 0; box-sizing: border-box; }
+.comment-edit-area:focus { outline: none; border-color: rgba(0,229,255,0.5); }
+.edit-action-row { display: flex; gap: 0.5rem; margin-top: 4px; }
+.btn-save-edit { padding: 5px 14px; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.35); color: #00E5FF; border-radius: 6px; font-size: 0.7rem; letter-spacing: 1px; cursor: pointer; font-family: var(--font-heading); }
+.btn-cancel-edit { padding: 5px 11px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #666; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
 .comment-replies { margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.5rem; }
 .comment-reply-item { padding: 0.55rem 0.75rem; background: rgba(255,255,255,0.025); border-left: 2px solid rgba(0,229,255,0.25); border-radius: 0 10px 10px 0; }
 .comment-reply-text { font-size: 0.95rem; color: #ddd; white-space: pre-wrap; line-height: 1.5; }
@@ -1198,7 +1213,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 18/03/2026 01:09</span>
+      <span class="badge">ACT: 18/03/2026 01:16</span>
     </div>
   </div>
 </header>
@@ -1485,7 +1500,7 @@ window.enterDashboard = function() {
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-const DATA = {"updated": "18/03/2026 01:09", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "18/03/2026 01:16", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1895,10 +1910,13 @@ function renderComments() {
     if (replies.length) {
       repliesHtml = '<div class="comment-replies">'
         + replies.map(function(r, ri) {
-          return '<div class="comment-reply-item">'
+          return '<div class="comment-reply-item" id="reply-' + cid + '-' + ri + '">'
             + '<div class="comment-reply-text">' + (r.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+            + '<div style="display:flex;align-items:center;gap:0.3rem;margin-top:3px;">'
             + '<div class="comment-reply-meta">' + r.date + '</div>'
-            + '</div>';
+            + '<button class="btn-edit-inline" onclick="editReply('' + cid + '',' + ri + ')" title="Editar">✎</button>'
+            + '<button class="btn-edit-inline btn-edit-del" onclick="deleteReply('' + cid + '',' + ri + ')" title="Borrar">✕</button>'
+            + '</div></div>';
         }).join('')
         + '</div>';
     }
@@ -1907,7 +1925,13 @@ function renderComments() {
     const replyInputId = 'reply-input-' + cid;
     return '<div class="comment-item" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
       + '<div style="flex:1">'
-      + (textEscaped ? '<div class="comment-text">' + textEscaped + '</div>' : '')
+      + (textEscaped ? '<div class="comment-text" id="cmtxt-' + cid + '">' + textEscaped + '</div>' : '')
+      + '<div id="cmedit-' + cid + '" style="display:none;">'
+      + '<textarea class="comment-edit-area" id="cmta-' + cid + '"></textarea>'
+      + '<div class="edit-action-row">'
+      + '<button class="btn-save-edit" onclick="saveEditComment('' + cid + '')">GUARDAR</button>'
+      + '<button class="btn-cancel-edit" onclick="cancelEditComment('' + cid + '')">CANCELAR</button>'
+      + '</div></div>'
       + attachHtml
       + '<div class="comment-meta">' + (c.author ? '<span style="color:rgba(255,255,255,0.65);font-weight:600;">' + c.author.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '') + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.65rem;">NUEVO HOY</span>' : '') + '</div>'
       + repliesHtml
@@ -1917,7 +1941,10 @@ function renderComments() {
       + '<button class="reply-btn-send" data-cid="' + cid + '" onclick="addReply(this.dataset.cid)">ENVIAR →</button>'
       + '</div>'
       + '</div>'
+      + '<div class="comment-actions">'
       + '<button class="comment-del" data-cid="' + cid + '" onclick="deleteComment(this.dataset.cid)">BORRAR</button>'
+      + '<button class="btn-edit-inline" data-cid="' + cid + '" onclick="editComment('' + cid + '')" style="border:1px solid rgba(255,255,255,0.1);padding:3px 8px;">EDITAR</button>'
+      + '</div>'
       + '</div>';
   });
 
@@ -1993,6 +2020,134 @@ document.addEventListener('keydown', function(e) {
     if (cid) addReply(cid);
   }
 });
+
+// ── Editar comentario ─────────────────────────────────────────────────────
+window.editComment = function(cid) {
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c) return;
+  const ta = document.getElementById('cmta-' + cid);
+  if (ta) ta.value = c.text || '';
+  const txtEl  = document.getElementById('cmtxt-' + cid);
+  const editEl = document.getElementById('cmedit-' + cid);
+  if (txtEl)  txtEl.style.display  = 'none';
+  if (editEl) editEl.style.display = 'block';
+  if (ta) ta.focus();
+};
+window.cancelEditComment = function(cid) {
+  const txtEl  = document.getElementById('cmtxt-' + cid);
+  const editEl = document.getElementById('cmedit-' + cid);
+  if (editEl) editEl.style.display = 'none';
+  if (txtEl)  txtEl.style.display  = '';
+};
+window.saveEditComment = async function(cid) {
+  const ta = document.getElementById('cmta-' + cid);
+  const c  = _commentCache.find(function(x) { return x.id === cid; });
+  if (!ta || !c) return;
+  const newText = ta.value.trim();
+  if (!newText) return;
+  c.text = newText;
+  try {
+    await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) });
+  } catch(e) {}
+  if (window._sndSuccess) window._sndSuccess();
+  renderComments();
+};
+
+// ── Editar / borrar respuestas ────────────────────────────────────────────
+window.deleteReply = async function(cid, ri) {
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c || !c.replies) return;
+  window.confirmDialog('¿Borrar esta respuesta?', 'Borrar', async function() {
+    c.replies.splice(ri, 1);
+    try { await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }); } catch(e) {}
+    renderComments();
+  });
+};
+window.editReply = function(cid, ri) {
+  const row = document.getElementById('reply-' + cid + '-' + ri);
+  const c   = _commentCache.find(function(x) { return x.id === cid; });
+  if (!row || !c || !c.replies || !c.replies[ri]) return;
+  const existing = (c.replies[ri].text || '').replace(/"/g,'&quot;');
+  row.innerHTML = '<input class="reply-input" id="riedit-' + cid + '-' + ri + '" value="' + existing + '" style="flex:1;">'
+    + '<button class="reply-btn-send" onclick="saveEditReply('' + cid + '',' + ri + ')">→</button>'
+    + '<button class="btn-cancel-edit" onclick="renderComments()" style="margin-left:4px;">✕</button>';
+  const inp = document.getElementById('riedit-' + cid + '-' + ri);
+  if (inp) inp.focus();
+};
+window.saveEditReply = async function(cid, ri) {
+  const inp = document.getElementById('riedit-' + cid + '-' + ri);
+  if (!inp) return;
+  const text = inp.value.trim();
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c || !c.replies || !c.replies[ri] || !text) return;
+  c.replies[ri].text = text;
+  try { await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }); } catch(e) {}
+  if (window._sndSuccess) window._sndSuccess();
+  renderComments();
+};
+
+// ── Editar tarea (título) ─────────────────────────────────────────────────
+window.editTarea = function(id) {
+  const t = _tareasCache.find(function(x) { return x.id === id; });
+  if (!t) return;
+  const inp  = document.getElementById('tinp-' + id);
+  const txtEl  = document.getElementById('ttxt-' + id);
+  const editEl = document.getElementById('tedit-' + id);
+  if (inp) inp.value = t.titulo;
+  if (txtEl)  txtEl.style.display  = 'none';
+  if (editEl) editEl.style.display = 'flex';
+  if (inp) inp.focus();
+};
+window.cancelEditTarea = function(id) {
+  const txtEl  = document.getElementById('ttxt-' + id);
+  const editEl = document.getElementById('tedit-' + id);
+  if (editEl) editEl.style.display = 'none';
+  if (txtEl)  txtEl.style.display  = '';
+};
+window.saveEditTarea = async function(id) {
+  const inp = document.getElementById('tinp-' + id);
+  const t   = _tareasCache.find(function(x) { return x.id === id; });
+  if (!inp || !t) return;
+  const newTitle = inp.value.trim();
+  if (!newTitle) return;
+  t.titulo = newTitle;
+  await _saveTareas();
+  if (window._sndSuccess) window._sndSuccess();
+  renderTareas();
+};
+
+// ── Editar / borrar comentarios de tarea ──────────────────────────────────
+window.deleteTareaComment = async function(tid, ci) {
+  const t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.comentarios) return;
+  window.confirmDialog('¿Borrar este comentario?', 'Borrar', async function() {
+    t.comentarios.splice(ci, 1);
+    await _saveTareas();
+    renderTareas();
+  });
+};
+window.editTareaComment = function(tid, ci) {
+  const row = document.getElementById('tcc-' + tid + '-' + ci);
+  const t   = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!row || !t || !t.comentarios || !t.comentarios[ci]) return;
+  const existing = (t.comentarios[ci].texto || '').replace(/"/g,'&quot;');
+  row.innerHTML = '<input class="tarea-comment-input" id="tcinp-' + tid + '-' + ci + '" value="' + existing + '" style="flex:1;min-width:0;">'
+    + '<button class="tarea-comment-send" onclick="saveEditTareaComment('' + tid + '',' + ci + ')">→</button>'
+    + '<button class="btn-cancel-edit" onclick="renderTareas()" style="margin-left:2px;">✕</button>';
+  const inp = document.getElementById('tcinp-' + tid + '-' + ci);
+  if (inp) inp.focus();
+};
+window.saveEditTareaComment = async function(tid, ci) {
+  const inp = document.getElementById('tcinp-' + tid + '-' + ci);
+  if (!inp) return;
+  const text = inp.value.trim();
+  const t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.comentarios || !t.comentarios[ci] || !text) return;
+  t.comentarios[ci].texto = text;
+  await _saveTareas();
+  if (window._sndSuccess) window._sndSuccess();
+  renderTareas();
+};
 
 let _localFiles = [];
 
@@ -2245,15 +2400,18 @@ function renderTareas() {
     const comments = (t.comentarios || []);
     const lastComment = comments.length ? comments[comments.length-1] : null;
 
-    // Comments collapsed — show last one as preview, expand button if more
+    // Comments — con editar/borrar
     let commentsHtml = '';
     if (comments.length > 0) {
-      commentsHtml += comments.map(c =>
-        '<div class="tarea-comment-item">'
-        + '<span style="color:#A855F7;margin-right:4px;">→</span>'
-        + c.texto.replace(/</g,'&lt;')
-        + '<span class="tarea-comment-date">' + c.fecha + '</span></div>'
-      ).join('');
+      commentsHtml += comments.map(function(c, ci) {
+        return '<div class="tarea-comment-item" id="tcc-' + t.id + '-' + ci + '">'
+          + '<span style="color:#A855F7;margin-right:4px;flex-shrink:0;">→</span>'
+          + '<span class="tci-text">' + c.texto.replace(/</g,'&lt;') + '</span>'
+          + '<span class="tarea-comment-date">' + c.fecha + '</span>'
+          + '<button class="btn-edit-inline" onclick="editTareaComment('' + t.id + '',' + ci + ')" title="Editar">✎</button>'
+          + '<button class="btn-edit-inline btn-edit-del" onclick="deleteTareaComment('' + t.id + '',' + ci + ')" title="Borrar">✕</button>'
+          + '</div>';
+      }).join('');
     }
 
     const checkBtn = isCompleted
@@ -2263,9 +2421,16 @@ function renderTareas() {
     return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (alta && !isCompleted ? '" style="border-left-color:#FF2A6D;' : '') + '">'
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">'
       + '<div style="flex:1;">'
-      + '<div class="tarea-titulo">'
+      + '<div class="tarea-titulo" id="ttxt-' + t.id + '">'
       + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.86rem;">↑</span>' : '')
-      + t.titulo.replace(/</g,'&lt;') + '</div>'
+      + t.titulo.replace(/</g,'&lt;')
+      + '<button class="btn-edit-inline" onclick="editTarea('' + t.id + '')" style="margin-left:8px;" title="Editar tarea">✎</button>'
+      + '</div>'
+      + '<div id="tedit-' + t.id + '" style="display:none;gap:0.5rem;align-items:center;margin-top:4px;">'
+      + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200">'
+      + '<button class="reply-btn-send" onclick="saveEditTarea('' + t.id + '')">→</button>'
+      + '<button class="btn-cancel-edit" onclick="cancelEditTarea('' + t.id + '')">✕</button>'
+      + '</div>'
       + '</div>'
       + '<div style="flex-shrink:0;">'
       + (isCompleted ? '<span class="tarea-pill pill-completada">✓ LISTA</span>' : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>')
