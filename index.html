@@ -1082,7 +1082,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:18</span>
+      <span class="badge">ACT: 17/03/2026 21:25</span>
     </div>
   </div>
 </header>
@@ -1368,7 +1368,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:18", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:25", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1620,7 +1620,7 @@ let _commentCache = []; // cache local del servidor
 async function saveComment(text, files) {
   files = files || [];
   const today = new Date().toLocaleDateString('es-CL');
-  _commentCache.push({ text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
+  _commentCache.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
   if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
   try {
     await fetch(API_URL, {
@@ -1700,6 +1700,10 @@ async function loadComments() {
     const res = await fetch(API_URL + '?t=' + Date.now());
     if (res.ok) _commentCache = await res.json();
   } catch(e) { /* offline — mantiene cache vacío */ }
+  // Migración: añadir id a comentarios antiguos que no lo tienen
+  _commentCache.forEach(function(c) {
+    if (!c.id) c.id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  });
   renderComments();
   checkCommentDot();
 }
@@ -1741,21 +1745,22 @@ function renderComments() {
         }).join('')
         + '</div>';
     }
-    const replyRowId = 'reply-row-' + idx;
-    const replyInputId = 'reply-input-' + idx;
+    const cid = c.id;
+    const replyRowId = 'reply-row-' + cid;
+    const replyInputId = 'reply-input-' + cid;
     return '<div class="comment-item" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
       + '<div style="flex:1">'
       + (textEscaped ? '<div class="comment-text">' + textEscaped + '</div>' : '')
       + attachHtml
       + '<div class="comment-meta">' + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.6rem;">NUEVO HOY</span>' : '') + '</div>'
       + repliesHtml
-      + '<button class="comment-reply-btn" data-idx="' + idx + '" onclick="showReplyInput(this.dataset.idx)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
+      + '<button class="comment-reply-btn" data-cid="' + cid + '" onclick="showReplyInput(this.dataset.cid)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
       + '<div class="reply-input-row" id="' + replyRowId + '">'
-      + '<input class="reply-input" id="' + replyInputId + '" type="text" maxlength="400" placeholder="Escribe tu respuesta...">'
-      + '<button class="reply-btn-send" data-idx="' + idx + '" onclick="addReply(this.dataset.idx)">ENVIAR →</button>'
+      + '<input class="reply-input" data-cid="' + cid + '" id="' + replyInputId + '" type="text" maxlength="400" placeholder="Escribe tu respuesta...">'
+      + '<button class="reply-btn-send" data-cid="' + cid + '" onclick="addReply(this.dataset.cid)">ENVIAR →</button>'
       + '</div>'
       + '</div>'
-      + '<button class="comment-del" onclick="deleteComment(' + idx + ')">BORRAR</button>'
+      + '<button class="comment-del" data-cid="' + cid + '" onclick="deleteComment(this.dataset.cid)">BORRAR</button>'
       + '</div>';
   });
 
@@ -1776,7 +1781,9 @@ function renderComments() {
   el.innerHTML = allItems.join('');
 }
 
-window.deleteComment = async function(i) {
+window.deleteComment = async function(cid) {
+  const i = _commentCache.findIndex(function(c) { return c.id === cid; });
+  if (i === -1) return;
   _commentCache.splice(i, 1);
   try {
     await fetch(API_URL, {
@@ -1789,23 +1796,23 @@ window.deleteComment = async function(i) {
   checkCommentDot();
 };
 
-window.showReplyInput = function(idx) {
-  const row = document.getElementById('reply-row-' + idx);
+window.showReplyInput = function(cid) {
+  const row = document.getElementById('reply-row-' + cid);
   if (!row) return;
   const visible = row.style.display === 'flex';
   row.style.display = visible ? 'none' : 'flex';
   if (!visible) {
-    const inp = document.getElementById('reply-input-' + idx);
+    const inp = document.getElementById('reply-input-' + cid);
     if (inp) inp.focus();
   }
 };
 
-window.addReply = async function(idx) {
-  const inp = document.getElementById('reply-input-' + idx);
+window.addReply = async function(cid) {
+  const inp = document.getElementById('reply-input-' + cid);
   if (!inp) return;
   const text = inp.value.trim();
   if (!text) return;
-  const c = _commentCache[Number(idx)];
+  const c = _commentCache.find(function(x) { return x.id === cid; });
   if (!c) return;
   if (!c.replies) c.replies = [];
   c.replies.push({ text: text, date: new Date().toLocaleString('es-CL') });
@@ -1825,8 +1832,8 @@ window.addReply = async function(idx) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && e.target.classList.contains('reply-input')) {
     e.preventDefault();
-    const idx = e.target.id.replace('reply-input-', '');
-    addReply(idx);
+    const cid = e.target.dataset.cid;
+    if (cid) addReply(cid);
   }
 });
 
@@ -1991,6 +1998,7 @@ document.getElementById('comment-modal-overlay').addEventListener('click', funct
 // ── SISTEMA DE TAREAS ─────────────────────────────────────────────────────
 const TAREAS_URL = 'https://opencore.cl/dashboard/tareas.php';
 let _tareasCache = [];
+let _tareasLoaded = false;
 
 window.goToTareas = function() {
   document.getElementById('btn-tareas').classList.add('active');
@@ -2006,13 +2014,20 @@ window.goToTareas = function() {
 async function loadTareas() {
   try {
     const res = await fetch(TAREAS_URL + '?t=' + Date.now());
-    if (res.ok) _tareasCache = await res.json();
+    if (res.ok) {
+      _tareasCache = await res.json();
+      _tareasLoaded = true;
+    }
   } catch(e) { }
   renderTareas();
   checkTareasDot();
 }
 
 async function _saveTareas() {
+  if (!_tareasLoaded) {
+    _showTareasWarn('⚠ Sin conexión inicial — espera y vuelve a intentar');
+    return;
+  }
   try {
     const res = await fetch(TAREAS_URL, {
       method: 'POST',
@@ -2445,8 +2460,8 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
 
   // ── Wire up delete functions with confirm ─────────
   window.deleteComment = (function(orig) {
-    return function(i) {
-      window.confirmDialog('¿Eliminar este comentario?', 'Eliminar', function() { orig(i); });
+    return function(cid) {
+      window.confirmDialog('¿Eliminar este comentario?', 'Eliminar', function() { orig(cid); });
     };
   })(window.deleteComment);
 
