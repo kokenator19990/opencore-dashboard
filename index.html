@@ -1301,7 +1301,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 18/03/2026 19:53</span>
+      <span class="badge">ACT: 18/03/2026 19:59</span>
     </div>
   </div>
 </header>
@@ -1619,7 +1619,7 @@ window.enterDashboard = function() {
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-const DATA = {"updated": "18/03/2026 19:53", "min_fecha": "17/03/2026", "total": 2830, "enviados": 138, "contactadas": 105, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 47, "Minería": 29, "Seguridad/EPP": 15, "Repuestos": 12, "Logística": 12, "Energía": 8, "Automatiz.": 6, "Construcción": 4, "Arriendo Maq.": 3, "TI/Telecom": 2}, "timeline_labels": ["2026-03-17", "2026-03-18"], "timeline_vals": [58, 80], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 93, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "18/03/2026 19:59", "min_fecha": "17/03/2026", "total": 2830, "enviados": 138, "contactadas": 105, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 47, "Minería": 29, "Seguridad/EPP": 15, "Repuestos": 12, "Logística": 12, "Energía": 8, "Automatiz.": 6, "Construcción": 4, "Arriendo Maq.": 3, "TI/Telecom": 2}, "timeline_labels": ["2026-03-17", "2026-03-18"], "timeline_vals": [58, 80], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 93, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2477,28 +2477,28 @@ function renderContactos() {
   if (cnt) cnt.textContent = _contactosCache.length;
   if (!_contactosCache.length) { el.innerHTML = "<p>Sin contactos</p>"; return; }
   el.innerHTML = _contactosCache.map(function(c) {
-    var dc = c.contactado ? "done" : "";
-    var bl = c.contactado ? "Desmarcar" : "Contactado";
+    var dc = c.contactado ? 'done' : '';
+    var bl = c.contactado ? 'Desmarcar' : 'Contactado';
     var comms = (c.comentarios||[]).map(function(cm,ci) {
-      return "<div class="contacto-comment-item"><span>"+cm+"</span>"+
-             "<button class="contacto-btn danger" onclick="deleteContactoComment("+JSON.stringify(c.id)+","+ci+")" >x</button></div>";
-    }).join("");
-    return "<div class="contacto-card "+dc+"" id="cc-"+c.id+"">"+ 
-      "<div class="contacto-header"><div>"+ 
-      "<div class="contacto-nombre">"+c.nombre+"</div>"+ 
-      "<div class="contacto-meta">"+c.meta+"</div>"+ 
-      "<div class="contacto-notas">"+c.notas+"</div></div>"+ 
-      "<div class="contacto-actions">"+ 
-      "<button class="contacto-btn" onclick="toggleContacto("+JSON.stringify(c.id)+")">"+bl+"</button>"+ 
-      "<button class="contacto-btn" onclick="toggleContactoComments("+JSON.stringify(c.id)+")" >Notas</button>"+ 
-      "<button class="contacto-btn danger" onclick="deleteContacto("+JSON.stringify(c.id)+")" >Del</button>"+ 
-      "</div></div>"+ 
-      "<div class="contacto-comments" id="ccomm-"+c.id+"">"+ comms+ 
-      "<div class="contacto-add-form">"+ 
-      "<input id="cinp-"+c.id+"" placeholder="Agregar nota..."/>"+ 
-      "<button onclick="addContactoComment("+JSON.stringify(c.id)+")" >+</button>"+ 
-      "</div></div></div>";
-  }).join("");
+      return '<div class="contacto-comment-item"><span>'+cm+'</span>'+
+             '<button class="contacto-btn danger" onclick="deleteContactoComment('+JSON.stringify(c.id)+','+ci+')" >x</button></div>';
+    }).join('');
+    return '<div class="contacto-card '+dc+'" id="cc-'+c.id+'">'+
+      '<div class="contacto-header"><div>'+
+      '<div class="contacto-nombre">'+c.nombre+'</div>'+
+      '<div class="contacto-meta">'+c.meta+'</div>'+
+      '<div class="contacto-notas">'+c.notas+'</div></div>'+
+      '<div class="contacto-actions">'+
+      '<button class="contacto-btn" onclick="toggleContacto('+JSON.stringify(c.id)+')">'+bl+'</button>'+
+      '<button class="contacto-btn" onclick="toggleContactoComments('+JSON.stringify(c.id)+')" >Notas</button>'+
+      '<button class="contacto-btn danger" onclick="deleteContacto('+JSON.stringify(c.id)+')" >Del</button>'+
+      '</div></div>'+
+      '<div class="contacto-comments" id="ccomm-'+c.id+'">'+ comms+
+      '<div class="contacto-add-form">'+
+      '<input id="cinp-'+c.id+'" placeholder="Agregar nota..."/>'+
+      '<button onclick="addContactoComment('+JSON.stringify(c.id)+')" >+</button>'+
+      '</div></div></div>';
+  }).join('');
 }
 
 function toggleContactoComments(id) {
