@@ -531,12 +531,13 @@ html { overflow-x: hidden; max-width: 100vw; }
     gap: 0.5rem;
     margin-bottom: 2rem;
   }
-  .ring-card { grid-column: 1 / -1; flex-direction: row; gap: 1.5rem; justify-content: flex-start; padding: 1.25rem 1.5rem; }
-  .progress-ring { width: 72px; height: 72px; flex-shrink: 0; }
-  .ring-text { font-size: 0.9rem; }
-  .kpi-card { padding: 1rem 1rem; }
-  .kpi-value { font-size: 2.2rem; letter-spacing: -1px; }
-  .kpi-label { font-size: 0.6rem; margin-bottom: 0.5rem; }
+  .ring-card { grid-column: auto; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0.75rem; gap: 0.4rem; }
+  .progress-ring { width: 58px; height: 58px; flex-shrink: 0; }
+  .ring-text { font-size: 0.8rem; }
+  .kpi-card { padding: 1rem 0.75rem; min-height: 100px; justify-content: center; }
+  .kpi-value { font-size: 1.9rem; letter-spacing: -1px; }
+  .kpi-label { font-size: 0.58rem; margin-bottom: 0.3rem; }
+  .kpi-sub { font-size: 0.58rem; }
 
   /* Analytics nav: 2 columns on mobile */
   .analytics-nav { grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.5rem; }
@@ -1076,7 +1077,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:06</span>
+      <span class="badge">ACT: 17/03/2026 21:07</span>
     </div>
   </div>
 </header>
@@ -1362,7 +1363,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:06", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:07", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
