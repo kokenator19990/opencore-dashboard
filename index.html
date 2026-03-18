@@ -493,7 +493,6 @@ html { overflow-x: hidden; max-width: 100vw; }
   .header-inner > div:first-child { margin-top: 6px; }
   .badge { display: none; }
   .feedback-btn { font-size: 0.72rem; padding: 9px 13px; letter-spacing: 0.8px; }
-  #comment-header-btn { font-size: 0.72rem; }
   /* Tarea form — input grande, botones compactos abajo */
   .tarea-input { font-size: 1.05rem; padding: 14px 14px; }
   .tarea-submit-btn { font-size: 0.68rem; padding: 10px 12px; }
@@ -1060,18 +1059,9 @@ window.enterDashboard = function() {
       <div class="header-logo-sub">OPENCORE 2026</div>
     </div>
     <div class="header-meta">
-      <a href="BDOPENCORE_FINAL.xlsx" download style="text-decoration:none;">
-        <button class="feedback-btn" style="border:none;cursor:pointer;">
-          ↓ DESCARGAR EXCEL
-        </button>
-      </a>
-      <button class="feedback-btn" id="comment-header-btn" onclick="openCommentModal()" style="position:relative;border:none;cursor:pointer;">
-        + AGREGAR COMENTARIO
-        <span id="comment-dot" style="display:none;position:absolute;top:-5px;right:-5px;width:10px;height:10px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
-      </button>
       <!-- Indicador de tareas en header -->
-      <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;"></button>
-      <span class="badge">ACT: 17/03/2026 21:02</span>
+      <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
+      <span class="badge">ACT: 17/03/2026 21:03</span>
     </div>
   </div>
 </header>
@@ -1122,6 +1112,7 @@ window.enterDashboard = function() {
 
     <!-- Agregar Comentario -->
     <div class="kpi-card kpi-action-card solid" onclick="openCommentModal()" style="cursor:pointer;position:relative;transition:background 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;">
+      <span id="comment-dot" style="display:none;position:absolute;top:0.75rem;right:0.75rem;width:9px;height:9px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 8px var(--accent-cyan),0 0 16px var(--accent-cyan);animation:pulseDot 1.5s infinite;"></span>
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.85;"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       <div class="kpi-label" style="color:rgba(0,229,255,0.75);text-align:center;margin-bottom:0;">AGREGAR<br>COMENTARIO</div>
     </div>
@@ -1356,7 +1347,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:02", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:03", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
