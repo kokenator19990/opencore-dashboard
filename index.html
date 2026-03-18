@@ -642,6 +642,11 @@ html { overflow-x: hidden; max-width: 100vw; }
   #local-comment-text { font-size: 0.97rem; }
   .btn-primary { width: 100%; padding: 0.85rem; font-size: 0.86rem; }
 }
+
+/* ── Logo glow animation ───────────────────────────────────────────────── */
+.oc-halo { animation: oc-pulse 3.8s ease-in-out infinite; }
+@keyframes oc-pulse { 0%,100% { opacity:.46; } 50% { opacity:.78; } }
+@media (prefers-reduced-motion: reduce) { .oc-halo { animation:none; opacity:.55; } }
 </style>
 </head>
 <body>
@@ -744,45 +749,63 @@ html { overflow-x: hidden; max-width: 100vw; }
 
   <div style="position:relative;z-index:2;text-align:center;user-select:none;padding:2rem;max-width:900px;width:100%;">
 
-    <!-- ── LOGO SVG — OPEN + CORE mismo tamaño, efecto 3D ── -->
-    <div style="margin-bottom:3rem;">
-      <svg id="splash-logo-svg" viewBox="0 0 660 100" xmlns="http://www.w3.org/2000/svg"
-        style="width:min(640px,90vw);height:auto;display:block;margin:0 auto;overflow:visible;max-width:calc(100vw - 4rem);">
+    <!-- ── LOGO OPENCORE — glow unificado blanco/cian ── -->
+    <div style="margin-bottom:2.8rem;">
+      <svg viewBox="0 0 660 100" xmlns="http://www.w3.org/2000/svg"
+        style="width:min(600px,88vw);height:auto;display:block;margin:0 auto;overflow:visible;max-width:calc(100vw - 3rem);">
         <defs>
-          <filter id="glow3d" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <!-- Halo cian: blur amplio → aura de neón -->
+          <filter id="oc-halo-s" x="-70%" y="-70%" width="240%" height="240%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="11"/>
+          </filter>
+          <!-- Bloom blanco: blur estrecho fusionado con fuente -->
+          <filter id="oc-glow-s" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
 
-        <!-- centrar contenido en viewBox: OPEN(x16-258) + CORE(x278-514) → shift +65 -->
         <g transform="translate(65,0)">
+          <!-- L1: halo cian pulsante -->
+          <g class="oc-halo" filter="url(#oc-halo-s)" opacity="0.72">
+            <circle cx="48" cy="50" r="32" fill="none" stroke="#00E5FF" stroke-width="10"/>
+            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square"
+              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
+            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square"
+              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
+            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
+              d="M218 82L218 18L258 82L258 18"/>
+            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
+              font-size="90" fill="#00E5FF" letter-spacing="3">CORE</text>
+          </g>
 
-        <!-- 3D shadow layer — offset behind main letters -->
-        <g transform="translate(5,6)" opacity="0.25" stroke="#003040" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter">
-          <circle cx="48" cy="50" r="32" stroke="#003040" fill="none"/>
-          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-          <path d="M218 82L218 18L258 82L258 18"/>
+          <!-- L2: bloom blanco suave -->
+          <g filter="url(#oc-glow-s)" opacity="0.80">
+            <circle cx="48" cy="50" r="32" fill="none" stroke="#fff" stroke-width="10"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
+              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
+              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
+              d="M218 82L218 18L258 82L258 18"/>
+            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
+              font-size="90" fill="#fff" letter-spacing="3">CORE</text>
+          </g>
+
+          <!-- L3: blanco nítido (capa superior) -->
+          <g>
+            <circle cx="48" cy="50" r="32" fill="none" stroke="#fff" stroke-width="10"/>
+            <circle cx="48" cy="50" r="11" fill="#00E5FF"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
+              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
+              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
+            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
+              d="M218 82L218 18L258 82L258 18"/>
+            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
+              font-size="90" fill="#fff" letter-spacing="3">CORE</text>
+          </g>
         </g>
-        <text x="278" y="80" font-family="'Space Grotesk',sans-serif" font-weight="800"
-          font-size="90" fill="#003040" letter-spacing="3" transform="translate(5,6)" opacity="0.25">CORE</text>
-
-        <!-- Main OPEN letters — white -->
-        <g stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter" filter="url(#glow3d)">
-          <circle cx="48" cy="50" r="32" stroke="#fff" fill="none"/>
-          <circle cx="48" cy="50" r="13" fill="#00E5FF" stroke="none"/>
-          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-          <path d="M218 82L218 18L258 82L258 18"/>
-        </g>
-
-        <!-- CORE text — cyan, visually same cap height as OPEN letters -->
-        <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
-          font-size="90" fill="#00E5FF" letter-spacing="3"
-          filter="url(#glow3d)">CORE</text>
-
-        </g><!-- end center group -->
       </svg>
     </div>
 
@@ -1111,8 +1134,10 @@ window.enterDashboard = function() {
   setTimeout(function() {
     splash.style.display = 'none';
     window._stopNucleus && window._stopNucleus();
-    // Sonido de entrada al dashboard (distinto al del botón splash)
     setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
+    // Pedir permiso y arrancar polling de notificaciones
+    setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
+    setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2500);
   }, 700);
 };
 </script>
@@ -1123,20 +1148,57 @@ window.enterDashboard = function() {
 <header class="header">
   <div class="header-inner">
     <div onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;gap:3px;" title="Ir al inicio">
-      <svg viewBox="0 0 530 120" width="185" height="42" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
-        <circle cx="50" cy="60" r="15" fill="#00E5FF"/>
-        <path d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"/>
-        <path d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"/>
-        <path d="M270 95L270 25L315 95L315 25" fill="none" stroke="#fff" stroke-width="12" stroke-linejoin="miter" stroke-linecap="square"/>
-        <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#00E5FF" letter-spacing="1">CORE</text>
+      <svg viewBox="0 0 530 120" width="185" height="42" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+        <defs>
+          <filter id="oc-halo-h" x="-70%" y="-70%" width="240%" height="240%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+          </filter>
+          <filter id="oc-glow-h" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- L1: halo cian -->
+        <g class="oc-halo" filter="url(#oc-halo-h)" opacity="0.68">
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#00E5FF" stroke-width="12"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#00E5FF" letter-spacing="1">CORE</text>
+        </g>
+        <!-- L2: bloom blanco -->
+        <g filter="url(#oc-glow-h)" opacity="0.82">
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#fff" letter-spacing="1">CORE</text>
+        </g>
+        <!-- L3: blanco nítido -->
+        <g>
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
+          <circle cx="50" cy="60" r="15" fill="#00E5FF"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#fff" letter-spacing="1">CORE</text>
+        </g>
       </svg>
       <div class="header-logo-sub">OPENCORE 2026</div>
     </div>
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 18/03/2026 00:07</span>
+      <span class="badge">ACT: 18/03/2026 01:09</span>
     </div>
   </div>
 </header>
@@ -1423,7 +1485,7 @@ window.enterDashboard = function() {
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-const DATA = {"updated": "18/03/2026 00:07", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "18/03/2026 01:09", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2330,22 +2392,70 @@ window._deleteTareaConfirmed = async function(id) {
   checkTareasDot();
 };
 
-// ── Notificaciones push vía ntfy.sh ──────────────────────────────────────
-const NTFY_TOPIC = 'opencore-stats-2026-oc';
-
-async function pushNotify(title, body, tag) {
+// ── Notificaciones del sistema ────────────────────────────────────────────
+function pushNotify(title, body) {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   try {
-    await fetch('https://ntfy.sh/' + NTFY_TOPIC, {
-      method: 'POST',
-      headers: {
-        'Title': title,
-        'Priority': 'default',
-        'Tags': tag,
-        'Content-Type': 'text/plain'
-      },
-      body: body
+    const n = new Notification(title, {
+      body: body,
+      icon: '/opencore-dashboard/icon-192.png',
+      badge: '/opencore-dashboard/icon-192.png',
+      silent: false
     });
-  } catch(e) { /* silent — no bloquea la app */ }
+    setTimeout(() => n.close(), 9000);
+  } catch(e) {}
+}
+
+async function _askNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+
+// Polling: detecta nuevas tareas y comentarios cada 60 s
+let _pollActive = false;
+async function _startPolling() {
+  if (_pollActive) return;
+  _pollActive = true;
+  // Inicializar conteos sin notificar (sesión actual)
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(TAREAS_URL + '?t=' + Date.now()),
+      fetch(API_URL   + '?t=' + Date.now())
+    ]);
+    if (r1.ok) localStorage.setItem('oc_pn_t', String((await r1.json()).length));
+    if (r2.ok) localStorage.setItem('oc_pn_c', String((await r2.json()).length));
+  } catch(e) {}
+
+  setInterval(async function() {
+    try {
+      // ── Tareas ──
+      const r1 = await fetch(TAREAS_URL + '?t=' + Date.now());
+      if (r1.ok) {
+        const tareas = await r1.json();
+        const prev = parseInt(localStorage.getItem('oc_pn_t') || '0');
+        if (tareas.length > prev && prev > 0) {
+          tareas.slice(prev).forEach(t => pushNotify('📋 Nueva tarea', t.titulo));
+          _tareasCache = tareas; renderTareas(); checkTareasDot();
+        }
+        localStorage.setItem('oc_pn_t', String(tareas.length));
+      }
+      // ── Comentarios ──
+      const r2 = await fetch(API_URL + '?t=' + Date.now());
+      if (r2.ok) {
+        const coms = await r2.json();
+        const prev = parseInt(localStorage.getItem('oc_pn_c') || '0');
+        if (coms.length > prev && prev > 0) {
+          coms.slice(prev).forEach(c =>
+            pushNotify('💬 Nuevo comentario — ' + (c.author || ''), (c.text || '').slice(0, 90))
+          );
+          _commentCache = coms; renderComments(); checkCommentDot();
+        }
+        localStorage.setItem('oc_pn_c', String(coms.length));
+      }
+    } catch(e) {}
+  }, 60000);
 }
 
 // ── Service Worker (PWA) ──────────────────────────────────────────────────
