@@ -744,46 +744,12 @@ html { overflow-x: hidden; max-width: 100vw; }
 
   <div style="position:relative;z-index:2;text-align:center;user-select:none;padding:2rem;max-width:900px;width:100%;">
 
-    <!-- ── LOGO SVG — OPEN + CORE mismo tamaño, efecto 3D ── -->
-    <div style="margin-bottom:3rem;">
-      <svg id="splash-logo-svg" viewBox="0 0 660 100" xmlns="http://www.w3.org/2000/svg"
-        style="width:min(640px,90vw);height:auto;display:block;margin:0 auto;overflow:visible;max-width:calc(100vw - 4rem);">
-        <defs>
-          <filter id="glow3d" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-
-        <!-- centrar contenido en viewBox: OPEN(x16-258) + CORE(x278-514) → shift +65 -->
-        <g transform="translate(65,0)">
-
-        <!-- 3D shadow layer — offset behind main letters -->
-        <g transform="translate(5,6)" opacity="0.25" stroke="#003040" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter">
-          <circle cx="48" cy="50" r="32" stroke="#003040" fill="none"/>
-          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-          <path d="M218 82L218 18L258 82L258 18"/>
-        </g>
-        <text x="278" y="80" font-family="'Space Grotesk',sans-serif" font-weight="800"
-          font-size="90" fill="#003040" letter-spacing="3" transform="translate(5,6)" opacity="0.25">CORE</text>
-
-        <!-- Main OPEN letters — white -->
-        <g stroke="#ffffff" stroke-width="10" fill="none" stroke-linecap="square" stroke-linejoin="miter" filter="url(#glow3d)">
-          <circle cx="48" cy="50" r="32" stroke="#fff" fill="none"/>
-          <circle cx="48" cy="50" r="13" fill="#00E5FF" stroke="none"/>
-          <path d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-          <path d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-          <path d="M218 82L218 18L258 82L258 18"/>
-        </g>
-
-        <!-- CORE text — cyan, visually same cap height as OPEN letters -->
-        <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
-          font-size="90" fill="#00E5FF" letter-spacing="3"
-          filter="url(#glow3d)">CORE</text>
-
-        </g><!-- end center group -->
-      </svg>
+    <!-- ── LOGO OPENCORE ── -->
+    <div style="margin-bottom:2.5rem;">
+      <img src="logo.png" alt="OpenCore Software"
+        style="width:min(520px,85vw);height:auto;display:block;margin:0 auto;
+               filter:drop-shadow(0 0 18px rgba(0,180,255,0.25));
+               user-select:none;-webkit-user-drag:none;">
     </div>
 
     <!-- Thin separator line -->
@@ -1136,7 +1102,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 23:50</span>
+      <span class="badge">ACT: 18/03/2026 00:04</span>
     </div>
   </div>
 </header>
@@ -1423,7 +1389,7 @@ window.enterDashboard = function() {
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-const DATA = {"updated": "17/03/2026 23:50", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "18/03/2026 00:04", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {

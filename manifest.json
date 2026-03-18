@@ -6,8 +6,8 @@
   "scope": "/opencore-dashboard/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#00092d",
+  "theme_color": "#00092d",
   "icons": [
     {
       "src": "icon-192.png",
