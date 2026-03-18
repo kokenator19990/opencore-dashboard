@@ -234,7 +234,36 @@ html { overflow-x: hidden; max-width: 100vw; }
   position: absolute; top: 0.75rem; right: 0.75rem;
   width: 10px; height: 10px; border-radius: 50%;
   background: #A855F7; box-shadow: 0 0 8px #A855F7;
-  animation: pulse-dot 1.5s ease-in-out infinite;
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+/* ── Hint visual cuando hay tareas pendientes ─────────────────────────── */
+@keyframes tareasBorderPulse {
+  0%,100% { border-color: rgba(168,85,247,0.15); box-shadow: none; }
+  50%     { border-color: rgba(168,85,247,0.6);  box-shadow: 0 0 24px rgba(168,85,247,0.18); }
+}
+@keyframes tareasScan {
+  0%         { transform: translateX(-160%); opacity: 0; }
+  15%,85%    { opacity: 1; }
+  100%       { transform: translateX(440%); opacity: 0; }
+}
+@keyframes tapHintPulse {
+  0%,100% { opacity: 0.45; color: var(--text-dim); }
+  50%     { opacity: 1;    color: #A855F7; }
+}
+.btn-tareas.has-pending {
+  animation: tareasBorderPulse 2.4s ease-in-out infinite;
+}
+.btn-tareas.has-pending::after {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 38%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(168,85,247,0.16), transparent);
+  animation: tareasScan 3.2s ease-in-out infinite;
+  pointer-events: none; border-radius: inherit;
+}
+.btn-tareas.has-pending .abn-sub {
+  animation: tapHintPulse 2s ease-in-out infinite;
 }
 
 /* Sección tareas */
@@ -1310,7 +1339,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 18/03/2026 20:24</span>
+      <span class="badge">ACT: 18/03/2026 20:31</span>
     </div>
   </div>
 </header>
@@ -1629,7 +1658,7 @@ window.enterDashboard = function() {
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-const DATA = {"updated": "18/03/2026 20:24", "min_fecha": "17/03/2026", "total": 2830, "enviados": 138, "contactadas": 105, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 47, "Minería": 29, "Seguridad/EPP": 15, "Repuestos": 12, "Logística": 12, "Energía": 8, "Automatiz.": 6, "Construcción": 4, "Arriendo Maq.": 3, "TI/Telecom": 2}, "timeline_labels": ["2026-03-17", "2026-03-18"], "timeline_vals": [58, 80], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 93, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "18/03/2026 20:31", "min_fecha": "17/03/2026", "total": 2830, "enviados": 138, "contactadas": 105, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 47, "Minería": 29, "Seguridad/EPP": 15, "Repuestos": 12, "Logística": 12, "Energía": 8, "Automatiz.": 6, "Construcción": 4, "Arriendo Maq.": 3, "TI/Telecom": 2}, "timeline_labels": ["2026-03-17", "2026-03-18"], "timeline_vals": [58, 80], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 93, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2463,6 +2492,7 @@ window.goToTareas = function() {
   const pending = _tareasCache.filter(t => t.estado === 'pendiente').length;
   localStorage.setItem('oc_tareas_seen', String(pending));
   document.getElementById('tareas-dot').style.display = 'none';
+  document.getElementById('btn-tareas').classList.remove('has-pending');
   const btn = document.getElementById('tareas-header-btn');
   if (btn) btn.style.animation = 'none';
 };
@@ -2729,6 +2759,8 @@ function checkTareasDot() {
   const seen = parseInt(localStorage.getItem('oc_tareas_seen') || '0');
   const showDot = pending > seen;
   document.getElementById('tareas-dot').style.display = showDot ? 'block' : 'none';
+  // Hint visual (borde + scan) cuando hay pendientes
+  document.getElementById('btn-tareas').classList.toggle('has-pending', pending > 0);
 
   // Indicador en header
   const btn = document.getElementById('tareas-header-btn');
