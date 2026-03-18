@@ -584,6 +584,34 @@ html { overflow-x: hidden; max-width: 100vw; }
 
   /* Toast */
   #comment-toast { bottom: 0.75rem; right: 0.75rem; left: 0.75rem; max-width: 100%; }
+
+  /* ── Voice FAB ───────────────────────────────────────────────────── */
+  #voice-fab {
+    display: flex; position: fixed; bottom: 28px; right: 20px;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(4,4,4,0.72); border: 1.5px solid rgba(0,229,255,0.28);
+    align-items: center; justify-content: center; z-index: 600;
+    cursor: pointer; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45); transition: border-color 0.2s;
+  }
+  #voice-fab.vf-on {
+    border-color: rgba(0,229,255,0.9);
+    animation: vfPulse 1.1s ease-out infinite;
+  }
+  @keyframes vfPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(0,229,255,0.5); }
+    70%  { box-shadow: 0 0 0 16px rgba(0,229,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,229,255,0); }
+  }
+  #voice-toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: rgba(6,6,6,0.9); border: 1px solid rgba(0,229,255,0.22);
+    border-radius: 10px; padding: 9px 18px;
+    font-family: inherit; font-size: 0.66rem; letter-spacing: 1.5px;
+    color: rgba(0,229,255,0.9); text-transform: uppercase;
+    white-space: nowrap; max-width: 84vw; overflow: hidden; text-overflow: ellipsis;
+    z-index: 601; display: none; text-align: center; pointer-events: none;
+  }
 }
 
 /* ── PHONE (≤ 480px) ─────────────────────────────────────────────────── */
@@ -1092,7 +1120,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 22:03</span>
+      <span class="badge">ACT: 17/03/2026 22:14</span>
     </div>
   </div>
 </header>
@@ -1378,7 +1406,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 22:03", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 22:14", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2523,6 +2551,233 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
       window._deleteTareaConfirmed(id);
     });
   };
+
+})();
+
+// ── SISTEMA DE COMANDOS DE VOZ (solo mobile/touch) ────────────────────────
+(function() {
+  if (!('ontouchstart' in window) && window.innerWidth > 900) return;
+
+  // Inyectar FAB + toast si no existen ya
+  (function injectUI() {
+    if (document.getElementById('voice-fab')) return;
+    const fab = document.createElement('div');
+    fab.id = 'voice-fab';
+    fab.title = 'Comando de voz';
+    fab.innerHTML = '<svg id="vf-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+    document.body.appendChild(fab);
+    const vt = document.createElement('div');
+    vt.id = 'voice-toast';
+    document.body.appendChild(vt);
+    fab.onclick = function() { window._voiceToggle && window._voiceToggle(); };
+  })();
+
+  const fab   = document.getElementById('voice-fab');
+  const toast = document.getElementById('voice-toast');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { fab && (fab.style.display = 'none'); return; }
+
+  const rec = new SR();
+  rec.lang = 'es-ES';
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.maxAlternatives = 3;
+
+  let _on = false, _ftimer = null;
+
+  function vShow(msg, ms) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(_ftimer);
+    if (ms !== false) _ftimer = setTimeout(function() { toast.style.display = 'none'; }, ms || 3000);
+  }
+
+  window._voiceToggle = function() {
+    if (_on) { rec.stop(); return; }
+    try { rec.start(); } catch(e) { vShow('Error al iniciar micrófono', 2500); }
+  };
+
+  rec.onstart  = function() { _on = true;  fab.classList.add('vf-on');    vShow('🎙 Escuchando...', false); if (typeof haptic==='function') haptic(12); };
+  rec.onend    = function() { _on = false; fab.classList.remove('vf-on'); if (toast.textContent.startsWith('🎙')) toast.style.display='none'; };
+  rec.onerror  = function(e) {
+    _on = false; fab.classList.remove('vf-on');
+    var msgs = {'no-speech':'Sin voz detectada','not-allowed':'Permiso denegado — activa el micrófono','network':'Error de red'};
+    vShow(msgs[e.error] || ('Error: ' + e.error), 3500);
+  };
+  rec.onresult = function(ev) {
+    var t = '', fin = false;
+    for (var i = ev.resultIndex; i < ev.results.length; i++) {
+      t = ev.results[i][0].transcript;
+      if (ev.results[i].isFinal) fin = true;
+    }
+    if (!fin) { vShow('🎙 ' + t, false); return; }
+    processVoice(t);
+  };
+
+  function n(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+  function navTo(id) { var el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
+  function clickBtn(id) { var b=document.getElementById(id); if(b) b.click(); }
+
+  function processVoice(raw) {
+    var t = n(raw);
+    vShow('"' + raw + '"', false);
+
+    // ── INICIO ────────────────────────────────────────────────────────────
+    if (/^(inicio|arriba|subir|volver|home|portada)/.test(t)) {
+      window.scrollTo({top:0,behavior:'smooth'});
+      vShow('↑ Inicio', 2000); return;
+    }
+
+    // ── DESCARGAR EXCEL ───────────────────────────────────────────────────
+    if (/(descargar|exportar).*(excel|archivo)|^excel$/.test(t)) {
+      var a = document.querySelector('a[download]'); if (a) a.click();
+      vShow('↓ Descargando Excel...', 3000); return;
+    }
+
+    // ── VER TAREAS ────────────────────────────────────────────────────────
+    if (/tarea(s)?/.test(t) && !/agrega|crear|nueva|asignar|borrar|elimina/.test(t)) {
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      vShow('✓ Tareas', 2000); return;
+    }
+
+    // ── VER COMENTARIOS ───────────────────────────────────────────────────
+    if (/comentario(s)?|muro/.test(t) && !/agrega|crear|nuevo|borrar|elimina/.test(t)) {
+      if (typeof goToComments==='function') goToComments(); else navTo('muro-comentarios');
+      vShow('✓ Comentarios', 2000); return;
+    }
+
+    // ── VER CONTACTADAS ───────────────────────────────────────────────────
+    if (/(contactada|empresa|prospecto|base total)/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-contactos'); navTo('analytics-section');
+      vShow('✓ Contactadas', 2000); return;
+    }
+
+    // ── VER REUNIONES ─────────────────────────────────────────────────────
+    if (/reunion(es)?|cierre/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-reuniones'); navTo('analytics-section');
+      vShow('✓ Reuniones', 2000); return;
+    }
+
+    // ── VER CANAL ─────────────────────────────────────────────────────────
+    if (/canal/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-canal'); navTo('analytics-section');
+      vShow('✓ Canal de contacto', 2000); return;
+    }
+
+    // ── CREAR TAREA ───────────────────────────────────────────────────────
+    // "agregar tarea: revisar correos"
+    // "crear tarea para Jorge: llamar cliente"
+    // "asignar tarea a jorge revisar documentos"
+    // "nueva tarea enviar propuesta"
+    var tareaRx = [
+      /(?:agregar|crear|nueva?|asignar|anadir|agrega|crea|asigna)\s+tarea\s+(?:(?:para|a)\s+(\w+)\s*[:·\-]?\s*)?(.+)/,
+      /tarea\s+(?:(?:para|a)\s+(\w+)\s*[:·\-]?\s*)?(.+)/
+    ];
+    for (var i=0; i<tareaRx.length; i++) {
+      var m = t.match(tareaRx[i]);
+      if (m) {
+        var persona = m[1] ? (m[1].charAt(0).toUpperCase()+m[1].slice(1)+': ') : '';
+        var titulo  = (persona + m[2].trim());
+        if (titulo.length > 2) {
+          if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+          setTimeout(function(tt) { return function() {
+            var inp = document.getElementById('tarea-titulo');
+            if (inp) { inp.value = tt.charAt(0).toUpperCase()+tt.slice(1); inp.focus(); }
+          }; }(titulo), 420);
+          vShow('✓ Tarea lista → pulsa Agregar', 4000); return;
+        }
+      }
+    }
+
+    // ── CREAR COMENTARIO ──────────────────────────────────────────────────
+    // "agregar comentario: reunión exitosa"
+    // "comentario: cerramos trato"
+    // "anotar: enviar propuesta mañana"
+    var comentRx = [
+      /(?:agregar|crear|nuevo?|anadir|agrega|crea|escribir|anotar)\s+comentario\s*[:·\-]?\s*(.+)/,
+      /comentario\s*[:·\-]\s*(.+)/,
+      /(?:anotar|anota|nota)\s*[:·\-]?\s*(.+)/
+    ];
+    for (var i=0; i<comentRx.length; i++) {
+      var m = t.match(comentRx[i]);
+      if (m) {
+        var texto = m[1].trim();
+        if (texto.length > 2) {
+          if (typeof openCommentModal==='function') openCommentModal();
+          setTimeout(function(tx) { return function() {
+            var inp = document.getElementById('modal-comment-text');
+            if (inp) { inp.value = tx.charAt(0).toUpperCase()+tx.slice(1); inp.focus(); }
+          }; }(texto), 380);
+          vShow('✓ Comentario listo → pulsa Enviar', 4000); return;
+        }
+      }
+    }
+
+    // ── RESPONDER ÚLTIMO COMENTARIO ───────────────────────────────────────
+    // "responder: muy bien hecho"
+    // "responder al último comentario: de acuerdo"
+    var respRx = [
+      /(?:responder|responde|contestar|contesta)\s*(?:al?\s+(?:ultimo|uultimo)\s+comentario\s*)?[:·\-]\s*(.+)/,
+      /(?:responder|responde|contestar)\s+(.+)/
+    ];
+    for (var i=0; i<respRx.length; i++) {
+      var m = t.match(respRx[i]);
+      if (m) {
+        var texto = m[1].trim();
+        if (texto.length > 2 && typeof _commentCache!=='undefined' && _commentCache.length > 0) {
+          var last = _commentCache[_commentCache.length-1];
+          if (last && last.id) {
+            if (typeof goToComments==='function') goToComments(); else navTo('muro-comentarios');
+            setTimeout(function(cid, tx) { return function() {
+              if (typeof showReplyInput==='function') showReplyInput(cid);
+              setTimeout(function() {
+                var inp = document.getElementById('reply-input-'+cid);
+                if (inp) { inp.value = tx.charAt(0).toUpperCase()+tx.slice(1); inp.focus(); }
+              }, 220);
+            }; }(last.id, texto), 520);
+            vShow('✓ Respuesta lista → pulsa Enviar', 4000); return;
+          }
+        }
+      }
+    }
+
+    // ── MARCAR ÚLTIMA TAREA COMPLETA ──────────────────────────────────────
+    if (/(completar|marcar.completa|lista|terminar|terminada)\s*(?:la\s+)?(?:ultima|última)?\s*tarea/.test(t)) {
+      if (typeof _tareasCache!=='undefined') {
+        var pend = _tareasCache.filter(function(x){return x.estado!=='completada';}).sort(function(a,b){return Number(b.id)-Number(a.id);});
+        if (pend.length && typeof toggleTarea==='function') { toggleTarea(pend[0].id); vShow('✓ Tarea marcada completa', 2500); }
+        else vShow('Sin tareas pendientes', 2500);
+      } return;
+    }
+
+    // ── BORRAR ÚLTIMA TAREA ───────────────────────────────────────────────
+    if (/(borrar|eliminar)\s*(?:la\s+)?(?:ultima|última)?\s*tarea/.test(t)) {
+      if (typeof _tareasCache!=='undefined' && _tareasCache.length > 0) {
+        var last = _tareasCache.slice().sort(function(a,b){return Number(b.id)-Number(a.id);})[0];
+        if (typeof deleteTarea==='function') deleteTarea(last.id);
+        vShow('⚠ Confirma eliminación', 3000);
+      } else vShow('Sin tareas para borrar', 2500);
+      return;
+    }
+
+    // ── BORRAR ÚLTIMO COMENTARIO ──────────────────────────────────────────
+    if (/(borrar|eliminar)\s*(?:el\s+)?(?:ultimo|último)?\s*comentario/.test(t)) {
+      if (typeof _commentCache!=='undefined' && _commentCache.length > 0) {
+        var last = _commentCache[_commentCache.length-1];
+        if (typeof deleteComment==='function') deleteComment(last.id);
+        vShow('⚠ Confirma eliminación', 3000);
+      } else vShow('Sin comentarios para borrar', 2500);
+      return;
+    }
+
+    // ── AYUDA ─────────────────────────────────────────────────────────────
+    if (/^(ayuda|comandos|que puedo|help)/.test(t)) {
+      vShow('Comandos: crear tarea, agregar comentario, ver reuniones, borrar tarea...', 5500); return;
+    }
+
+    // ── NO RECONOCIDO ─────────────────────────────────────────────────────
+    vShow('? "' + raw + '" — di ayuda para ver comandos', 3500);
+  }
 
 })();
 </script>
