@@ -1097,6 +1097,8 @@ window.enterDashboard = function() {
   setTimeout(function() {
     splash.style.display = 'none';
     window._stopNucleus && window._stopNucleus();
+    // Sonido de entrada al dashboard (distinto al del botón splash)
+    setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
   }, 700);
 };
 </script>
@@ -1120,7 +1122,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 22:48</span>
+      <span class="badge">ACT: 17/03/2026 22:54</span>
     </div>
   </div>
 </header>
@@ -1406,7 +1408,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 22:48", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 22:54", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -2471,15 +2473,18 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
     if (_ac.state === 'suspended') _ac.resume();
     return _ac;
   }
-  function playTone(freq, dur, vol, type) {
+  // freqEnd: si se pasa, hace ramp descendente → crea sensación de "peso" / graves
+  function playTone(freq, dur, vol, type, freqEnd) {
     try {
-      const ac = getAC();
+      const ac   = getAC();
       const osc  = ac.createOscillator();
       const gain = ac.createGain();
       osc.connect(gain); gain.connect(ac.destination);
       osc.type = type || 'sine';
       osc.frequency.setValueAtTime(freq, ac.currentTime);
-      gain.gain.setValueAtTime(vol || 0.1, ac.currentTime);
+      if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, ac.currentTime + dur * 0.75);
+      gain.gain.setValueAtTime(0.001, ac.currentTime);
+      gain.gain.linearRampToValueAtTime(vol || 0.10, ac.currentTime + 0.006); // ataque rápido
       gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
       osc.start(ac.currentTime);
       osc.stop(ac.currentTime + dur + 0.02);
@@ -2492,19 +2497,31 @@ window.addEventListener('resize', () => { if (activeChart) activeChart.resize();
   }
 
   // ── Sound presets ──────────────────────────────────
+  // Click de acción: "thud" sutil — pitch cae 190→85 Hz (parlantes lo reproducen, da sensación de graves)
   window._sndClick = function() {
-    haptic(10);
-    playTone(52, 0.13, 0.10);                          // deep bass thud
+    haptic(8);
+    playTone(190, 0.13, 0.09, 'sine', 85);
   };
+
+  // Botón splash (presionar): golpe más pesado
   window._sndSplash = function() {
-    haptic(20);
-    playTone(38, 0.22, 0.14);                          // very deep pulse
-    setTimeout(function() { playTone(68, 0.16, 0.09); }, 110); // subtle overtone
-  };
-  window._sndDelete = function() {
     haptic(18);
-    playTone(40, 0.18, 0.13);
-    setTimeout(function() { playTone(30, 0.22, 0.1); }, 90);   // ominous low drop
+    playTone(210, 0.22, 0.12, 'sine', 75);
+    setTimeout(function() { playTone(420, 0.10, 0.04, 'sine'); }, 70);
+  };
+
+  // Entrada al dashboard: 3 notas suaves ascendentes — "despertar"
+  window._sndEnter = function() {
+    playTone(138, 0.30, 0.07, 'sine');
+    setTimeout(function() { playTone(185, 0.26, 0.06, 'sine'); }, 140);
+    setTimeout(function() { playTone(246, 0.22, 0.05, 'sine'); }, 270);
+  };
+
+  // Delete / acción destructiva: caída ominosa de dos tonos
+  window._sndDelete = function() {
+    haptic(20);
+    playTone(230, 0.24, 0.10, 'sine', 65);
+    setTimeout(function() { playTone(160, 0.22, 0.08, 'sine', 55); }, 130);
   };
 
   // ── Splash button ──────────────────────────────────
