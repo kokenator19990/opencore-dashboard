@@ -1082,7 +1082,7 @@ window.enterDashboard = function() {
     <div class="header-meta">
       <!-- Indicador de tareas en header -->
       <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.65rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
-      <span class="badge">ACT: 17/03/2026 21:32</span>
+      <span class="badge">ACT: 17/03/2026 21:39</span>
     </div>
   </div>
 </header>
@@ -1368,7 +1368,7 @@ window.enterDashboard = function() {
 </footer>
 
 <script>
-const DATA = {"updated": "17/03/2026 21:32", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+const DATA = {"updated": "17/03/2026 21:39", "min_fecha": "17/03/2026", "total": 2830, "enviados": 58, "contactadas": 77, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 90.5, "email_base": 1989, "canales": {}, "cat_enviados": {"Industrial": 18, "Minería": 12, "Seguridad/EPP": 7, "Repuestos": 6, "Logística": 5, "Energía": 4, "Automatiz.": 3, "Arriendo Maq.": 1, "TI/Telecom": 1, "Construcción": 1}, "timeline_labels": ["2026-03-17"], "timeline_vals": [58], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 58, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
 
 // ── Counters ───────────────────────────────────────────────────────────────
 function animateVal(id, end, dur) {
@@ -1613,30 +1613,66 @@ window.showChart = function(type) {
   }
 };
 
+// ── Identidad de usuario ───────────────────────────────────────────────────
+function getUserName() {
+  return localStorage.getItem('oc_user_name') || '';
+}
+
+function askUserName(cb) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);opacity:0;transition:opacity 0.2s;';
+  setTimeout(function() { ov.style.opacity = '1'; }, 10);
+  ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
+    + '<div style="font-family:inherit;font-size:0.7rem;letter-spacing:2.5px;color:rgba(0,229,255,0.7);text-align:center;margin-bottom:0.5rem;text-transform:uppercase;">Identificarte</div>'
+    + '<div style="font-family:inherit;font-size:0.78rem;color:#888;text-align:center;margin-bottom:1.4rem;">¿Cuál es tu nombre?<br><span style="font-size:0.65rem;color:#555;">Solo se pregunta una vez en este dispositivo</span></div>'
+    + '<input id="_nameInp" type="text" maxlength="30" autocomplete="name" placeholder="Ej: Jorge, Juan..." style="width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:13px 14px;color:#fff;font-family:inherit;font-size:0.88rem;outline:none;margin-bottom:1rem;transition:border 0.2s;">'
+    + '<button id="_nameSave" style="width:100%;padding:13px;border:none;background:var(--accent-cyan);color:#000;border-radius:10px;font-family:inherit;font-size:0.72rem;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CONTINUAR →</button>'
+    + '</div>';
+  document.body.appendChild(ov);
+  const inp = ov.querySelector('#_nameInp');
+  setTimeout(function() { inp.focus(); }, 150);
+  const save = function() {
+    const name = inp.value.trim();
+    if (!name) { inp.style.borderColor = '#FF2A6D'; inp.focus(); return; }
+    localStorage.setItem('oc_user_name', name);
+    ov.style.opacity = '0';
+    setTimeout(function() { ov.remove(); cb(name); }, 200);
+  };
+  ov.querySelector('#_nameSave').onclick = save;
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+}
+
+function withName(cb) {
+  const n = getUserName();
+  if (n) { cb(n); } else { askUserName(cb); }
+}
+
 // ── Comment helpers ────────────────────────────────────────────────────────
 const API_URL = 'https://opencore.cl/dashboard/api.php';
 let _commentCache = []; // cache local del servidor
 
-async function saveComment(text, files) {
+function saveComment(text, files) {
   files = files || [];
-  const today = new Date().toLocaleDateString('es-CL');
-  _commentCache.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
-  if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(_commentCache)
-    });
-    localStorage.setItem('oc_last_comment_day', today);
-    if (text) pushNotify('OpenCORE — Nuevo comentario', text.slice(0, 100), 'speech_balloon');
-  } catch(e) {
-    _commentCache.pop();
-    alert('Error al guardar. Verifica tu conexión a internet.');
-    return;
-  }
-  renderComments();
-  checkCommentDot();
+  withName(async function(name) {
+    const today = new Date().toLocaleDateString('es-CL');
+    _commentCache.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), author: name, text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
+    if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(_commentCache)
+      });
+      localStorage.setItem('oc_last_comment_day', today);
+      if (text) pushNotify('OpenCORE — Nuevo comentario de ' + name, text.slice(0, 80), 'speech_balloon');
+    } catch(e) {
+      _commentCache.pop();
+      alert('Error al guardar. Verifica tu conexión a internet.');
+      return;
+    }
+    renderComments();
+    checkCommentDot();
+  });
 }
 
 function checkCommentDot() {
@@ -1752,7 +1788,7 @@ function renderComments() {
       + '<div style="flex:1">'
       + (textEscaped ? '<div class="comment-text">' + textEscaped + '</div>' : '')
       + attachHtml
-      + '<div class="comment-meta">' + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.6rem;">NUEVO HOY</span>' : '') + '</div>'
+      + '<div class="comment-meta">' + (c.author ? '<span style="color:rgba(255,255,255,0.65);font-weight:600;">' + c.author.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '') + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.6rem;">NUEVO HOY</span>' : '') + '</div>'
       + repliesHtml
       + '<button class="comment-reply-btn" data-cid="' + cid + '" onclick="showReplyInput(this.dataset.cid)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
       + '<div class="reply-input-row" id="' + replyRowId + '">'
@@ -2109,8 +2145,9 @@ function renderTareas() {
       + (isCompleted ? '<span class="tarea-pill pill-completada">✓ LISTA</span>' : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>')
       + '</div></div>'
       + '<div class="tarea-meta" style="margin-top:0.5rem;">'
-      + 'Asignada: ' + t.fecha_creacion
-      + (t.fecha_completada ? ' &nbsp;·&nbsp; Completada: ' + t.fecha_completada : '')
+      + (t.autor ? '<span style="color:rgba(255,255,255,0.55);font-weight:600;">' + t.autor.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '')
+      + t.fecha_creacion
+      + (t.fecha_completada ? ' &nbsp;·&nbsp; ✓ ' + t.fecha_completada : '')
       + '</div>'
       + '<div class="tarea-actions">' + checkBtn
       + '<button class="tarea-btn tarea-btn-del" data-id="' + t.id + '" onclick="deleteTarea(this.dataset.id)" style="margin-left:auto;font-size:0.55rem;opacity:0.5;">✕ eliminar</button>'
@@ -2160,28 +2197,31 @@ function checkTareasDot() {
   }
 }
 
-window.addTarea = async function(e) {
+window.addTarea = function(e) {
   e.preventDefault();
   const titulo = document.getElementById('tarea-titulo').value.trim();
   if (!titulo) return;
   const prioBtn = document.getElementById('tarea-prio-btn');
-  _tareasCache.push({
-    id: Date.now().toString(),
-    titulo: titulo,
-    prioridad: prioBtn.dataset.alta === '1' ? 'alta' : 'normal',
-    estado: 'pendiente',
-    fecha_creacion: new Date().toLocaleDateString('es-CL'),
-    fecha_completada: null,
-    comentarios: []
+  withName(async function(name) {
+    _tareasCache.push({
+      id: Date.now().toString(),
+      titulo: titulo,
+      autor: name,
+      prioridad: prioBtn.dataset.alta === '1' ? 'alta' : 'normal',
+      estado: 'pendiente',
+      fecha_creacion: new Date().toLocaleDateString('es-CL'),
+      fecha_completada: null,
+      comentarios: []
+    });
+    await _saveTareas();
+    pushNotify('OpenCORE — Nueva tarea asignada', name + ': ' + titulo, 'clipboard');
+    document.getElementById('tarea-titulo').value = '';
+    prioBtn.dataset.alta = '0';
+    prioBtn.style.color = 'rgba(255,42,45,0.25)';
+    prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+    renderTareas();
+    checkTareasDot();
   });
-  await _saveTareas();
-  pushNotify('OpenCORE — Nueva tarea asignada', titulo, 'clipboard');
-  document.getElementById('tarea-titulo').value = '';
-  prioBtn.dataset.alta = '0';
-  prioBtn.style.color = 'rgba(255,42,45,0.25)';
-  prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
-  renderTareas();
-  checkTareasDot();
 };
 
 window.toggleTarea = async function(id) {
