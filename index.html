@@ -651,13 +651,14 @@ html { overflow-x: hidden; max-width: 100vw; }
 .comment-del:hover { color: var(--accent-red); }
 .comment-actions { display: flex; flex-direction: row; align-items: center; gap: 0.6rem; flex-shrink: 0; padding-left: 0.75rem; }
 .btn-edit-inline {
-  background: none; border: none; color: rgba(255,255,255,0.25); cursor: pointer;
-  font-size: 0.68rem; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.5px;
-  transition: color 0.15s; line-height: 1;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6); cursor: pointer;
+  font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;
+  transition: all 0.15s; line-height: 1; white-space: nowrap;
 }
-.btn-edit-inline:hover { color: rgba(0,229,255,0.75); }
-.btn-edit-del { color: rgba(255,80,80,0.35); }
-.btn-edit-del:hover { color: rgba(255,80,80,0.8); }
+.btn-edit-inline:hover { color: #00E5FF; border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); }
+.btn-edit-del { color: rgba(255,100,100,0.7); border-color: rgba(255,80,80,0.2); background: rgba(255,80,80,0.05); }
+.btn-edit-del:hover { color: #FF2A6D; border-color: rgba(255,42,109,0.5); background: rgba(255,42,109,0.1); }
 .comment-edit-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.25); color: #eee; font-family: var(--font-sans); font-size: 0.92rem; padding: 8px 10px; border-radius: 8px; resize: vertical; min-height: 58px; margin: 6px 0; box-sizing: border-box; }
 .comment-edit-area:focus { outline: none; border-color: rgba(0,229,255,0.5); }
 .edit-action-row { display: flex; gap: 0.5rem; margin-top: 4px; }
@@ -1544,7 +1545,7 @@ window.enterDashboard = function() {
     </button>
 
     <!-- Card 3: Reuniones -->
-    <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="showChart('reuniones')">
+    <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="goToReuniones()">
       <div class="abn-icon">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -1583,31 +1584,7 @@ window.enterDashboard = function() {
 
 
 
-  </div><!-- /dash-left -->
-  <div class="dash-right">
-    <div class="aq-grid">
-      <div class="aq-card">
-        <div class="aq-title">TOTAL CONTACTADAS</div>
-        <div id="aq-chart-contactadas" style="height:220px;"></div>
-      </div>
-      <div class="aq-card">
-        <div class="aq-title">CANAL DE CONTACTO</div>
-        <div id="aq-chart-canal" style="height:220px;"></div>
-      </div>
-      <div class="aq-card">
-        <div class="aq-title">REUNIONES</div>
-        <div id="aq-chart-reuniones" style="height:220px;"></div>
-      </div>
-      <div class="aq-card aq-tareas-card">
-        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.7rem;border-bottom:1px solid var(--border);padding-bottom:0.6rem;">
-          <span class="aq-title" style="margin:0;flex:1;">TAREAS</span>
-          <span id="aq-tareas-badge" style="font-size:0.72rem;color:#A855F7;font-family:var(--font-heading);"></span>
-          <button class="qab-btn" onclick="goToTareas()" style="font-size:0.65rem;padding:3px 9px;">+ Agregar</button>
-        </div>
-        <div id="aq-tareas-inline" style="max-height:190px;overflow-y:auto;"></div>
-      </div>
-    </div>
-  </div></div><!-- /dash-split -->
+  </div><!-- /dash-split -->
 
   <!-- CHART REVEAL PANEL -->
   <section class="chart-reveal-panel" id="chart-reveal-panel">
@@ -1651,6 +1628,34 @@ window.enterDashboard = function() {
     </div>
     <div class="ovl-body">
 
+      <!-- Reuniones -->
+      <div id="ovl-reuniones" style="display:none">
+        <p style="color:var(--text-dim);font-size:0.84rem;margin:0 0 1rem;">Registra y gestiona reuniones. Agrega notas, comentarios y archivos.</p>
+        <section class="comment-board" style="border-top-color:rgba(255,42,109,0.4);">
+          <form id="reunion-form" onsubmit="addReunion(event)" style="display:flex;flex-direction:column;gap:0.7rem;margin-bottom:1.5rem;">
+            <input class="tarea-input" id="reunion-empresa" type="text" maxlength="120" placeholder="Empresa / Contacto *" required>
+            <div style="display:flex;gap:0.6rem;">
+              <input class="tarea-input" id="reunion-fecha" type="date" style="flex:1;" required>
+              <select class="tarea-input" id="reunion-estado" style="flex:1;cursor:pointer;">
+                <option value="agendada">Agendada</option>
+                <option value="realizada">Realizada</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+            </div>
+            <textarea class="tarea-desc-input" id="reunion-desc" maxlength="600" placeholder="Notas / descripción (opcional)..." rows="3"></textarea>
+            <div style="display:flex;gap:0.6rem;align-items:center;">
+              <label class="qab-btn" style="cursor:pointer;color:rgba(255,42,109,0.8);border-color:rgba(255,42,109,0.3);">
+                📎 Adjuntar
+                <input type="file" id="reunion-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="handleReunionFiles(this.files)">
+              </label>
+              <div id="reunion-attach-preview" style="display:none;flex-wrap:wrap;gap:0.4rem;flex:1;"></div>
+              <button type="submit" class="btn-primary tarea-submit-btn" style="margin-left:auto;">+ AGREGAR REUNIÓN</button>
+            </div>
+          </form>
+          <div id="reuniones-list"></div>
+        </section>
+      </div>
+
       <!-- Tareas -->
       <div id="ovl-tareas" style="display:none">
         <p style="color:var(--text-dim);font-size:0.84rem;margin:0 0 1rem;">Asigna y revisa tareas. Marca como completada cuando termines.</p>
@@ -1660,6 +1665,13 @@ window.enterDashboard = function() {
               placeholder="Nueva tarea..." required>
             <textarea class="tarea-desc-input" id="tarea-desc" maxlength="600"
               placeholder="Detalle / descripción (opcional)..." rows="3"></textarea>
+            <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+              <label class="qab-btn" style="cursor:pointer;color:rgba(168,85,247,0.8);border-color:rgba(168,85,247,0.3);">
+                📎 Adjuntar archivo
+                <input type="file" id="tarea-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="handleTareaFiles(this.files)">
+              </label>
+              <div id="tarea-attach-preview" style="display:none;flex-wrap:wrap;gap:0.4rem;flex:1;"></div>
+            </div>
             <div class="tarea-form-actions">
               <button type="button" id="tarea-prio-btn"
                 onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.3)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';"
@@ -1877,7 +1889,10 @@ function drawCanalMiniChart() {
 // ── Reuniones counter (read-only desde localStorage) ──────────────────────
 let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') || DATA.reuniones_db || 0);
 function updateReunionesBadge() {
-  document.getElementById('nav-reuniones').textContent = reuniones;
+  var realized = (_reunionesCache || []).filter(function(r){ return r.estado === 'realizada'; }).length;
+  var total = (_reunionesCache || []).length;
+  var el = document.getElementById('nav-reuniones');
+  if (el) el.textContent = total ? realized + '/' + total : '0';
 }
 
 // ── Charts ────────────────────────────────────────────────────────────────
@@ -2687,6 +2702,224 @@ const TAREAS_URL = 'https://opencore.cl/dashboard/tareas.php';
 let _tareasCache = [];
 let _tareasLoaded = false;
 
+// ── SISTEMA DE REUNIONES (localStorage) ─────────────────────────────────
+const REUNIONES_KEY = 'oc_reuniones_v2';
+let _reunionesCache = [];
+let _reunionFiles = [];
+
+function loadReuniones() {
+  try {
+    var raw = localStorage.getItem(REUNIONES_KEY);
+    _reunionesCache = raw ? JSON.parse(raw) : [];
+  } catch(e) { _reunionesCache = []; }
+  renderReuniones();
+  updateReunionesBadge();
+}
+
+function saveReuniones() {
+  localStorage.setItem(REUNIONES_KEY, JSON.stringify(_reunionesCache));
+}
+
+window.goToReuniones = function() {
+  if (window._sndNav) window._sndNav();
+  document.getElementById('btn-reuniones').classList.add('active');
+  openOverlay('ovl-reuniones', 'REUNIONES');
+  renderReuniones();
+};
+
+window.addReunion = function(e) {
+  e.preventDefault();
+  var empresa = document.getElementById('reunion-empresa').value.trim();
+  var fecha = document.getElementById('reunion-fecha').value;
+  var estado = document.getElementById('reunion-estado').value;
+  var desc = document.getElementById('reunion-desc').value.trim();
+  if (!empresa || !fecha) return;
+  withName(function(name) {
+    _reunionesCache.unshift({
+      id: Date.now().toString(),
+      empresa: empresa,
+      fecha: fecha,
+      estado: estado,
+      descripcion: desc,
+      autor: name,
+      fecha_creacion: new Date().toLocaleDateString('es-CL'),
+      archivos: _reunionFiles.slice(),
+      comentarios: []
+    });
+    saveReuniones();
+    _reunionFiles = [];
+    document.getElementById('reunion-empresa').value = '';
+    document.getElementById('reunion-fecha').value = '';
+    document.getElementById('reunion-desc').value = '';
+    document.getElementById('reunion-attach-preview').innerHTML = '';
+    document.getElementById('reunion-attach-preview').style.display = 'none';
+    updateReunionesBadge();
+    renderReuniones();
+  });
+};
+
+window.handleReunionFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        _reunionFiles.push({name: file.name, type: 'image', b64: b64});
+        renderReunionPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        _reunionFiles.push({name: file.name, type: 'file', b64: ev.target.result});
+        renderReunionPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('reunion-file-input').value = '';
+};
+
+function renderReunionPreview() {
+  var prev = document.getElementById('reunion-attach-preview');
+  if (!_reunionFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _reunionFiles.map(function(f, i) {
+    if (f.type === 'image') {
+      return '<div style="position:relative;display:inline-block;"><img src="' + f.b64 + '" style="height:44px;border-radius:6px;border:1px solid rgba(255,42,109,0.3);"><button onclick="_removeReunionFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#FF2A6D;border:none;border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:9px;color:#fff;padding:0;">✕</button></div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:4px;background:rgba(255,42,109,0.08);border:1px solid rgba(255,42,109,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(255,42,109,0.8);">📄 ' + f.name + '<button onclick="_removeReunionFile(' + i + ')" style="background:none;border:none;cursor:pointer;color:#FF2A6D;font-size:10px;padding:0;margin-left:4px;">✕</button></div>';
+  }).join('');
+}
+
+window._removeReunionFile = function(i) {
+  _reunionFiles.splice(i, 1);
+  renderReunionPreview();
+};
+
+window.setReunionEstado = async function(id, estado) {
+  var r = _reunionesCache.find(function(x){ return x.id === id; });
+  if (!r) return;
+  r.estado = estado;
+  saveReuniones();
+  updateReunionesBadge();
+  renderReuniones();
+};
+
+window.deleteReunion = function(id) {
+  window.confirmDialog('¿Eliminar esta reunión?', 'Eliminar', function() {
+    _reunionesCache = _reunionesCache.filter(function(x){ return x.id !== id; });
+    saveReuniones();
+    updateReunionesBadge();
+    renderReuniones();
+  });
+};
+
+window.addReunionComment = function(id) {
+  var inp = document.getElementById('rc-' + id);
+  var texto = inp ? inp.value.trim() : '';
+  if (!texto) return;
+  var r = _reunionesCache.find(function(x){ return x.id === id; });
+  if (!r) return;
+  if (!r.comentarios) r.comentarios = [];
+  r.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
+  saveReuniones();
+  renderReuniones();
+};
+
+function renderReuniones() {
+  var el = document.getElementById('reuniones-list');
+  if (!el) return;
+  if (!_reunionesCache.length) {
+    el.innerHTML = '<div class="empty-state" style="margin-top:1rem;">Sin reuniones registradas. Agrega la primera arriba.</div>';
+    return;
+  }
+  var estadoColor = { agendada: '#E5FF00', realizada: '#4ADE80', cancelada: '#FF2A6D' };
+  var estadoLabel = { agendada: 'AGENDADA', realizada: 'REALIZADA', cancelada: 'CANCELADA' };
+  el.innerHTML = _reunionesCache.map(function(r) {
+    var comments = r.comentarios || [];
+    var archivos = r.archivos || [];
+    var commentsHtml = comments.map(function(c, ci) {
+      return '<div class="tarea-comment-item">'
+        + '<span style="color:#FF2A6D;margin-right:4px;flex-shrink:0;">→</span>'
+        + '<span class="tci-text">' + c.texto.replace(/</g,'&lt;') + '</span>'
+        + '<span class="tarea-comment-date">' + c.fecha + '</span>'
+        + '</div>';
+    }).join('');
+    var archivosHtml = archivos.map(function(f) {
+      if (f.type === 'image') return '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(255,42,109,0.3);"></a>';
+      return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,42,109,0.08);border:1px solid rgba(255,42,109,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(255,42,109,0.8);text-decoration:none;">📄 ' + f.name + '</a>';
+    }).join('');
+    var col = estadoColor[r.estado] || '#888';
+    return '<div class="tarea-card" style="border-left-color:' + col + ';margin-bottom:0.75rem;">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.8rem;">'
+      + '<div style="flex:1;">'
+      + '<div class="tarea-titulo">' + r.empresa.replace(/</g,'&lt;') + '</div>'
+      + '<div class="tarea-meta" style="margin-top:0.3rem;">'
+      + (r.autor ? '<span style="color:rgba(255,255,255,0.5);font-weight:600;">' + r.autor + '</span> &nbsp;·&nbsp; ' : '')
+      + r.fecha + ' &nbsp;·&nbsp; ' + r.fecha_creacion
+      + '</div>'
+      + (r.descripcion ? '<div class="tarea-desc-text" style="margin-top:0.6rem;">' + r.descripcion.replace(/</g,'&lt;').replace(/\n/g,'<br>') + '</div>' : '')
+      + '</div>'
+      + '<div style="flex-shrink:0;">'
+      + '<select onchange="setReunionEstado(\'' + r.id + '\', this.value)" style="background:rgba(' + (r.estado==='realizada'?'74,222,128':'r.estado===agendada'?'229,255,0':'255,42,109') + ',0.1);border:1px solid ' + col + '44;border-radius:6px;color:' + col + ';padding:4px 8px;font-size:0.72rem;font-family:var(--font-heading);cursor:pointer;">'
+      + '<option value="agendada"' + (r.estado==='agendada'?' selected':'') + '>AGENDADA</option>'
+      + '<option value="realizada"' + (r.estado==='realizada'?' selected':'') + '>REALIZADA</option>'
+      + '<option value="cancelada"' + (r.estado==='cancelada'?' selected':'') + '>CANCELADA</option>'
+      + '</select>'
+      + '</div></div>'
+      + (archivosHtml ? '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.7rem;">' + archivosHtml + '</div>' : '')
+      + '<div class="tarea-actions" style="margin-top:0.7rem;">'
+      + '<button class="tarea-btn tarea-btn-del btn-edit-del" data-id="' + r.id + '" onclick="deleteReunion(this.dataset.id)" style="font-size:0.72rem;">✕ Eliminar</button>'
+      + '</div>'
+      + '<div class="tarea-comments" style="margin-top:0.8rem;">'
+      + (commentsHtml || '<div style="font-size:0.88rem;color:var(--text-dim);margin-bottom:0.4rem;">Sin comentarios.</div>')
+      + '<div class="tarea-comment-input-row" style="margin-top:0.6rem;">'
+      + '<input class="tarea-comment-input" id="rc-' + r.id + '" placeholder="Comentario sobre esta reunión..." maxlength="300">'
+      + '<button class="tarea-comment-send" data-id="' + r.id + '" onclick="addReunionComment(this.dataset.id)">→ Guardar</button>'
+      + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Tareas: file attachments ────────────────────────────────────────────
+var _tareaFiles = [];
+
+window.handleTareaFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        _tareaFiles.push({name: file.name, type: 'image', b64: b64});
+        renderTareaPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        _tareaFiles.push({name: file.name, type: 'file', b64: ev.target.result});
+        renderTareaPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('tarea-file-input').value = '';
+};
+
+function renderTareaPreview() {
+  var prev = document.getElementById('tarea-attach-preview');
+  if (!_tareaFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _tareaFiles.map(function(f, i) {
+    if (f.type === 'image') {
+      return '<div style="position:relative;display:inline-block;"><img src="' + f.b64 + '" style="height:44px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"><button onclick="_removeTareaFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#A855F7;border:none;border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:9px;color:#fff;padding:0;">✕</button></div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);">📄 ' + f.name + '<button onclick="_removeTareaFile(' + i + ')" style="background:none;border:none;cursor:pointer;color:#A855F7;font-size:10px;padding:0;margin-left:4px;">✕</button></div>';
+  }).join('');
+}
+
+window._removeTareaFile = function(i) {
+  _tareaFiles.splice(i, 1);
+  renderTareaPreview();
+};
+
 window.goToTareas = function() {
   if (window._sndNav) window._sndNav();
   document.getElementById('btn-tareas').classList.add('active');
@@ -2798,7 +3031,7 @@ window.goToContactos = function() {
 
 // -- OVERLAY ENGINE --
 window.openOverlay = function(panelId, title) {
-  ['ovl-tareas','ovl-contactos'].forEach(function(id){
+  ['ovl-tareas','ovl-contactos','ovl-reuniones'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -2977,6 +3210,16 @@ function renderTareas() {
       + (t.fecha_completada ? ' &nbsp;·&nbsp; ✓ completada ' + t.fecha_completada : '')
       + '</div>'
       + (desc ? '<div class="tarea-desc-text">' + desc.replace(/</g,'&lt;').replace(/\n/g,'<br>') + '</div>' : '')
+      + (function() {
+          var files = t.archivos || [];
+          if (!files.length) return '';
+          return '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.8rem;">'
+            + files.map(function(f) {
+                if (f.type === 'image') return '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"></a>';
+                return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);text-decoration:none;">📄 ' + f.name + '</a>';
+              }).join('')
+            + '</div>';
+        })()
       + '<div class="tarea-actions">'
       + checkBtn
       + '<button class="tarea-btn tarea-btn-del" data-id="' + t.id + '" onclick="event.stopPropagation();editTarea(this.dataset.id)" style="border-color:rgba(168,85,247,0.3);color:#A855F7;">✎ Editar</button>'
@@ -3050,12 +3293,16 @@ window.addTarea = function(e) {
       estado: 'pendiente',
       fecha_creacion: new Date().toLocaleDateString('es-CL'),
       fecha_completada: null,
+      archivos: _tareaFiles.slice(),
       comentarios: []
     });
+    _tareaFiles = [];
     await _saveTareas();
     pushNotify('OpenCORE — Nueva tarea asignada', name + ': ' + titulo, 'clipboard');
     document.getElementById('tarea-titulo').value = '';
     if (descEl) descEl.value = '';
+    const prevEl = document.getElementById('tarea-attach-preview');
+    if (prevEl) { prevEl.innerHTML = ''; prevEl.style.display = 'none'; }
     prioBtn.dataset.alta = '0';
     prioBtn.style.color = 'rgba(255,42,45,0.25)';
     prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
@@ -3194,6 +3441,7 @@ document.addEventListener('DOMContentLoaded', function() {
   _loadContactosLS();
   renderContactos();
     loadTareas();
+  loadReuniones();
   initAnalyticsCharts();
 
   // ── Detectar cambios vs sesión anterior ────────────────────────────────
