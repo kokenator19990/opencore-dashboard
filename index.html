@@ -3191,8 +3191,8 @@ function renderTareas() {
       + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.9rem;">↑</span>' : '')
       + t.titulo.replace(/</g,'&lt;')
       + '</div>'
-      + '<div id="tedit-' + t.id + '" style="display:none;gap:0.5rem;align-items:center;margin-top:4px;">'
-      + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'){event.stopPropagation();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){event.stopPropagation();cancelEditTarea(\'' + t.id + '\');}">'
+      + '<div id="tedit-' + t.id + '" style="display:none;gap:0.5rem;align-items:center;margin-top:4px;" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">'
+      + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200" onkeydown="if(event.key===\'Enter\'){event.stopPropagation();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){event.stopPropagation();cancelEditTarea(\'' + t.id + '\');}">'
       + '<button class="reply-btn-send" data-id="' + t.id + '" onclick="event.stopPropagation();saveEditTarea(this.dataset.id)">→</button>'
       + '<button class="btn-cancel-edit" data-id="' + t.id + '" onclick="event.stopPropagation();cancelEditTarea(this.dataset.id)">✕</button>'
       + '</div>'
