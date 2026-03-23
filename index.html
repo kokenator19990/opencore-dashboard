@@ -500,8 +500,8 @@ html { overflow-x: hidden; max-width: 100vw; }
 .kpi-action-card:hover { background: rgba(255,255,255,0.08) !important; }
 
 /* Dashboard split layout — desktop only */
-.dash-split { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2.5rem; }
-.dash-left { width: 360px; flex-shrink: 0; }
+.dash-split { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 2.5rem; }
+.dash-left { width: 320px; flex-shrink: 0; }
 .dash-right { flex: 1; min-width: 0; }
 .aq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .aq-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; }
@@ -518,23 +518,24 @@ html { overflow-x: hidden; max-width: 100vw; }
 
 /* On desktop: hide chart-reveal-panel (charts always visible in aq-grid) */
 @media (min-width: 769px) {
-  .chart-reveal-panel { display: none !important; }
-  .dash-left .kpi-grid { margin-bottom: 1rem; }
-  .dash-left .analytics-nav { gap: 0.5rem; }
-  .dash-left .analytics-btn { padding: 0.7rem 0.9rem; min-height: 0; }
-  .dash-left .abn-icon { display: none; }
-  .dash-left .abn-sub { display: none; }
-  .dash-left .abn-label { font-size: 0.7rem; }
-  .dash-left .abn-value { font-size: 1.5rem; }
-  .dash-left .section-title { margin: 1rem 0 0.5rem; }
-  .dash-left .section-title h2 { font-size: 0.72rem; }
+  /* analytics-nav becomes 2x2 grid on the right side */
+  .dash-split .analytics-nav {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-content: start;
+    margin-bottom: 0;
+  }
+  .dash-left .kpi-grid { margin-bottom: 0.75rem; }
+  .dash-left { margin-bottom: 0; }
+  /* chart-reveal-panel shows below the split on desktop */
 }
 
-/* On mobile: single column, hide dash-right */
+/* On mobile: single column, analytics-nav stacks */
 @media (max-width: 768px) {
   .dash-split { display: block; margin-bottom: 0; }
   .dash-left { width: 100%; }
-  .dash-right { display: none; }
 }
 
 /* Quick actions bar */
@@ -1467,7 +1468,8 @@ window.enterDashboard = function() {
 
 <main class="container">
 
-  <div class="dash-split"><div class="dash-left">
+  <div class="dash-split">
+  <div class="dash-left">
   <!-- KPI STRIP: 4 indicadores rápidos -->
   <section class="kpi-grid">
 
@@ -1505,10 +1507,7 @@ window.enterDashboard = function() {
     </a>
   </div>
 
-  <!-- ANALYTICS NAV: 3 botones principales -->
-  <div class="section-title">
-    <h2>ANALÍTICA COMERCIAL</h2>
-  </div>
+  </div><!-- /dash-left -->
 
   <section class="analytics-nav">
 
@@ -1585,18 +1584,7 @@ window.enterDashboard = function() {
       <div class="abn-sub">Pendientes · VER TAREAS ↓</div>
     </button>
 
-  </section>
-  <!-- CONTACTOS PERSONALES — oculto hasta próxima semana
-  <button class="abn-card" onclick="goToContactos()" aria-label="Contactos">
-    <div class="abn-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-    <div id="cnt-contactos" class="abn-num">0</div>
-    <div class="abn-label">CONTACTOS</div>
-    <div class="abn-sub">Personas clave &middot; VER &#8595;</div>
-  </button>
-  -->
-
-
-
+  </section><!-- /analytics-nav -->
   </div><!-- /dash-split -->
 
   <!-- CHART REVEAL PANEL -->
