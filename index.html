@@ -467,6 +467,44 @@ html { overflow-x: hidden; max-width: 100vw; }
 
 .kpi-action-card:hover { background: rgba(255,255,255,0.08) !important; }
 
+/* Dashboard split layout — desktop only */
+.dash-split { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2.5rem; }
+.dash-left { width: 360px; flex-shrink: 0; }
+.dash-right { flex: 1; min-width: 0; }
+.aq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.aq-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; }
+.aq-title { font-family: var(--font-heading); font-size: 0.72rem; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; display: block; }
+
+/* Inline tareas in aq-card */
+.aq-tarea-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; color: var(--text-main); }
+.aq-tarea-item:last-child { border-bottom: none; }
+.aq-tarea-item .aq-t-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.aq-tarea-item .aq-t-dot.alta { background: #FF2A6D; }
+.aq-tarea-item .aq-t-dot.normal { background: #A855F7; }
+.aq-tarea-item .aq-t-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aq-tarea-item .aq-t-check { font-size: 0.7rem; color: #4ADE80; flex-shrink: 0; }
+
+/* On desktop: hide chart-reveal-panel (charts always visible in aq-grid) */
+@media (min-width: 769px) {
+  .chart-reveal-panel { display: none !important; }
+  .dash-left .kpi-grid { margin-bottom: 1rem; }
+  .dash-left .analytics-nav { gap: 0.5rem; }
+  .dash-left .analytics-btn { padding: 0.7rem 0.9rem; min-height: 0; }
+  .dash-left .abn-icon { display: none; }
+  .dash-left .abn-sub { display: none; }
+  .dash-left .abn-label { font-size: 0.7rem; }
+  .dash-left .abn-value { font-size: 1.5rem; }
+  .dash-left .section-title { margin: 1rem 0 0.5rem; }
+  .dash-left .section-title h2 { font-size: 0.72rem; }
+}
+
+/* On mobile: single column, hide dash-right */
+@media (max-width: 768px) {
+  .dash-split { display: block; margin-bottom: 0; }
+  .dash-left { width: 100%; }
+  .dash-right { display: none; }
+}
+
 /* Quick actions bar */
 .quick-actions-bar {
   display: flex; gap: 0.6rem; margin-bottom: 2.5rem; flex-wrap: wrap;
@@ -1396,6 +1434,7 @@ window.enterDashboard = function() {
 
 <main class="container">
 
+  <div class="dash-split"><div class="dash-left">
   <!-- KPI STRIP: 4 indicadores rápidos -->
   <section class="kpi-grid">
 
@@ -1524,6 +1563,32 @@ window.enterDashboard = function() {
   -->
 
 
+
+  </div><!-- /dash-left -->
+  <div class="dash-right">
+    <div class="aq-grid">
+      <div class="aq-card">
+        <div class="aq-title">TOTAL CONTACTADAS</div>
+        <div id="aq-chart-contactadas" style="height:220px;"></div>
+      </div>
+      <div class="aq-card">
+        <div class="aq-title">CANAL DE CONTACTO</div>
+        <div id="aq-chart-canal" style="height:220px;"></div>
+      </div>
+      <div class="aq-card">
+        <div class="aq-title">REUNIONES</div>
+        <div id="aq-chart-reuniones" style="height:220px;"></div>
+      </div>
+      <div class="aq-card aq-tareas-card">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.7rem;border-bottom:1px solid var(--border);padding-bottom:0.6rem;">
+          <span class="aq-title" style="margin:0;flex:1;">TAREAS</span>
+          <span id="aq-tareas-badge" style="font-size:0.72rem;color:#A855F7;font-family:var(--font-heading);"></span>
+          <button class="qab-btn" onclick="goToTareas()" style="font-size:0.65rem;padding:3px 9px;">+ Agregar</button>
+        </div>
+        <div id="aq-tareas-inline" style="max-height:190px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div></div><!-- /dash-split -->
 
   <!-- CHART REVEAL PANEL -->
   <section class="chart-reveal-panel" id="chart-reveal-panel">
@@ -1805,6 +1870,94 @@ window.closeChart = function() {
   document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
   if (activeChart) { activeChart.dispose(); activeChart = null; }
   document.getElementById('btn-contactos').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+// ── Analytics charts always-visible (desktop 2x2 grid) ───────────────────
+var _aqCharts = {};
+function initAnalyticsCharts() {
+  if (typeof echarts === 'undefined') return;
+  _initAqChart_contactados();
+  _initAqChart_canal();
+  _initAqChart_reuniones();
+  renderTareasInline();
+}
+
+function _initAqChart_contactados() {
+  var dom = document.getElementById('aq-chart-contactadas');
+  if (!dom) return;
+  if (_aqCharts.contactadas) { _aqCharts.contactadas.dispose(); }
+  _aqCharts.contactadas = echarts.init(dom, 'dark');
+  var cats = Object.keys(DATA.cat_enviados || {});
+  var vals = Object.values(DATA.cat_enviados || {});
+  if (!cats.length) {
+    _aqCharts.contactadas.setOption({ backgroundColor:'transparent', title:{ text:'SIN DATOS', left:'center', top:'center', textStyle:{color:'#555',fontFamily:'Space Grotesk',fontSize:13} } });
+    return;
+  }
+  _aqCharts.contactadas.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(0,229,255,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+    grid: { left:'2%', right:'2%', bottom:'18%', top:'5%', containLabel:true },
+    xAxis: { type:'category', data:cats, axisLabel:{ color:'#00E5FF', fontFamily:'Space Grotesk', fontSize:9, rotate: cats.length > 5 ? 30 : 0, interval:0 }, axisLine:{ lineStyle:{ color:'rgba(0,229,255,0.15)' } } },
+    yAxis: { type:'value', splitLine:{ lineStyle:{ color:'rgba(0,229,255,0.05)', type:'dashed' } }, axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:9 } },
+    series: [{ type:'bar', barWidth:'60%', data:vals, itemStyle:{ borderRadius:[4,4,0,0], color:function(p){ var c=['#00E5FF','#B200FF','#E5FF00','#00FFAA','#FF2A6D','#FF6B35','#9B59B6','#3498DB','#2ECC71','#F1C40F'][p.dataIndex%10]; return new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:c},{offset:1,color:c+'20'}]); } }, label:{ show:true, position:'top', color:'#00E5FF', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:10 } }]
+  });
+}
+
+function _initAqChart_canal() {
+  var dom = document.getElementById('aq-chart-canal');
+  if (!dom) return;
+  if (_aqCharts.canal) { _aqCharts.canal.dispose(); }
+  _aqCharts.canal = echarts.init(dom, 'dark');
+  var labels = ['Correo','LinkedIn','Llamadas','Referidos'];
+  var colors = ['#00E5FF','#B200FF','#E5FF00','#00FFAA'];
+  var vals = [DATA.canal_correo||0, DATA.canal_linkedin||0, DATA.canal_llamadas||0, DATA.canal_referidos||0];
+  _aqCharts.canal.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(229,255,0,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+    grid: { left:'2%', right:'2%', bottom:'10%', top:'5%', containLabel:true },
+    xAxis: { type:'category', data:labels, axisLabel:{ color:'#E5FF00', fontFamily:'Space Grotesk', fontSize:10, fontWeight:'bold' }, axisLine:{ lineStyle:{ color:'rgba(229,255,0,0.15)' } } },
+    yAxis: { type:'value', splitLine:{ lineStyle:{ color:'rgba(229,255,0,0.05)', type:'dashed' } }, axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:9 } },
+    series: [{ type:'bar', barWidth:'50%', data:vals.map(function(v,i){ return { value:v, itemStyle:{ borderRadius:[4,4,0,0], color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:colors[i]},{offset:1,color:colors[i]+'20'}]) } }; }), label:{ show:true, position:'top', color:'#E5FF00', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:11 } }]
+  });
+}
+
+function _initAqChart_reuniones() {
+  var dom = document.getElementById('aq-chart-reuniones');
+  if (!dom) return;
+  if (_aqCharts.reuniones) { _aqCharts.reuniones.dispose(); }
+  _aqCharts.reuniones = echarts.init(dom, 'dark');
+  var totalR = reuniones;
+  var restante = Math.max(0, DATA.enviados - totalR);
+  if (totalR > 0) {
+    _aqCharts.reuniones.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'item', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(255,42,42,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'}, formatter:'{b}: {c} ({d}%)' },
+      legend: { bottom:'2%', left:'center', textStyle:{color:'#888',fontFamily:'Inter',fontSize:10}, itemGap:14, icon:'circle' },
+      series: [{ name:'Reuniones', type:'pie', radius:['45%','72%'], center:['50%','44%'], itemStyle:{ borderRadius:8, borderColor:'#141414', borderWidth:2 }, label:{ show:false }, data:[{ value:totalR, name:'Logradas', itemStyle:{ color:'#FF2A2A', shadowColor:'rgba(255,42,42,0.4)', shadowBlur:10 } }, { value:restante, name:'Sin reunión', itemStyle:{ color:'rgba(255,255,255,0.04)' } }] }]
+    });
+  } else {
+    _aqCharts.reuniones.setOption({ backgroundColor:'transparent', title:{ text:'0 reuniones aún', subtext:'Se actualizará al registrar', left:'center', top:'center', textStyle:{ color:'#555', fontFamily:'Space Grotesk', fontSize:13 }, subtextStyle:{ color:'#444', fontFamily:'Inter', fontSize:11 } } });
+  }
+}
+
+window.renderTareasInline = function() {
+  var el = document.getElementById('aq-tareas-inline');
+  var badge = document.getElementById('aq-tareas-badge');
+  if (!el) return;
+  var pending = (_tareasCache || []).filter(function(t){ return t.estado !== 'completada'; });
+  if (badge) badge.textContent = pending.length ? pending.length + ' pendiente' + (pending.length > 1 ? 's' : '') : 'al día ✓';
+  if (!pending.length) {
+    el.innerHTML = '<div style="color:var(--text-dim);font-size:0.82rem;padding:0.5rem 0;">Sin tareas pendientes. Buen trabajo.</div>';
+    return;
+  }
+  el.innerHTML = pending.map(function(t) {
+    var alta = t.prioridad === 'alta';
+    return '<div class="aq-tarea-item" onclick="goToTareas()" style="cursor:pointer;">'
+      + '<span class="aq-t-dot ' + (alta ? 'alta' : 'normal') + '"></span>'
+      + '<span class="aq-t-text" title="' + t.titulo.replace(/"/g,'&quot;') + '">' + t.titulo.replace(/</g,'&lt;') + '</span>'
+      + (t.comentarios && t.comentarios.length ? '<span style="font-size:0.68rem;color:#A855F7;">💬' + t.comentarios.length + '</span>' : '')
+      + '</div>';
+  }).join('');
 };
 
 window.showChart = function(type) {
@@ -2661,6 +2814,7 @@ async function loadTareas() {
   } catch(e) { }
   renderTareas();
   checkTareasDot();
+  if (typeof renderTareasInline === 'function') renderTareasInline();
 }
 
 async function _saveTareas() {
@@ -2896,6 +3050,7 @@ window.toggleTarea = async function(id) {
   if (t.estado === 'completada') pushNotify('OpenCORE — Tarea completada ✓', t.titulo, 'white_check_mark');
   renderTareas();
   checkTareasDot();
+  if (typeof renderTareasInline === 'function') renderTareasInline();
 };
 
 window.addTareaComment = async function(id) {
@@ -3013,6 +3168,7 @@ document.addEventListener('DOMContentLoaded', function() {
   _loadContactosLS();
   renderContactos();
     loadTareas();
+  initAnalyticsCharts();
 
   // ── Detectar cambios vs sesión anterior ────────────────────────────────
   const snap = {
