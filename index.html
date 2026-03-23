@@ -2476,32 +2476,61 @@ window.saveEditReply = async function(cid, ri) {
 
 // ── Editar tarea (título) ─────────────────────────────────────────────────
 window.editTarea = function(id) {
-  const t = _tareasCache.find(function(x) { return x.id === id; });
-  if (!t) return;
-  const inp  = document.getElementById('tinp-' + id);
-  const txtEl  = document.getElementById('ttxt-' + id);
-  const editEl = document.getElementById('tedit-' + id);
-  if (inp) inp.value = t.titulo;
-  if (txtEl)  txtEl.style.display  = 'none';
-  if (editEl) editEl.style.display = 'flex';
-  if (inp) inp.focus();
+  _editingTareaId = id;
+  _expandedTareaId = id;
+  renderTareas();
+  setTimeout(function() {
+    var inp = document.getElementById('tinp-' + id);
+    if (inp) { inp.select(); inp.focus(); }
+  }, 30);
 };
 window.cancelEditTarea = function(id) {
-  const txtEl  = document.getElementById('ttxt-' + id);
-  const editEl = document.getElementById('tedit-' + id);
-  if (editEl) editEl.style.display = 'none';
-  if (txtEl)  txtEl.style.display  = '';
+  _editingTareaId = null;
+  renderTareas();
 };
 window.saveEditTarea = async function(id) {
-  const inp = document.getElementById('tinp-' + id);
-  const t   = _tareasCache.find(function(x) { return x.id === id; });
+  var inp = document.getElementById('tinp-' + id);
+  var t   = _tareasCache.find(function(x) { return x.id === id; });
   if (!inp || !t) return;
-  const newTitle = inp.value.trim();
+  var newTitle = inp.value.trim();
   if (!newTitle) return;
   t.titulo = newTitle;
+  _editingTareaId = null;
   await _saveTareas();
   if (window._sndSuccess) window._sndSuccess();
   renderTareas();
+};
+
+// ── Adjuntar / borrar archivos en tarea existente ─────────────────────────
+window.addFilesToTarea = function(id, files) {
+  var t = _tareasCache.find(function(x) { return x.id === id; });
+  if (!t) return;
+  if (!t.archivos) t.archivos = [];
+  var total = files.length, count = 0;
+  function done() { count++; if (count >= total) { _saveTareas(); renderTareas(); } }
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        t.archivos.push({name: file.name, type: 'image', b64: b64}); done();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); done(); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        t.archivos.push({name: file.name, type: 'file', b64: ev.target.result}); done();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+};
+window.deleteTareaFile = function(tid, fi) {
+  var t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.archivos) return;
+  window.confirmDialog('¿Borrar este archivo?', 'Borrar', async function() {
+    t.archivos.splice(fi, 1);
+    await _saveTareas();
+    renderTareas();
+  });
 };
 
 // ── Editar / borrar comentarios de tarea ──────────────────────────────────
@@ -3105,6 +3134,7 @@ function _showTareasWarn(msg) {
 }
 
 let _expandedTareaId = null;
+let _editingTareaId  = null;
 
 window.expandTarea = function(id) {
   _expandedTareaId = (_expandedTareaId === id) ? null : id;
@@ -3191,11 +3221,6 @@ function renderTareas() {
       + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.9rem;">↑</span>' : '')
       + t.titulo.replace(/</g,'&lt;')
       + '</div>'
-      + '<div id="tedit-' + t.id + '" style="display:none;gap:0.5rem;align-items:center;margin-top:4px;" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">'
-      + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200" onkeydown="if(event.key===\'Enter\'){event.stopPropagation();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){event.stopPropagation();cancelEditTarea(\'' + t.id + '\');}">'
-      + '<button class="reply-btn-send" data-id="' + t.id + '" onclick="event.stopPropagation();saveEditTarea(this.dataset.id)">→</button>'
-      + '<button class="btn-cancel-edit" data-id="' + t.id + '" onclick="event.stopPropagation();cancelEditTarea(this.dataset.id)">✕</button>'
-      + '</div>'
       + '</div>'
       + '</div>'
       + '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">'
@@ -3205,27 +3230,46 @@ function renderTareas() {
       + '</div>';
 
     // Expanded body (only when open)
+    const isEditing = _editingTareaId === t.id;
+    const editForm = isEditing
+      ? '<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
+        + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200" value="' + t.titulo.replace(/"/g,'&quot;').replace(/</g,'&lt;') + '"'
+        + ' onkeydown="if(event.key===\'Enter\'){saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
+        + '<button class="reply-btn-send" onclick="saveEditTarea(\'' + t.id + '\')">→ Guardar</button>'
+        + '<button class="btn-cancel-edit" onclick="cancelEditTarea(\'' + t.id + '\')">✕</button>'
+        + '</div>'
+      : '';
+    const filesHtml = (function() {
+      var files = t.archivos || [];
+      if (!files.length) return '';
+      return '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">'
+        + files.map(function(f, fi) {
+            var delBtn = '<button onclick="deleteTareaFile(\'' + t.id + '\',' + fi + ')" title="Borrar archivo" style="background:rgba(255,42,42,0.15);border:1px solid rgba(255,42,42,0.3);border-radius:4px;color:#FF2A6D;cursor:pointer;font-size:0.65rem;padding:2px 5px;flex-shrink:0;">✕</button>';
+            if (f.type === 'image') {
+              return '<div style="display:inline-flex;align-items:center;gap:3px;">'
+                + '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"></a>'
+                + delBtn + '</div>';
+            }
+            return '<div style="display:inline-flex;align-items:center;gap:3px;">'
+              + '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);text-decoration:none;">📄 ' + f.name + '</a>'
+              + delBtn + '</div>';
+          }).join('')
+        + '</div>';
+    })();
     const body = '<div class="tarea-card-body">'
+      + editForm
       + '<div class="tarea-meta">'
       + (t.autor ? '<span style="color:rgba(255,255,255,0.55);font-weight:600;">' + t.autor.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '')
       + t.fecha_creacion
       + (t.fecha_completada ? ' &nbsp;·&nbsp; ✓ completada ' + t.fecha_completada : '')
       + '</div>'
       + (desc ? '<div class="tarea-desc-text">' + desc.replace(/</g,'&lt;').replace(/\n/g,'<br>') + '</div>' : '')
-      + (function() {
-          var files = t.archivos || [];
-          if (!files.length) return '';
-          return '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.8rem;">'
-            + files.map(function(f) {
-                if (f.type === 'image') return '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"></a>';
-                return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);text-decoration:none;">📄 ' + f.name + '</a>';
-              }).join('')
-            + '</div>';
-        })()
+      + filesHtml
       + '<div class="tarea-actions">'
       + checkBtn
-      + '<button class="tarea-btn tarea-btn-del" data-id="' + t.id + '" onclick="event.stopPropagation();editTarea(this.dataset.id)" style="border-color:rgba(168,85,247,0.3);color:#A855F7;">✎ Editar</button>'
-      + '<button class="tarea-btn tarea-btn-del" data-id="' + t.id + '" onclick="event.stopPropagation();deleteTarea(this.dataset.id)" style="margin-left:auto;opacity:0.5;">✕ Eliminar</button>'
+      + '<button class="tarea-btn tarea-btn-del" onclick="event.stopPropagation();editTarea(\'' + t.id + '\')" style="border-color:rgba(168,85,247,0.3);color:#A855F7;">✎ Editar</button>'
+      + '<label class="tarea-btn" title="Adjuntar archivo o imagen" style="border-color:rgba(0,229,255,0.25);color:rgba(0,229,255,0.7);cursor:pointer;display:inline-flex;align-items:center;gap:0.3rem;" onclick="event.stopPropagation()">📎<input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="addFilesToTarea(\'' + t.id + '\',this.files);this.value=\'\';"></label>'
+      + '<button class="tarea-btn tarea-btn-del" onclick="event.stopPropagation();deleteTarea(\'' + t.id + '\')" style="margin-left:auto;opacity:0.5;">✕ Eliminar</button>'
       + '</div>'
       + '<div class="tarea-comments" style="margin-top:1rem;">'
       + (commentsHtml || '<div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem;">Sin comentarios aún.</div>')
