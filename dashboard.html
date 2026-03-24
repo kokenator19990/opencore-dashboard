@@ -1,0 +1,3909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Opencore Stats</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Opencore Stats">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<!-- iOS startup image (pantalla antes de cargar el HTML) -->
+<link rel="apple-touch-startup-image" href="splash-ios.png"
+      media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-ios.png"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-ios.png"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-ios.png"
+      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+<link rel="apple-touch-startup-image" href="splash-ios.png"
+      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="splash-ios.png">
+<!-- background negro inmediato antes de que cargue CSS -->
+<style>html,body{background:#000!important}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg-panel: #141414;
+  --border: #222222;
+  --text-main: #ffffff;
+  --text-dim: #c8c8c8;
+  --accent-cyan: #00E5FF;
+  --accent-yellow: #E5FF00;
+  --accent-red: #FF2A2A;
+  --accent-purple: #B200FF;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+}
+html {
+  width: 100%;
+}
+
+/* Prevenir zoom automático de iOS en inputs (trigger: font-size < 16px) */
+input, textarea, select {
+  font-size: 16px !important;
+}
+/* Permitir pinch-zoom solo en el lightbox de fotos */
+#lightbox-overlay {
+  touch-action: pinch-zoom;
+}
+
+/* ANIMATED GRID */
+.particles-bg {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+}
+.particles-bg::before {
+  content: "";
+  position: absolute; width: 200%; height: 200%; top: -50%; left: -25%;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(400px) rotateX(65deg);
+  animation: gridScroll 15s linear infinite;
+}
+@keyframes gridScroll {
+  0%   { transform: perspective(400px) rotateX(65deg) translateY(0); }
+  100% { transform: perspective(400px) rotateX(65deg) translateY(60px); }
+}
+
+/* HEADER */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  position: sticky; top: 0;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.header-meta { display: flex; align-items: center; gap: 1.2rem; }
+.header-logo-sub { font-family: var(--font-heading); font-size: 0.56rem; letter-spacing: 3px; color: rgba(0,229,255,0.65); text-transform: uppercase; }
+.feedback-btn {
+  font-family: var(--font-heading); font-size: 0.89rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--accent-cyan);
+  background: rgba(0,229,255,0.06);
+  border: 1px solid rgba(0,229,255,0.35);
+  padding: 10px 20px; border-radius: 10px;
+  text-decoration: none; transition: all 0.3s ease;
+  white-space: nowrap;
+}
+.feedback-btn:hover {
+  background: rgba(0,229,255,0.15);
+  box-shadow: 0 0 15px rgba(0,229,255,0.4);
+}
+.badge {
+  font-size: 0.76rem; font-family: var(--font-heading);
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0,229,255,0.3);
+  padding: 4px 12px; border-radius: 8px;
+}
+
+/* CONTAINER */
+.container {
+  position: relative; z-index: 10;
+  max-width: 1400px; margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+/* KPI STRIP */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.kpi-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  padding: 2rem 1.5rem;
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.kpi-card.solid { background: rgba(255,255,255,0.05); }
+.kpi-card:hover { background: rgba(255,255,255,0.07); }
+.kpi-label {
+  font-size: 0.81rem; font-weight: 700;
+  letter-spacing: 2px; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 0.75rem;
+}
+.kpi-value {
+  font-family: var(--font-heading);
+  font-size: 3.5rem; font-weight: 700;
+  letter-spacing: -3px; line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.kpi-sub {
+  font-size: 0.81rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.accent-cyan   { color: var(--accent-cyan)   !important; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+.accent-yellow { color: var(--accent-yellow) !important; text-shadow: 0 0 10px rgba(229,255,0,0.3); }
+.accent-red    { color: var(--accent-red)    !important; }
+
+/* Ring KPI */
+.ring-card { align-items: center; text-align: center; justify-content: center; gap: 0.5rem; }
+.kpi-grid .ring-card { flex-direction: row; text-align: left; justify-content: flex-start; gap: 1.5rem; padding: 1.25rem 1.5rem; }
+.progress-ring { position: relative; width: 90px; height: 90px; }
+.progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.progress-ring circle { fill: transparent; stroke-width: 6; stroke-linecap: square; }
+.progress-ring .bg { stroke: #2a2a2a; }
+.progress-ring .progress {
+  stroke: var(--accent-cyan);
+  stroke-dasharray: 283; stroke-dashoffset: 283;
+  transition: stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);
+  filter: drop-shadow(0 0 4px rgba(0,229,255,0.5));
+}
+.ring-text {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+}
+
+/* SECTION TITLE */
+.section-title {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.section-title h2 {
+  font-family: var(--font-heading); font-weight: 700;
+  font-size: 0.92rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-dim); margin: 0;
+}
+
+/* ANALYTICS NAV — 4 main buttons */
+.analytics-nav {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem; margin-bottom: 2rem;
+}
+.analytics-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2.25rem 2rem;
+  text-align: left; cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  display: flex; flex-direction: column; gap: 0.4rem;
+  color: var(--text-main);
+}
+.analytics-btn::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: var(--text-dim); opacity: 0.3; transition: all 0.3s;
+}
+.analytics-btn:hover {
+  background: rgba(255,255,255,0.02);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.analytics-btn.btn-contactos.active::before { background: var(--accent-cyan); opacity: 1; box-shadow: 0 0 15px var(--accent-cyan); }
+.analytics-btn.btn-canal.active::before    { background: var(--accent-yellow); opacity: 1; box-shadow: 0 0 15px var(--accent-yellow); }
+.analytics-btn.btn-reuniones.active::before { background: var(--accent-red); opacity: 1; box-shadow: 0 0 15px var(--accent-red); }
+.analytics-btn.btn-tareas.active::before   { background: #A855F7; opacity: 1; box-shadow: 0 0 15px #A855F7; }
+.analytics-btn.btn-contactos.active { background: rgba(0,229,255,0.03); border-color: rgba(0,229,255,0.25); }
+.analytics-btn.btn-canal.active    { background: rgba(229,255,0,0.02); border-color: rgba(229,255,0,0.2); }
+.analytics-btn.btn-reuniones.active { background: rgba(255,42,42,0.03); border-color: rgba(255,42,42,0.25); }
+.analytics-btn.btn-tareas.active   { background: rgba(168,85,247,0.04); border-color: rgba(168,85,247,0.3); }
+.analytics-btn.btn-tareas:hover .abn-icon,
+.analytics-btn.btn-tareas.active .abn-icon {
+  color: #A855F7;
+  filter: drop-shadow(0 0 6px #A855F7) drop-shadow(0 0 14px rgba(168,85,247,0.5));
+}
+.analytics-btn.btn-tareas.active .abn-value { color: #A855F7; text-shadow: 0 0 20px rgba(168,85,247,0.4); }
+
+/* Dot de notificación en card tareas */
+.tareas-dot {
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #A855F7; box-shadow: 0 0 8px #A855F7;
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+/* ── Hint visual cuando hay tareas pendientes ─────────────────────────── */
+@keyframes tareasBorderPulse {
+  0%,100% { border-color: rgba(168,85,247,0.15); box-shadow: none; }
+  50%     { border-color: rgba(168,85,247,0.6);  box-shadow: 0 0 24px rgba(168,85,247,0.18); }
+}
+@keyframes tareasScan {
+  0%         { transform: translateX(-160%); opacity: 0; }
+  15%,85%    { opacity: 1; }
+  100%       { transform: translateX(440%); opacity: 0; }
+}
+@keyframes tapHintPulse {
+  0%,100% { opacity: 0.45; color: var(--text-dim); }
+  50%     { opacity: 1;    color: #A855F7; }
+}
+.btn-tareas.has-pending {
+  animation: tareasBorderPulse 2.4s ease-in-out infinite;
+}
+.btn-tareas.has-pending::after {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 38%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(168,85,247,0.16), transparent);
+  animation: tareasScan 3.2s ease-in-out infinite;
+  pointer-events: none; border-radius: inherit;
+}
+.btn-tareas.has-pending .abn-sub {
+  animation: tapHintPulse 2s ease-in-out infinite;
+}
+
+/* Sección tareas */
+.tarea-card {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-left: 3px solid #FF2A6D; padding: 1rem 1.2rem;
+  margin-bottom: 0.75rem; transition: border-color 0.3s;
+  border-radius: 12px;
+}
+.tarea-card.completada { border-left-color: #4ADE80; opacity: 0.85; }
+.tarea-titulo {
+  font-family: var(--font-heading); font-size: 0.95rem;
+  font-weight: 700; letter-spacing: 1px; color: var(--text-main);
+  margin-bottom: 0.3rem; cursor: pointer; line-height: 1.4;
+}
+.tarea-card.completada .tarea-titulo { color: var(--text-main); }
+/* Tabs de tareas */
+.tareas-tabs { display:flex; gap:0; margin-bottom:1.2rem; border-bottom:1px solid var(--border); }
+.tareas-tab { font-family:var(--font-heading); font-size:0.78rem; letter-spacing:2px; padding:6px 14px 8px; cursor:pointer; border:none; background:transparent; color:var(--text-dim); border-bottom:2px solid transparent; transition:all 0.2s; }
+.tareas-tab:hover { color:var(--text-main); }
+.tareas-tab.active-pendientes { color:#FF2A6D; border-bottom-color:#FF2A6D; }
+.tareas-tab.active-completadas { color:#4ADE80; border-bottom-color:#4ADE80; }
+.tareas-tab.active-historial   { color:#A855F7; border-bottom-color:#A855F7; }
+/* Historial lista compacta */
+.hist-item { display:flex; align-items:center; gap:0.6rem; padding:6px 10px; border-radius:8px; font-size:0.85rem; color:var(--text-dim); margin-bottom:4px; background:rgba(255,255,255,0.02); }
+.hist-item:hover { background:rgba(255,255,255,0.04); }
+.hist-badge { font-size:0.65rem; font-family:var(--font-heading); letter-spacing:1px; padding:2px 6px; border-radius:4px; flex-shrink:0; }
+.hist-badge.done  { background:rgba(74,222,128,0.12); color:#4ADE80; border:1px solid rgba(74,222,128,0.25); }
+.hist-badge.del   { background:rgba(255,42,109,0.10); color:#FF2A6D; border:1px solid rgba(255,42,109,0.2); }
+.hist-del-btn { margin-left:auto; background:rgba(255,42,109,0.1); border:1px solid rgba(255,42,109,0.2); border-radius:5px; color:rgba(255,42,109,0.5); cursor:pointer; font-size:0.7rem; padding:2px 7px; flex-shrink:0; transition:all 0.2s; }
+.hist-del-btn:hover { background:rgba(255,42,109,0.25); color:#FF2A6D; }
+.tarea-meta { font-size: 0.97rem; color: var(--text-dim); margin-bottom: 0.6rem; }
+.tarea-pill {
+  display: inline-block; font-size: 0.7rem; letter-spacing: 1.5px;
+  padding: 3px 9px; border-radius: 6px; font-weight: 700;
+  font-family: var(--font-heading); margin-right: 0.4rem;
+}
+.pill-pendiente { background: rgba(255,42,109,0.12); color: #FF2A6D; border: 1px solid rgba(255,42,109,0.35); }
+.pill-completada { background: rgba(74,222,128,0.12); color: #4ADE80; border: 1px solid rgba(74,222,128,0.3); }
+.pill-alta { background: rgba(255,42,42,0.1); color: #FF2A6D; border: 1px solid rgba(255,42,42,0.3); }
+.tarea-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.7rem; }
+.tarea-btn {
+  font-family: var(--font-heading); font-size: 0.9rem; letter-spacing: 1.5px;
+  padding: 9px 17px; border: 1px solid; cursor: pointer;
+  background: transparent; transition: all 0.2s; border-radius: 8px; min-height: 44px;
+}
+.tarea-btn-check { border-color: rgba(74,222,128,0.4); color: #4ADE80; }
+.tarea-btn-check:hover { background: rgba(74,222,128,0.1); }
+.tarea-btn-uncheck { border-color: rgba(168,85,247,0.4); color: #A855F7; }
+.tarea-btn-uncheck:hover { background: rgba(168,85,247,0.1); }
+.tarea-btn-del { border-color: rgba(255,255,255,0.1); color: #999; }
+.tarea-btn-del:hover { border-color: #FF2A6D; color: #FF2A6D; }
+  /* -- OVERLAY PANELS -- */
+  #sections-overlay {
+    display: none; position: fixed; inset: 0; z-index: 8000;
+    background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+    justify-content: center; align-items: flex-start;
+    padding: 20px 16px 40px; overflow-y: auto; overflow-x: hidden;
+    touch-action: pan-y;
+  }
+  #sections-overlay.open { display: flex; }
+  .ovl-panel {
+    background: rgba(10,10,11,0.98); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; width: 100%; max-width: 860px; margin: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.9);
+    animation: ovlIn 0.22s cubic-bezier(0.16,1,0.3,1);
+    overflow-x: hidden;
+  }
+  @keyframes ovlIn {
+    from { opacity:0; transform:scale(0.97) translateY(10px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  .ovl-hdr {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.5rem 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky; top: 0; background: rgba(10,10,11,0.99); z-index: 2;
+    border-radius: 14px 14px 0 0;
+  }
+  .ovl-hdr-title {
+    font-family: var(--font-heading); font-size: 0.72rem;
+    font-weight: 700; letter-spacing: 2.5px; color: var(--accent-cyan);
+  }
+  .ovl-x {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+    color: #bbb; width: 30px; height: 30px; border-radius: 50%;
+    cursor: pointer; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .ovl-x:hover { background: rgba(255,42,42,0.22); border-color: #FF2A6D; color: #FF2A6D; }
+  .ovl-body { padding: 1.5rem; overflow-x: hidden; max-width: 100%; }
+  /* -- CONTACTOS PERSONALES -- */
+  .contacto-card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; transition: border-color .2s; }
+  .contacto-card:hover { border-color: #05D9E8; }
+  .contacto-card.done { opacity: .5; }
+  .contacto-header { display:flex; justify-content:space-between; align-items:flex-start; }
+  .contacto-nombre { font-weight:700; color:#E0E0FF; font-size:.95rem; }
+  .contacto-meta { font-size:.78rem; color:#888; margin-top:2px; }
+  .contacto-notas { font-size:.82rem; color:#aaa; margin-top:6px; }
+  .contacto-actions { display:flex; gap:6px; flex-shrink:0; margin-left:10px; }
+  .contacto-btn { background:none; border:1px solid #333; border-radius:6px; color:#aaa; font-size:.75rem; padding:3px 8px; cursor:pointer; transition:all .2s; }
+  .contacto-btn:hover { border-color:#05D9E8; color:#05D9E8; }
+  .contacto-btn.danger:hover { border-color:#FF2A6D; color:#FF2A6D; }
+  .contacto-comments { margin-top:8px; border-top:1px solid #2a2a4a; padding-top:8px; display:none; }
+  .contacto-comment-item { font-size:.8rem; color:#aaa; padding:3px 0; display:flex; justify-content:space-between; }
+  .contacto-add-form { display:flex; gap:8px; margin-top:8px; }
+  .contacto-add-form input { flex:1; background:#0d0d1a; border:1px solid #333; border-radius:6px; color:#E0E0FF; padding:6px 10px; font-size:.82rem; }
+  .contacto-add-form button { background:#05D9E8; border:none; border-radius:6px; color:#000; font-weight:700; padding:6px 12px; cursor:pointer; font-size:.82rem; }
+  .contacto-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .contacto-new-form { background:#1a1a2e; border:1px solid #2a2a4a; border-radius:10px; padding:16px; margin-bottom:16px; display:none; gap:8px; flex-wrap:wrap; }
+  .contacto-new-form.open { display:flex; }
+  .contacto-new-form input { background:#0d0d1a; border:1px solid #333; border-radius:6px; color:#E0E0FF; padding:7px 10px; font-size:.83rem; min-width:160px; flex:1; }
+  .contacto-new-form button { background:#05D9E8; border:none; border-radius:6px; color:#000; font-weight:700; padding:7px 14px; cursor:pointer; }
+
+.tarea-comments { margin-top: 0.8rem; border-top: 1px solid var(--border); padding-top: 0.7rem; }
+.tarea-comment-item { font-size: 1.02rem; color: #e0e0e0; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 0.4rem; }
+.tarea-comment-item:last-child { border-bottom: none; }
+.tci-text { flex: 1; }
+.tarea-comment-date { font-size: 0.76rem; color: #bbb; margin-left: 0.5rem; }
+.tarea-comment-input-row { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.tarea-edit-row { display: flex; gap: 0.5rem; align-items: center; }
+.tarea-edit-btns { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.tarea-comment-input {
+  flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 10px 14px; font-size: 1.06rem;
+  border-radius: 4px; font-family: var(--font-sans); width: 100%;
+}
+.tarea-comment-input:focus { outline: none; border-color: rgba(168,85,247,0.4); }
+/* Auto-resize: textarea que crece con el contenido */
+textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: border-box; min-height: 80px; display: block; }
+.tarea-comment-send {
+  font-family: var(--font-heading); font-size: 0.93rem; letter-spacing: 1px;
+  padding: 10px 16px; border: 1px solid rgba(168,85,247,0.4); color: #A855F7;
+  background: transparent; cursor: pointer; border-radius: 10px; min-height: 44px;
+}
+.tarea-comment-send:hover { background: rgba(168,85,247,0.1); }
+.tarea-card-header { cursor: pointer; user-select: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.tarea-card-header:hover .tarea-titulo { color: #A855F7; transition: color 0.2s; }
+.tarea-expand-arrow { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.3rem; flex-shrink: 0; transition: transform 0.2s; }
+.tarea-card.tc-expanded .tarea-expand-arrow { transform: rotate(90deg); }
+.tarea-card-body { display: none; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+.tarea-card.tc-expanded .tarea-card-body { display: block; }
+
+/* Pulsing dot para tareas pendientes */
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+.tarea-pending-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #FF2A6D; flex-shrink: 0; margin-top: 5px;
+  animation: dotPulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(255,42,109,0.7);
+}
+
+/* Efecto foco: tarea expandida destaca, resto se atenúan */
+.tarea-card { transition: opacity 0.25s, filter 0.25s, transform 0.25s, border-color 0.25s, box-shadow 0.25s, background 0.25s; }
+#tareas-list.has-expanded .tarea-card:not(.tc-expanded) {
+  opacity: 0.25;
+  filter: blur(0.6px);
+  transform: scale(0.985);
+  /* NO pointer-events: none — permite hacer click para abrir otra tarea */
+  cursor: pointer;
+}
+#tareas-list.has-expanded .tarea-card.tc-expanded {
+  border-color: rgba(0,229,255,0.7);
+  box-shadow: 0 0 0 1px rgba(0,229,255,0.3), 0 10px 40px rgba(0,229,255,0.12), 0 0 80px rgba(0,229,255,0.05);
+  background: rgba(0,229,255,0.04);
+  transform: scale(1.015);
+  z-index: 2;
+  position: relative;
+}
+#tareas-list.has-expanded .tarea-card.tc-expanded .tarea-titulo { font-size: 1.02rem; color: #fff; }
+
+.tarea-comment-count { font-size: 0.8rem; color: #A855F7; background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.25); border-radius: 20px; padding: 2px 9px; flex-shrink: 0; }
+.tarea-desc-text { font-size: 1rem; color: var(--text-dim); line-height: 1.6; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; border-left: 2px solid rgba(168,85,247,0.3); white-space: pre-wrap; }
+.tarea-desc-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-main); padding: 10px 14px; font-size: 1rem; border-radius: 4px; font-family: var(--font-sans); resize: vertical; min-height: 72px; box-sizing: border-box; }
+.tarea-desc-input:focus { outline: none; border-color: rgba(168,85,247,0.5); }
+.tarea-add-form { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.tarea-input {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 13px 14px; font-size: 1.18rem;
+  border-radius: 10px; font-family: var(--font-sans); width: 100%;
+  box-sizing: border-box;
+}
+.tarea-form-actions { display: flex; gap: 0.6rem; align-items: center; }
+.tarea-submit-btn { padding: 12px 22px; font-size: 0.93rem; white-space: nowrap; margin-left: auto; min-height: 48px; }
+.tarea-input:focus { outline: none; border-color: rgba(168,85,247,0.5); box-shadow: 0 0 0 2px rgba(168,85,247,0.08); }
+.tarea-input-row { display: flex; gap: 0.6rem; }
+.tarea-select {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--text-main); padding: 10px 12px; font-size: 0.84rem;
+  border-radius: 4px; font-family: var(--font-body); cursor: pointer;
+}
+
+.abn-icon {
+  width: 32px; height: 32px; margin-bottom: 0.5rem;
+  color: rgba(0,229,255,0.35);
+  filter: drop-shadow(0 0 0px #00E5FF);
+  transition: color 0.35s, filter 0.35s;
+}
+.abn-icon svg { width: 32px; height: 32px; }
+.analytics-btn:hover .abn-icon,
+.analytics-btn.active .abn-icon {
+  color: #00E5FF;
+  filter: drop-shadow(0 0 6px #00E5FF) drop-shadow(0 0 14px rgba(0,229,255,0.5));
+}
+.analytics-btn.btn-reuniones:hover .abn-icon,
+.analytics-btn.btn-reuniones.active .abn-icon {
+  color: #FF2A6D;
+  filter: drop-shadow(0 0 6px #FF2A6D) drop-shadow(0 0 14px rgba(255,42,109,0.5));
+}
+
+.abn-label { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 700; letter-spacing: 2px; color: var(--text-dim); }
+.analytics-btn.active .abn-label { color: var(--text-main); }
+
+.abn-value {
+  font-family: var(--font-heading); font-size: 3rem; font-weight: 400;
+  line-height: 1; margin: 0.25rem 0;
+  color: var(--text-main);
+}
+.analytics-btn.btn-contactos.active .abn-value { color: var(--accent-cyan); text-shadow: 0 0 20px rgba(0,229,255,0.4); }
+.analytics-btn.btn-reuniones.active .abn-value { color: var(--accent-red); text-shadow: 0 0 20px rgba(255,42,42,0.4); }
+
+.abn-sub { font-size: 0.89rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+.abn-card {
+  background: rgba(255,255,255,0.01);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  display: inline-flex; flex-direction: column; align-items: center; gap: 0.35rem;
+  color: var(--text-main); text-align: center; min-width: 180px;
+}
+.abn-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: var(--accent-cyan); opacity: 0.4; transition: opacity 0.3s;
+}
+.abn-card:hover {
+  background: rgba(0,229,255,0.04);
+  border-color: rgba(0,229,255,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.abn-card:hover::before { opacity: 1; }
+.abn-card .abn-icon { color: var(--accent-cyan); margin-bottom: 0.2rem; }
+.abn-num {
+  font-family: var(--font-heading); font-size: 2.5rem; font-weight: 700;
+  line-height: 1; margin: 0.15rem 0; color: var(--text-main);
+}
+
+.kpi-action-card:hover { background: rgba(255,255,255,0.08) !important; }
+
+/* Dashboard split layout — desktop only */
+.dash-split { display: flex; gap: 0.75rem; align-items: stretch; margin-bottom: 2.5rem; }
+.dash-left { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; }
+.dash-right { flex: 1; min-width: 0; }
+.aq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.aq-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 1.2rem; }
+.aq-title { font-family: var(--font-heading); font-size: 0.72rem; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; display: block; }
+
+/* Inline tareas in aq-card */
+.aq-tarea-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; color: var(--text-main); }
+.aq-tarea-item:last-child { border-bottom: none; }
+.aq-tarea-item .aq-t-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.aq-tarea-item .aq-t-dot.alta { background: #FF2A6D; }
+.aq-tarea-item .aq-t-dot.normal { background: #A855F7; }
+.aq-tarea-item .aq-t-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aq-tarea-item .aq-t-check { font-size: 0.7rem; color: #4ADE80; flex-shrink: 0; }
+
+/* On desktop: hide chart-reveal-panel (charts always visible in aq-grid) */
+@media (min-width: 769px) {
+  /* analytics-nav becomes 2x2 grid on the right side */
+  .dash-split .analytics-nav {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-content: start;
+    margin-bottom: 0;
+  }
+  .dash-left .kpi-grid { margin-bottom: 0.75rem; }
+  .dash-left { margin-bottom: 0; }
+  /* chart-reveal-panel shows below the split on desktop */
+}
+
+/* On mobile: single column, analytics-nav stacks */
+@media (max-width: 768px) {
+  .dash-split { display: block; margin-bottom: 0; }
+  .dash-left { width: 100%; }
+}
+
+/* Quick actions bar */
+.quick-actions-bar {
+  display: flex; flex-direction: column; gap: 0.6rem; flex: 1; margin-bottom: 0;
+}
+.qab-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  font-family: var(--font-heading); font-size: 0.88rem; letter-spacing: 2px;
+  flex: 1; border-radius: 10px; cursor: pointer;
+  border: 1px solid; background: transparent; text-decoration: none;
+  transition: all 0.18s; white-space: nowrap; min-height: 52px;
+}
+.qab-btn svg { width: 18px; height: 18px; }
+.qab-comment { color: var(--accent-cyan); border-color: rgba(0,229,255,0.3); }
+.qab-comment:hover { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.6); box-shadow: 0 0 16px rgba(0,229,255,0.1); }
+.qab-excel { color: rgba(229,255,0,0.8); border-color: rgba(229,255,0,0.25); }
+.qab-excel:hover { background: rgba(229,255,0,0.07); border-color: rgba(229,255,0,0.5); box-shadow: 0 0 16px rgba(229,255,0,0.08); }
+
+/* Indicador de datos actualizados */
+@keyframes updatedGlow {
+  0%   { border-color: rgba(0,229,255,0.55); box-shadow: 0 0 18px rgba(0,229,255,0.18), inset 0 0 12px rgba(0,229,255,0.05); }
+  60%  { border-color: rgba(0,229,255,0.3);  box-shadow: 0 0 10px rgba(0,229,255,0.1);  inset 0 0 6px  rgba(0,229,255,0.03); }
+  100% { border-color: rgba(0,229,255,0.18); box-shadow: 0 0 6px  rgba(0,229,255,0.06); }
+}
+.data-updated {
+  border-color: rgba(0,229,255,0.18) !important;
+  box-shadow: 0 0 6px rgba(0,229,255,0.06);
+  animation: updatedGlow 2.5s ease-out forwards;
+}
+.data-updated .kpi-label,
+.data-updated .abn-label {
+  color: rgba(0,229,255,0.6) !important;
+}
+
+/* Canal grid chips */
+.canal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.45rem; margin: 0.7rem 0 0.3rem; width: 100%;
+}
+.canal-chip {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.canal-chip-auto {
+  border-color: rgba(0,229,255,0.25);
+  background: rgba(0,229,255,0.04);
+}
+.canal-chip { transition: border-color 0.3s, background 0.3s; }
+.canal-chip-val {
+  font-family: var(--font-heading); font-size: 1.4rem;
+  font-weight: 700; line-height: 1; color: var(--text-main);
+}
+.canal-chip-auto .canal-chip-val { color: var(--accent-cyan); }
+.canal-chip-lbl {
+  font-size: 0.59rem; letter-spacing: 1.2px;
+  color: var(--text-dim); text-transform: uppercase;
+}
+
+/* CHART REVEAL PANEL */
+.chart-reveal-panel {
+  display: none;
+  background: rgba(10,10,12,0.95);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 14px;
+  margin-bottom: 3rem; position: relative;
+  box-shadow: 0 0 50px rgba(0,229,255,0.04) inset;
+  animation: fanDown 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  min-height: 430px;
+}
+.chart-reveal-panel.active { display: block; }
+@keyframes fanDown {
+  from { opacity: 0; transform: scaleY(0.9) translateY(-20px); transform-origin: top; }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.crp-inner { padding: 2rem; display: flex; flex-direction: column; min-height: 430px; }
+.crp-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 1rem; margin-bottom: 1.5rem;
+}
+.crp-title { font-family: var(--font-heading); font-weight: 700; letter-spacing: 2px; color: var(--accent-cyan); font-size: 1.03rem; }
+.crp-close { cursor: pointer; color: var(--text-dim); font-size: 1.2rem; transition: color 0.3s; }
+.crp-close:hover { color: var(--accent-red); }
+#active-chart { min-height: 350px !important; width: 100% !important; flex-grow: 1; }
+
+/* COMMENT WALL */
+.comment-board { margin-bottom: 3rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group textarea {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); color: #eeeeee;
+  padding: 1rem; font-family: var(--font-sans); font-size: 1rem;
+  resize: vertical; transition: var(--transition);
+}
+.form-group textarea:focus {
+  outline: none; border-color: var(--accent-cyan);
+  box-shadow: inset 4px 0 0 var(--accent-cyan);
+}
+.btn-primary {
+  background: var(--text-main); color: var(--bg);
+  border: none; font-family: var(--font-sans);
+  padding: 10px 20px; font-size: 0.92rem; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+  transition: background 0.3s; border-radius: 10px;
+}
+.btn-primary:hover { background: var(--accent-cyan); }
+.comments-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.comment-item {
+  border: 1px solid var(--border); padding: 1.25rem 1.5rem;
+  background: var(--bg-panel); border-left: 2px solid var(--accent-yellow);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+  border-radius: 12px;
+}
+.comment-text { font-size: 1rem; line-height: 1.65; white-space: pre-wrap; color: #eeeeee; }
+.comment-meta { font-size: 0.81rem; color: var(--text-dim); margin-top: 0.5rem; letter-spacing: 1px; text-transform: uppercase; }
+.comment-del {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 0.7rem; font-weight: 700; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; flex-shrink: 0;
+}
+.comment-del:hover { color: var(--accent-red); }
+.comment-actions { display: flex; flex-direction: row; align-items: center; gap: 0.6rem; flex-shrink: 0; padding-left: 0.75rem; }
+.btn-edit-inline {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6); cursor: pointer;
+  font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;
+  transition: all 0.15s; line-height: 1; white-space: nowrap;
+}
+.btn-edit-inline:hover { color: #00E5FF; border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); }
+.btn-edit-del { color: rgba(255,100,100,0.7); border-color: rgba(255,80,80,0.2); background: rgba(255,80,80,0.05); }
+.btn-edit-del:hover { color: #FF2A6D; border-color: rgba(255,42,109,0.5); background: rgba(255,42,109,0.1); }
+.comment-edit-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.25); color: #eee; font-family: var(--font-sans); font-size: 0.92rem; padding: 8px 10px; border-radius: 8px; resize: none; overflow: hidden; min-height: 58px; margin: 6px 0; box-sizing: border-box; line-height: 1.5; }
+.comment-edit-area:focus { outline: none; border-color: rgba(0,229,255,0.5); }
+.edit-action-row { display: flex; gap: 0.5rem; margin-top: 4px; }
+.btn-save-edit { padding: 5px 14px; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.35); color: #00E5FF; border-radius: 6px; font-size: 0.7rem; letter-spacing: 1px; cursor: pointer; font-family: var(--font-heading); }
+.btn-cancel-edit { padding: 5px 11px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #666; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+.comment-replies { margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.5rem; }
+.comment-reply-item { padding: 0.55rem 0.75rem; background: rgba(255,255,255,0.025); border-left: 2px solid rgba(0,229,255,0.25); border-radius: 0 10px 10px 0; }
+.comment-reply-text { font-size: 0.95rem; color: #ddd; white-space: pre-wrap; line-height: 1.5; }
+.comment-reply-meta { font-size: 0.67rem; color: #999; margin-top: 0.25rem; letter-spacing: 0.8px; }
+.comment-reply-btn { background: none; border: none; color: var(--text-dim); font-size: 0.67rem; font-family: var(--font-heading); letter-spacing: 1px; cursor: pointer; text-transform: uppercase; margin-top: 0.5rem; padding: 0; display: inline-block; }
+.comment-reply-btn:hover { color: var(--accent-cyan); }
+.reply-input-row { display: none; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem; }
+.reply-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.2); color: var(--text-main); padding: 8px 12px; font-size: 0.95rem; border-radius: 10px; font-family: var(--font-sans); }
+.reply-input-row .reply-btn-send { align-self: flex-end; }
+.reply-input:focus { outline: none; border-color: rgba(0,229,255,0.5); }
+.reply-btn-send { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.3); color: var(--accent-cyan); padding: 8px 14px; font-size: 0.76rem; font-family: var(--font-heading); letter-spacing: 1px; cursor: pointer; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+.empty-state {
+  padding: 3rem; text-align: center; color: var(--text-dim);
+  font-size: 1.03rem; border: 1px dashed var(--border); letter-spacing: 1px;
+}
+
+/* FOOTER */
+.footer {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 4rem 2rem; margin-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.logo-mark {
+  width: 12px; height: 12px; background: var(--text-main);
+  transform: rotate(45deg); box-shadow: 0 0 15px rgba(255,255,255,0.5);
+}
+.footer p {
+  font-size: 0.76rem; font-weight: 700; letter-spacing: 3px; color: var(--text-dim);
+}
+
+/* Pulsing dot for new comments */
+@keyframes pulseDot {
+  0%,100% { transform:scale(1); opacity:1; }
+  50%      { transform:scale(1.4); opacity:0.6; }
+}
+
+/* ── QUICK REPLY CHIPS ───────────────────────────────────────────────── */
+.quick-chip {
+  background: rgba(0,229,255,0.06);
+  border: 1px solid rgba(0,229,255,0.2);
+  color: rgba(0,229,255,0.8);
+  font-family: var(--font-sans);
+  font-size: 0.81rem; font-weight: 600;
+  padding: 7px 12px; border-radius: 20px;
+  cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+.quick-chip:hover, .quick-chip:active {
+  background: rgba(0,229,255,0.14);
+  border-color: rgba(0,229,255,0.5);
+}
+
+/* ── TOUCH RIPPLE ─────────────────────────────────────────────────────── */
+.ripple {
+  position:absolute;border-radius:50%;
+  background:rgba(0,229,255,0.18);
+  transform:scale(0);animation:rippleAnim 0.55s linear;
+  pointer-events:none;
+}
+@keyframes rippleAnim {
+  to { transform:scale(4);opacity:0; }
+}
+
+/* Tareas split: en pantallas pequeñas el form va abajo */
+@media (max-width: 640px) {
+  #tareas-split { flex-direction: column !important; }
+  #tareas-split > div:last-child { width: 100% !important; }
+}
+
+/* ── TABLET (≤ 1024px) ────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .analytics-nav { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+}
+
+/* ── MOBILE (≤ 768px) ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Header compact */
+  .header { padding: 1.1rem 1rem 0.9rem; }
+  .header-inner { gap: 0.75rem; align-items: center; }
+  .header-meta { gap: 0.5rem; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+  .header-inner > div:first-child { margin-top: 6px; }
+  .badge { display: none; }
+  .feedback-btn { font-size: 0.82rem; padding: 9px 13px; letter-spacing: 0.8px; }
+  /* Tarea form — input grande, botones compactos abajo */
+  .tarea-input { font-size: 1.18rem; padding: 14px 14px; }
+  .tarea-submit-btn { font-size: 0.93rem; padding: 12px 16px; min-height: 48px; }
+  #tarea-prio-btn { font-size: 0.78rem; padding: 0 12px; min-height: 44px; }
+  .tarea-btn { font-size: 0.95rem; padding: 10px 18px; min-height: 46px; }
+  .tarea-comment-send { font-size: 0.95rem; padding: 10px 16px; min-height: 46px; width: 100%; justify-content: center; }
+  .tarea-comment-input { font-size: 1.06rem; padding: 14px 16px; min-height: 54px; width: 100%; }
+  .tarea-desc-input { font-size: 1.06rem; }
+  /* Inputs de editar tarea y comentario: apilados verticalmente en mobile */
+  .tarea-edit-row { display: flex; flex-direction: column; gap: 0.6rem; }
+  .tarea-edit-btns { display: flex; gap: 0.5rem; }
+  .tarea-edit-btns button { flex: 1; min-height: 48px; justify-content: center; }
+  .tarea-comment-input-row { flex-direction: column; gap: 0.5rem; }
+  /* Tareas: nueva línea completa bajo los botones */
+  #tareas-header-btn {
+    order: 10; width: 100%; text-align: center; margin-top: 2px;
+    font-size: 0.73rem !important; padding: 6px 12px !important;
+  }
+
+  /* Container */
+  .container { padding: 1.25rem 0.75rem; }
+
+  /* Splash: ocultar stats y texto extra en mobile */
+  .splash-stats { display: none !important; }
+  footer.footer { display: none; }
+
+  /* KPI grid: 2x2 on mobile */
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .ring-card { grid-column: auto; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0.75rem; gap: 0.4rem; }
+  .progress-ring { width: 58px; height: 58px; flex-shrink: 0; }
+  .ring-text { font-size: 0.86rem; }
+  .kpi-card { padding: 1rem 0.75rem; min-height: 100px; justify-content: center; }
+  .kpi-value { font-size: 1.9rem; letter-spacing: -1px; }
+  .kpi-label { font-size: 0.67rem; margin-bottom: 0.3rem; }
+  .kpi-sub { font-size: 0.67rem; }
+
+  /* Analytics nav: 2 columns on mobile */
+  .analytics-nav { grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.5rem; }
+  .analytics-btn { padding: 1.25rem 1.25rem; }
+  .abn-icon { width: 24px; height: 24px; margin-bottom: 0.35rem; }
+  .abn-icon svg { width: 24px; height: 24px; }
+  .abn-value { font-size: 2.5rem; }
+  .canal-grid { gap: 0.35rem; margin: 0.5rem 0 0.25rem; }
+  .canal-chip { padding: 0.4rem 0.5rem; }
+  .canal-chip-val { font-size: 1.2rem; }
+
+  /* Section titles */
+  .section-title h2 { font-size: 0.85rem; }
+
+  /* Chart panel */
+  .chart-reveal-panel { padding: 1rem 0.75rem; }
+  .crp-inner { padding: 1rem; }
+  #active-chart { height: 220px !important; }
+
+  /* Comment modal full-screen on mobile */
+  #comment-modal-overlay > div {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex; flex-direction: column;
+    padding: 1.5rem 1.25rem !important;
+  }
+  #modal-comment-text { flex: 1; font-size: 1rem; resize: none; }
+
+  /* Comments list */
+  .comment-item { padding: 0.85rem; }
+  .comment-text { font-size: 0.97rem; }
+  .comment-meta { font-size: 0.78rem; }
+  .tarea-meta { font-size: 0.94rem; }
+  .tarea-comment-item { font-size: 1.02rem; }
+  .comment-actions { flex-direction: column; gap: 0.4rem; padding-left: 0.5rem; }
+  .comment-del, .btn-edit-inline { min-height: 32px; padding: 4px 10px; font-size: 0.7rem; }
+  .abn-label { font-size: 1.0rem; }
+  .abn-sub { font-size: 0.93rem; }
+
+  /* Toast */
+  #comment-toast { bottom: 0.75rem; right: 0.75rem; left: 0.75rem; max-width: 100%; }
+
+  /* ── Voice FAB (oculto) ──────────────────────────────────────────── */
+  #voice-fab {
+    display: none !important; position: fixed; bottom: 28px; right: 20px;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: rgba(4,4,4,0.72); border: 1.5px solid rgba(0,229,255,0.28);
+    align-items: center; justify-content: center; z-index: 600;
+    cursor: pointer; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45); transition: border-color 0.2s;
+  }
+  #voice-fab.vf-on {
+    border-color: rgba(0,229,255,0.9);
+    animation: vfPulse 1.1s ease-out infinite;
+  }
+  @keyframes vfPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(0,229,255,0.5); }
+    70%  { box-shadow: 0 0 0 16px rgba(0,229,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,229,255,0); }
+  }
+  #voice-toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: rgba(6,6,6,0.9); border: 1px solid rgba(0,229,255,0.22);
+    border-radius: 10px; padding: 9px 18px;
+    font-family: inherit; font-size: 0.71rem; letter-spacing: 1.5px;
+    color: rgba(0,229,255,0.9); text-transform: uppercase;
+    white-space: nowrap; max-width: 84vw; overflow: hidden; text-overflow: ellipsis;
+    z-index: 601; display: none; text-align: center; pointer-events: none;
+  }
+
+  /* iOS: evita zoom automático al enfocar inputs */
+  input, textarea, select { font-size: 16px !important; }
+
+  /* Overlay — bottom sheet en mobile */
+  #sections-overlay { align-items: flex-end; padding: 0; overflow: hidden; touch-action: pan-y; }
+  .ovl-panel { border-radius: 16px 16px 0 0; max-height: 88vh; overflow-y: auto; overflow-x: hidden; width: 100%; margin: 0; touch-action: pan-y; overscroll-behavior: contain; }
+}
+
+/* ── PHONE (≤ 480px) ─────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .header-inner > a { transform: scale(0.8); transform-origin: left center; }
+  .kpi-value { font-size: 1.9rem; }
+  .abn-value { font-size: 2.2rem; }
+  .ring-card { gap: 1rem; padding: 1rem; }
+  .progress-ring { width: 60px; height: 60px; }
+  .ring-text { font-size: 0.86rem; }
+  .analytics-btn { padding: 1rem; }
+
+  /* Comment board */
+  #local-comment-text { font-size: 0.97rem; }
+  .btn-primary { width: 100%; padding: 0.85rem; font-size: 0.86rem; }
+}
+
+/* ── Logo glow animation ───────────────────────────────────────────────── */
+.oc-halo { animation: oc-pulse 3.8s ease-in-out infinite; }
+@keyframes oc-pulse { 0%,100% { opacity:.46; } 50% { opacity:.78; } }
+@media (prefers-reduced-motion: reduce) { .oc-halo { animation:none; opacity:.55; } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SPACE BACKGROUND ═══════════════ -->
+<canvas id="space-bg" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+<script>
+(function() {
+  const cv = document.getElementById('space-bg');
+  const cx = cv.getContext('2d');
+  let W, H, stars, orbs, rays;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function init() {
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+    stars = Array.from({length:220}, () => ({
+      x:rand(0,W), y:rand(0,H),
+      r:rand(0.3,1.5),
+      a:rand(0.15,0.65),
+      speed:rand(0.04,0.18),
+      tw:rand(0,Math.PI*2),
+      tws:rand(0.004,0.022),
+    }));
+    orbs = [
+      {cx:W*0.85, cy:H*0.15, r:60, col:'0,229,255', spd:0.00025, ang:0, dR:20, op:0.07},
+      {cx:W*0.10, cy:H*0.75, r:32, col:'0,180,255', spd:0.00045, ang:1.3, dR:10, op:0.05},
+      {cx:W*0.50, cy:H*0.90, r:20, col:'120,210,255',spd:0.00075, ang:2.5, dR:7,  op:0.04},
+    ];
+    rays = Array.from({length:7}, () => newRay());
+  }
+
+  function newRay() {
+    return {x:rand(0,W),y:rand(0,H*0.7),len:rand(70,170),
+      ang:rand(0.25,0.75),spd:rand(1.5,3.5),life:0,max:rand(60,110)};
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    stars.forEach(s => {
+      s.tw+=s.tws; s.y-=s.speed*0.07;
+      if(s.y<-2) s.y=H+2;
+      const al=s.a*(0.55+0.45*Math.sin(s.tw));
+      cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(180,230,255,${al})`; cx.fill();
+    });
+    orbs.forEach(o => {
+      o.ang+=o.spd;
+      const px=o.cx+Math.cos(o.ang)*o.dR;
+      const py=o.cy+Math.sin(o.ang*0.65)*o.dR*0.5;
+      for(let i=3;i>=1;i--) {
+        const g=cx.createRadialGradient(px,py,o.r*0.15,px,py,o.r*i*0.85);
+        g.addColorStop(0,`rgba(${o.col},${o.op*(1.1/i)})`)
+        g.addColorStop(1,`rgba(${o.col},0)`);
+        cx.beginPath(); cx.arc(px,py,o.r*i*0.85,0,Math.PI*2);
+        cx.fillStyle=g; cx.fill();
+      }
+      cx.beginPath();
+      cx.ellipse(px,py,o.r*1.85,o.r*0.42,o.ang*0.28,0,Math.PI*2);
+      cx.strokeStyle=`rgba(${o.col},${o.op*0.55})`; cx.lineWidth=0.5; cx.stroke();
+    });
+    rays.forEach((r,i) => {
+      r.life++;
+      if(r.life>r.max){rays[i]=newRay();return;}
+      r.x+=Math.cos(r.ang)*r.spd; r.y+=Math.sin(r.ang)*r.spd;
+      const p=r.life/r.max;
+      const al=p<0.2?p/0.2:p>0.8?(1-p)/0.2:1;
+      const ex=r.x-Math.cos(r.ang)*r.len, ey=r.y-Math.sin(r.ang)*r.len;
+      const gr=cx.createLinearGradient(r.x,r.y,ex,ey);
+      gr.addColorStop(0,`rgba(0,229,255,${al*0.45})`);
+      gr.addColorStop(1,'rgba(0,229,255,0)');
+      cx.beginPath(); cx.moveTo(r.x,r.y); cx.lineTo(ex,ey);
+      cx.strokeStyle=gr; cx.lineWidth=0.85; cx.stroke();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize',() => { init(); });
+  init(); draw();
+})();
+</script>
+
+<script>
+// Init on load (previously triggered by splash exit)
+window.addEventListener("load", function() {
+  setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 200);
+  setTimeout(function() { if (typeof _askNotifPermission === "function") _askNotifPermission(); }, 800);
+  setTimeout(function() { if (typeof _startPolling === "function") _startPolling(); }, 1200);
+});
+</script>
+<div class="particles-bg"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;gap:3px;" title="Ir al inicio">
+      <svg viewBox="0 0 530 120" width="185" height="42" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+        <defs>
+          <filter id="oc-halo-h" x="-70%" y="-70%" width="240%" height="240%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+          </filter>
+          <filter id="oc-glow-h" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- L1: halo cian -->
+        <g class="oc-halo" filter="url(#oc-halo-h)" opacity="0.68">
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#00E5FF" stroke-width="12"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#00E5FF" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#00E5FF" letter-spacing="1">CORE</text>
+        </g>
+        <!-- L2: bloom blanco -->
+        <g filter="url(#oc-glow-h)" opacity="0.82">
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#fff" letter-spacing="1">CORE</text>
+        </g>
+        <!-- L3: blanco nítido -->
+        <g>
+          <circle cx="50" cy="60" r="35" fill="none" stroke="#fff" stroke-width="12"/>
+          <circle cx="50" cy="60" r="15" fill="#00E5FF"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M120 25L120 95 M120 25L160 25A20 20 0 0 1 180 45A20 20 0 0 1 160 65L120 65"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square"
+            d="M240 25L205 25 M205 25L205 95L240 95 M205 60L230 60"/>
+          <path fill="none" stroke="#fff" stroke-width="12" stroke-linecap="square" stroke-linejoin="miter"
+            d="M270 95L270 25L315 95L315 25"/>
+          <text x="335" y="78" font-family="'Space Grotesk',sans-serif" font-weight="800" font-size="64" fill="#fff" letter-spacing="1">CORE</text>
+        </g>
+      </svg>
+      <div class="header-logo-sub">OPENCORE 2026</div>
+    </div>
+    <div class="header-meta">
+      <!-- Indicador de tareas en header -->
+      <button id="tareas-header-btn" onclick="goToTareas()" style="display:none;font-family:var(--font-heading);font-size:0.7rem;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.3s;white-space:nowrap;border-radius:10px;"></button>
+      <span class="badge">ACT: 20/03/2026 10:33</span>
+    </div>
+  </div>
+</header>
+
+<!-- COMMENT TOAST ALERT -->
+<div id="comment-toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;
+  background:rgba(10,10,15,0.96);border:1px solid rgba(0,229,255,0.4);
+  box-shadow:0 0 24px rgba(0,229,255,0.2),0 8px 32px rgba(0,0,0,0.6);
+  padding:0.9rem 1.1rem;max-width:320px;gap:0.75rem;
+  align-items:flex-start;backdrop-filter:blur(12px);">
+  <div style="flex:1;cursor:pointer;" onclick="goToComments()">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:700;
+      letter-spacing:2px;color:var(--accent-cyan);margin-bottom:0.3rem;">
+      ● NUEVO COMENTARIO
+    </div>
+    <div id="toast-text" style="font-size:0.86rem;color:rgba(255,255,255,0.8);line-height:1.4;"></div>
+    <div style="font-size:0.65rem;color:var(--text-dim);margin-top:0.35rem;letter-spacing:1px;">
+      CLICK PARA VER →
+    </div>
+  </div>
+  <button onclick="dismissToast()" style="background:none;border:none;color:var(--text-dim);
+    cursor:pointer;font-size:1rem;padding:0;line-height:1;flex-shrink:0;margin-top:-2px;">✕</button>
+</div>
+
+<main class="container">
+
+  <div class="dash-split">
+  <div class="dash-left">
+  <!-- KPI STRIP: 4 indicadores rápidos -->
+  <section class="kpi-grid">
+
+    <!-- Ring: cobertura email -->
+    <div class="kpi-card ring-card solid">
+      <div class="progress-ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="bg" cx="50" cy="50" r="45"></circle>
+          <circle class="progress" id="cobertura-ring" cx="50" cy="50" r="45"></circle>
+        </svg>
+        <div class="ring-text" id="kpi-cobertura-val">0%</div>
+      </div>
+      <div class="kpi-label" style="text-align:center;margin-bottom:0;">% CONTACTADAS</div>
+    </div>
+
+    <!-- Total base -->
+    <div class="kpi-card">
+      <div class="kpi-label">BASE TOTAL</div>
+      <div class="kpi-value" id="kpi-total-val">0</div>
+      <div class="kpi-sub">Prospectos en CRM</div>
+    </div>
+
+  </section>
+
+  <!-- QUICK ACTIONS BAR -->
+  <div class="quick-actions-bar">
+    <button class="qab-btn qab-comment" onclick="document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});setTimeout(function(){document.getElementById('local-comment-text').focus();},400);">
+      <span id="comment-dot" style="display:none;width:7px;height:7px;background:var(--accent-cyan);border-radius:50%;box-shadow:0 0 6px var(--accent-cyan);animation:pulseDot 1.5s infinite;flex-shrink:0;"></span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Agregar Comentario
+    </button>
+    <a href="BDOPENCORE_FINAL.xlsx" download class="qab-btn qab-excel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Descargar Excel
+    </a>
+  </div>
+
+  </div><!-- /dash-left -->
+
+  <section class="analytics-nav">
+
+    <!-- Card 1: Total Contactadas -->
+    <button class="analytics-btn btn-contactos" id="btn-contactos" onclick="showChart('contactos')">
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+        </svg>
+      </div>
+      <div class="abn-label">TOTAL CONTACTADAS</div>
+      <div class="abn-value" id="nav-contactadas">0</div>
+      <div class="abn-sub">Todos los canales · VER GRÁFICO ↗</div>
+    </button>
+
+    <!-- Card 2: Canal de Contacto -->
+    <button class="analytics-btn btn-canal" id="btn-canal" onclick="showChart('canal')">
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 6l11 6 11-6"/>
+          <path d="M1 6v12l11 6 11-6V6"/>
+        </svg>
+      </div>
+      <div class="abn-label">CANAL DE CONTACTO</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;margin-top:0.3rem;">
+        <canvas id="canal-mini-chart" width="80" height="80" style="display:block;"></canvas>
+        <div id="canal-mini-legend" style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;"></div>
+      </div>
+      <div class="canal-grid" style="display:none;">
+        <div class="canal-chip canal-chip-auto">
+          <span class="canal-chip-val" id="canal-correo-val">0</span>
+          <span class="canal-chip-lbl">CORREO</span>
+        </div>
+        <div class="canal-chip">
+          <span class="canal-chip-val" id="canal-li-val">0</span>
+          <span class="canal-chip-lbl">LINKEDIN</span>
+        </div>
+        <div class="canal-chip">
+          <span class="canal-chip-val" id="canal-llamados-val">0</span>
+          <span class="canal-chip-lbl">LLAMADAS</span>
+        </div>
+        <div class="canal-chip">
+          <span class="canal-chip-val" id="canal-red-val">0</span>
+          <span class="canal-chip-lbl">REFERIDOS</span>
+        </div>
+      </div>
+    </button>
+
+    <!-- Card 3: Reuniones -->
+    <button class="analytics-btn btn-reuniones" id="btn-reuniones" onclick="goToReuniones()">
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+      </div>
+      <div class="abn-label">REUNIONES</div>
+      <div class="abn-value" id="nav-reuniones">0</div>
+      <div class="abn-sub">Cierres concertados · VER GRÁFICO ↗</div>
+    </button>
+
+    <!-- Card 4: Tareas -->
+    <button class="analytics-btn btn-tareas" id="btn-tareas" onclick="goToTareas()">
+      <span class="tareas-dot" id="tareas-dot" style="display:none;"></span>
+      <div class="abn-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </div>
+      <div class="abn-label">TAREAS</div>
+      <div class="abn-value" id="nav-tareas-count">0</div>
+      <div class="abn-sub">Pendientes · VER TAREAS ↓</div>
+    </button>
+
+  </section><!-- /analytics-nav -->
+  </div><!-- /dash-split -->
+
+  <!-- CHART REVEAL PANEL -->
+  <section class="chart-reveal-panel" id="chart-reveal-panel">
+    <div class="crp-inner">
+      <div class="crp-header">
+        <span class="crp-title" id="crp-title">—</span>
+        <span class="crp-close" onclick="closeChart()">✕</span>
+      </div>
+      <div id="active-chart"></div>
+    </div>
+  </section>
+
+  <!-- MURO DE COMENTARIOS (inline, siempre visible) -->
+  <div class="section-title" style="margin-top:3rem;" id="muro-comentarios">
+    <h2>MURO DE COMENTARIOS</h2>
+  </div>
+  <section class="comment-board">
+    <form id="local-comment-form">
+      <div class="form-group">
+        <textarea id="local-comment-text" rows="3" maxlength="500"
+          placeholder="Escribe un comentario, actualización o feedback personal..."></textarea>
+      </div>
+      <div id="local-attach-preview" style="display:none;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;"></div>
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <label for="local-file-input" title="Adjuntar imagen" style="display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid rgba(0,229,255,0.3);border-radius:6px;cursor:pointer;background:rgba(0,229,255,0.05);flex-shrink:0;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.12)'" onmouseout="this.style.background='rgba(0,229,255,0.05)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </label>
+        <input type="file" id="local-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="display:none;" onchange="handleLocalFiles(this.files)">
+        <button type="submit" class="btn-primary" style="flex:1;">PUBLICAR</button>
+      </div>
+    </form>
+    <div id="comments-list" class="comments-list"></div>
+  </section>
+
+<!-- OVERLAY: Tareas / Contactos -->
+<div id="sections-overlay" onclick="if(event.target===this)closeOverlay()">
+  <div class="ovl-panel">
+    <div class="ovl-hdr">
+      <span class="ovl-hdr-title" id="ovl-title">PANEL</span>
+      <button class="ovl-x" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="ovl-body">
+
+      <!-- Reuniones -->
+      <div id="ovl-reuniones" style="display:none">
+        <p style="color:var(--text-dim);font-size:0.84rem;margin:0 0 1rem;">Registra y gestiona reuniones. Agrega notas, comentarios y archivos.</p>
+        <section class="comment-board" style="border-top-color:rgba(255,42,109,0.4);">
+          <form id="reunion-form" onsubmit="addReunion(event)" style="display:flex;flex-direction:column;gap:0.7rem;margin-bottom:1.5rem;">
+            <input class="tarea-input" id="reunion-empresa" type="text" maxlength="120" placeholder="Empresa / Contacto *" required>
+            <div style="display:flex;gap:0.6rem;">
+              <input class="tarea-input" id="reunion-fecha" type="date" style="flex:1;" required>
+              <select class="tarea-input" id="reunion-estado" style="flex:1;cursor:pointer;">
+                <option value="agendada">Agendada</option>
+                <option value="realizada">Realizada</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+            </div>
+            <textarea class="tarea-desc-input" id="reunion-desc" maxlength="600" placeholder="Notas / descripción (opcional)..." rows="3"></textarea>
+            <div style="display:flex;gap:0.6rem;align-items:center;">
+              <label class="qab-btn" style="cursor:pointer;color:rgba(255,42,109,0.8);border-color:rgba(255,42,109,0.3);">
+                📎 Adjuntar
+                <input type="file" id="reunion-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="handleReunionFiles(this.files)">
+              </label>
+              <div id="reunion-attach-preview" style="display:none;flex-wrap:wrap;gap:0.4rem;flex:1;"></div>
+              <button type="submit" class="btn-primary tarea-submit-btn" style="margin-left:auto;">+ AGREGAR REUNIÓN</button>
+            </div>
+          </form>
+          <div id="reuniones-list"></div>
+        </section>
+      </div>
+
+      <!-- Tareas -->
+      <div id="ovl-tareas" style="display:none">
+        <div style="display:flex;gap:1.5rem;align-items:flex-start;" id="tareas-split">
+          <!-- Lista principal de tareas -->
+          <div style="flex:1;min-width:0;">
+            <div id="tareas-list"></div>
+          </div>
+          <!-- Panel lateral: nueva tarea -->
+          <div style="width:260px;flex-shrink:0;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.18);border-radius:12px;padding:1.1rem 1rem;">
+            <div style="font-family:var(--font-heading);font-size:0.68rem;letter-spacing:2.5px;color:rgba(168,85,247,0.7);margin-bottom:0.9rem;text-transform:uppercase;">+ Nueva tarea</div>
+            <form class="tarea-add-form" id="tarea-form" onsubmit="addTarea(event)" style="margin-bottom:0;">
+              <input class="tarea-input" id="tarea-titulo" type="text" maxlength="120" placeholder="Título de la tarea..." required style="font-size:0.9rem;padding:10px 12px;">
+              <textarea class="tarea-desc-input" id="tarea-desc" maxlength="600" placeholder="Descripción (opcional)..." rows="3" style="font-size:0.85rem;"></textarea>
+              <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.4rem;">
+                <label class="qab-btn" style="cursor:pointer;color:rgba(168,85,247,0.8);border-color:rgba(168,85,247,0.3);font-size:0.68rem;">
+                  📎 Adjuntar
+                  <input type="file" id="tarea-file-input" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="handleTareaFiles(this.files)">
+                </label>
+                <div id="tarea-attach-preview" style="display:none;flex-wrap:wrap;gap:0.4rem;flex:1;"></div>
+              </div>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <button type="button" id="tarea-prio-btn"
+                  onclick="this.dataset.alta=(this.dataset.alta==='1'?'0':'1');this.style.color=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.3)';this.style.borderColor=this.dataset.alta==='1'?'#FF2A6D':'rgba(255,255,255,0.1)';"
+                  style="height:36px;flex-shrink:0;padding:0 10px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;font-size:0.65rem;font-family:var(--font-heading);letter-spacing:1px;color:rgba(255,255,255,0.3);transition:all 0.2s;"
+                  data-alta="0">⚡ URGENTE</button>
+                <button type="submit" class="btn-primary" style="flex:1;padding:9px 10px;font-size:0.75rem;letter-spacing:1.5px;">ASIGNAR</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contactos Personales -->
+      <div id="ovl-contactos" style="display:none">
+        <section id="sec-contactos">
+          <div class="contacto-section-header">
+            <h2 style="margin:0;font-size:1.1rem;color:#E0E0FF">Contactos Personales</h2>
+            <button onclick="document.getElementById('new-contacto-form').classList.toggle('open')"
+              style="background:#05D9E8;border:none;border-radius:8px;color:#000;font-weight:700;padding:8px 16px;cursor:pointer;font-size:.85rem">+ Agregar</button>
+          </div>
+          <div id="new-contacto-form" class="contacto-new-form">
+            <input id="nc-nombre" placeholder="Nombre" />
+            <input id="nc-meta" placeholder="Meta / cargo" />
+            <input id="nc-notas" placeholder="Notas" />
+            <button onclick="addContacto(event)">Guardar</button>
+          </div>
+          <div id="contactos-list"></div>
+        </section>
+      </div>
+
+    </div><!-- /ovl-body -->
+  </div><!-- /ovl-panel -->
+</div><!-- /sections-overlay -->
+
+</main>
+
+<!-- LIGHTBOX DE IMÁGENES -->
+<div id="lightbox-overlay" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;justify-content:center;align-items:center;cursor:zoom-out;backdrop-filter:blur(6px);">
+  <img id="lightbox-img" src="" style="max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:0 0 60px rgba(0,229,255,0.18);transform:scale(0.85);transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1),opacity 0.18s;" alt="">
+  <div style="position:fixed;top:1rem;right:1.2rem;color:#aaa;font-size:2rem;line-height:1;pointer-events:none;">✕</div>
+</div>
+
+<!-- MODAL COMENTARIO RÁPIDO — mobile-first full-screen -->
+<div id="comment-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:500;justify-content:center;align-items:flex-end;backdrop-filter:blur(8px);">
+  <div style="background:#141414;border-top:2px solid var(--accent-cyan);
+    width:100%;max-width:580px;padding:1.5rem 1.25rem 2rem;
+    box-shadow:0 -8px 40px rgba(0,229,255,0.12);
+    border-radius:16px 16px 0 0;
+    display:flex;flex-direction:column;gap:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-family:var(--font-heading);font-weight:700;letter-spacing:2px;font-size:0.92rem;color:var(--accent-cyan);">+ COMENTARIO</div>
+      <button onclick="closeCommentModal()" style="background:none;border:none;color:#888;font-size:1.5rem;cursor:pointer;padding:0;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <!-- Quick-reply chips -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+      <button class="quick-chip" onclick="quickReply('Muy bien, sigan así 👍')">Muy bien 👍</button>
+      <button class="quick-chip" onclick="quickReply('Enfóquense en LinkedIn')">Enfoque LinkedIn</button>
+      <button class="quick-chip" onclick="quickReply('Aumentar volumen de correos')">+ Correos</button>
+      <button class="quick-chip" onclick="quickReply('Buscar reuniones esta semana')">Buscar reuniones</button>
+    </div>
+    <textarea id="modal-comment-text" rows="3" maxlength="500"
+      placeholder="O escribe tu mensaje aquí..."
+      style="width:100%;background:rgba(255,255,255,0.04);border:1px solid #333;
+        border-radius:8px;color:#fff;padding:0.85rem 1rem;
+        font-family:var(--font-sans);font-size:1rem;resize:none;
+        -webkit-appearance:none;box-sizing:border-box;transition:border-color 0.3s;"
+      onfocus="this.style.borderColor='var(--accent-cyan)'"
+      onblur="this.style.borderColor='#333'"
+    ></textarea>
+
+    <!-- Adjuntos preview -->
+    <div id="attach-preview" style="display:none;flex-wrap:wrap;gap:0.5rem;"></div>
+
+    <!-- Barra de adjuntar + botones -->
+    <div style="display:flex;gap:0.75rem;align-items:stretch;">
+      <!-- Adjuntar archivo -->
+      <label for="modal-file-input" style="
+        display:flex;align-items:center;justify-content:center;gap:0.4rem;
+        background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.25);
+        border-radius:8px;padding:0 16px;cursor:pointer;
+        font-family:var(--font-heading);font-size:0.76rem;font-weight:700;
+        letter-spacing:1px;color:rgba(0,229,255,0.8);white-space:nowrap;
+        min-height:52px;transition:background 0.2s,border-color 0.2s;
+        -webkit-tap-highlight-color:transparent;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+        </svg>
+        ADJUNTAR
+      </label>
+      <input type="file" id="modal-file-input" multiple
+        accept="image/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx"
+        style="display:none;" onchange="handleFiles(this.files)">
+
+      <button onclick="closeCommentModal()" data-snd-custom style="flex:1;background:none;border:1px solid #333;
+        color:#888;padding:14px;font-family:var(--font-sans);font-size:0.86rem;
+        font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:6px;min-height:52px;">
+        CANCELAR
+      </button>
+      <button onclick="submitModalComment()" data-snd-custom class="btn-primary" style="flex:2;padding:14px;font-size:0.92rem;border-radius:6px;min-height:52px;">
+        PUBLICAR
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="logo-mark"></div>
+  <p>OPENCORE CRM // DASHBOARD EJECUTIVO</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>
+const DATA = {"updated": "24/03/2026 10:33", "min_fecha": "17/03/2026", "total": 2830, "enviados": 568, "contactadas": 455, "reuniones_db": 0, "alta": 0, "media": 0, "baja": 0, "pct_email": 79.2, "email_base": 2241, "canales": {}, "cat_enviados": {"Industrial": 171, "Minería": 109, "Logística": 37, "Repuestos": 37, "Seguridad/EPP": 34, "Energía": 21, "Construcción": 20, "Arriendo Maq.": 13, "Automatiz.": 13}, "timeline_labels": ["2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24"], "timeline_vals": [65, 28, 86, 90, 88, 86], "notas_excel": [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}], "canal_correo": 443, "canal_linkedin": 12, "canal_llamadas": 0, "canal_referidos": 0};
+
+// ── Counters ───────────────────────────────────────────────────────────────
+function animateVal(id, end, dur) {
+  const el = document.getElementById(id);
+  if (!el || end === 0) { if(el) el.textContent = 0; return; }
+  let startTs = null;
+  const step = ts => {
+    if (!startTs) startTs = ts;
+    const p = Math.min((ts - startTs) / dur, 1);
+    el.textContent = Math.floor(p * end).toLocaleString();
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = end.toLocaleString();
+  };
+  requestAnimationFrame(step);
+}
+
+// ── Ring ──────────────────────────────────────────────────────────────────
+function animateRing(pct) {
+  const circ = 283;
+  const circle = document.getElementById('cobertura-ring');
+  const text   = document.getElementById('kpi-cobertura-val');
+  circle.style.strokeDasharray  = circ + ' ' + circ;
+  circle.style.strokeDashoffset = circ;
+  setTimeout(() => {
+    circle.style.strokeDashoffset = circ - (pct / 100) * circ;
+    let startTs = null;
+    const step = ts => {
+      if (!startTs) startTs = ts;
+      const p = Math.min((ts - startTs) / 2000, 1);
+      text.textContent = (p * pct).toFixed(1) + '%';
+      if (p < 1) requestAnimationFrame(step);
+      else text.textContent = pct + '%';
+    };
+    requestAnimationFrame(step);
+  }, 120);
+}
+
+// ── Canal counters + total contactadas (desde Excel vía DATA) ────────────
+function getTotalContactadas() {
+  // Leemos directamente del Excel sincronizado
+  return (DATA.canal_correo || 0)
+       + (DATA.canal_linkedin || 0)
+       + (DATA.canal_llamadas || 0)
+       + (DATA.canal_referidos || 0);
+}
+function updateCanalBadges() {
+  document.getElementById('canal-correo-val').textContent   = DATA.canal_correo   || 0;
+  document.getElementById('canal-li-val').textContent       = DATA.canal_linkedin  || 0;
+  document.getElementById('canal-llamados-val').textContent = DATA.canal_llamadas  || 0;
+  document.getElementById('canal-red-val').textContent      = DATA.canal_referidos || 0;
+  const total = getTotalContactadas();
+  document.getElementById('nav-contactadas').textContent = total.toLocaleString();
+  const pct = DATA.total > 0 ? parseFloat((total / DATA.total * 100).toFixed(1)) : 0;
+  document.getElementById('kpi-cobertura-val').textContent = pct + '%';
+  drawCanalMiniChart();
+}
+function drawCanalMiniChart() {
+  const canvas = document.getElementById('canal-mini-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const segments = [
+    { val: DATA.canal_correo   || 0, color: '#00E5FF', label: 'CORREO' },
+    { val: DATA.canal_linkedin  || 0, color: '#B200FF', label: 'LINKEDIN' },
+    { val: DATA.canal_llamadas  || 0, color: '#E5FF00', label: 'LLAMADAS' },
+    { val: DATA.canal_referidos || 0, color: '#FF2A6D', label: 'REFERIDOS' }
+  ].filter(s => s.val > 0);
+  const total = segments.reduce((a, s) => a + s.val, 0);
+  const cx = 40, cy = 40, r = 34, innerR = 20;
+  ctx.clearRect(0, 0, 80, 80);
+  if (total === 0) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 14; ctx.stroke();
+  } else {
+    let startAngle = -Math.PI / 2;
+    segments.forEach(s => {
+      const slice = (s.val / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+      ctx.arc(cx, cy, innerR, startAngle + slice, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = s.color + 'cc';
+      ctx.fill();
+      startAngle += slice;
+    });
+    // center total
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(total, cx, cy);
+  }
+  // legend
+  const legend = document.getElementById('canal-mini-legend');
+  if (legend) {
+    legend.innerHTML = segments.map(s =>
+      '<span style="font-size:0.67rem;color:' + s.color + ';display:flex;align-items:center;gap:2px;">'
+      + '<span style="width:6px;height:6px;border-radius:50%;background:' + s.color + ';display:inline-block;"></span>'
+      + s.label + '</span>'
+    ).join('');
+  }
+}
+// ── Reuniones counter (read-only desde localStorage) ──────────────────────
+let reuniones = parseInt(localStorage.getItem('oc_reuniones_count') || DATA.reuniones_db || 0);
+function updateReunionesBadge() {
+  var realized = (_reunionesCache || []).filter(function(r){ return r.estado === 'realizada'; }).length;
+  var total = (_reunionesCache || []).length;
+  var el = document.getElementById('nav-reuniones');
+  if (el) el.textContent = total ? realized + '/' + total : '0';
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────
+let activeChart = null;
+const NEON = ['#00E5FF','#B200FF','#E5FF00','#FF2A6D','#00FFAA','#FF6B00','#4488FF','#FF88AA'];
+
+window.closeChart = function() {
+  document.getElementById('chart-reveal-panel').classList.remove('active');
+  document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
+  if (activeChart) { activeChart.dispose(); activeChart = null; }
+  document.getElementById('btn-contactos').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+// ── Analytics charts always-visible (desktop 2x2 grid) ───────────────────
+var _aqCharts = {};
+function initAnalyticsCharts() {
+  if (typeof echarts === 'undefined') return;
+  _initAqChart_contactados();
+  _initAqChart_canal();
+  _initAqChart_reuniones();
+  renderTareasInline();
+}
+
+function _initAqChart_contactados() {
+  var dom = document.getElementById('aq-chart-contactadas');
+  if (!dom) return;
+  if (_aqCharts.contactadas) { _aqCharts.contactadas.dispose(); }
+  _aqCharts.contactadas = echarts.init(dom, 'dark');
+  var cats = Object.keys(DATA.cat_enviados || {});
+  var vals = Object.values(DATA.cat_enviados || {});
+  if (!cats.length) {
+    _aqCharts.contactadas.setOption({ backgroundColor:'transparent', title:{ text:'SIN DATOS', left:'center', top:'center', textStyle:{color:'#555',fontFamily:'Space Grotesk',fontSize:13} } });
+    return;
+  }
+  _aqCharts.contactadas.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(0,229,255,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+    grid: { left:'2%', right:'2%', bottom:'18%', top:'5%', containLabel:true },
+    xAxis: { type:'category', data:cats, axisLabel:{ color:'#00E5FF', fontFamily:'Space Grotesk', fontSize:9, rotate: cats.length > 5 ? 30 : 0, interval:0 }, axisLine:{ lineStyle:{ color:'rgba(0,229,255,0.15)' } } },
+    yAxis: { type:'value', splitLine:{ lineStyle:{ color:'rgba(0,229,255,0.05)', type:'dashed' } }, axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:9 } },
+    series: [{ type:'bar', barWidth:'60%', data:vals, itemStyle:{ borderRadius:[4,4,0,0], color:function(p){ var c=['#00E5FF','#B200FF','#E5FF00','#00FFAA','#FF2A6D','#FF6B35','#9B59B6','#3498DB','#2ECC71','#F1C40F'][p.dataIndex%10]; return new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:c},{offset:1,color:c+'20'}]); } }, label:{ show:true, position:'top', color:'#00E5FF', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:10 } }]
+  });
+}
+
+function _initAqChart_canal() {
+  var dom = document.getElementById('aq-chart-canal');
+  if (!dom) return;
+  if (_aqCharts.canal) { _aqCharts.canal.dispose(); }
+  _aqCharts.canal = echarts.init(dom, 'dark');
+  var labels = ['Correo','LinkedIn','Llamadas','Referidos'];
+  var colors = ['#00E5FF','#B200FF','#E5FF00','#00FFAA'];
+  var vals = [DATA.canal_correo||0, DATA.canal_linkedin||0, DATA.canal_llamadas||0, DATA.canal_referidos||0];
+  _aqCharts.canal.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(229,255,0,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+    grid: { left:'2%', right:'2%', bottom:'10%', top:'5%', containLabel:true },
+    xAxis: { type:'category', data:labels, axisLabel:{ color:'#E5FF00', fontFamily:'Space Grotesk', fontSize:10, fontWeight:'bold' }, axisLine:{ lineStyle:{ color:'rgba(229,255,0,0.15)' } } },
+    yAxis: { type:'value', splitLine:{ lineStyle:{ color:'rgba(229,255,0,0.05)', type:'dashed' } }, axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:9 } },
+    series: [{ type:'bar', barWidth:'50%', data:vals.map(function(v,i){ return { value:v, itemStyle:{ borderRadius:[4,4,0,0], color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:colors[i]},{offset:1,color:colors[i]+'20'}]) } }; }), label:{ show:true, position:'top', color:'#E5FF00', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:11 } }]
+  });
+}
+
+function _initAqChart_reuniones() {
+  var dom = document.getElementById('aq-chart-reuniones');
+  if (!dom) return;
+  if (_aqCharts.reuniones) { _aqCharts.reuniones.dispose(); }
+  _aqCharts.reuniones = echarts.init(dom, 'dark');
+  var totalR = reuniones;
+  var restante = Math.max(0, DATA.enviados - totalR);
+  if (totalR > 0) {
+    _aqCharts.reuniones.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'item', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(255,42,42,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'}, formatter:'{b}: {c} ({d}%)' },
+      legend: { bottom:'2%', left:'center', textStyle:{color:'#888',fontFamily:'Inter',fontSize:10}, itemGap:14, icon:'circle' },
+      series: [{ name:'Reuniones', type:'pie', radius:['45%','72%'], center:['50%','44%'], itemStyle:{ borderRadius:8, borderColor:'#141414', borderWidth:2 }, label:{ show:false }, data:[{ value:totalR, name:'Logradas', itemStyle:{ color:'#FF2A2A', shadowColor:'rgba(255,42,42,0.4)', shadowBlur:10 } }, { value:restante, name:'Sin reunión', itemStyle:{ color:'rgba(255,255,255,0.04)' } }] }]
+    });
+  } else {
+    _aqCharts.reuniones.setOption({ backgroundColor:'transparent', title:{ text:'0 reuniones aún', subtext:'Se actualizará al registrar', left:'center', top:'center', textStyle:{ color:'#555', fontFamily:'Space Grotesk', fontSize:13 }, subtextStyle:{ color:'#444', fontFamily:'Inter', fontSize:11 } } });
+  }
+}
+
+window.renderTareasInline = function() {
+  var el = document.getElementById('aq-tareas-inline');
+  var badge = document.getElementById('aq-tareas-badge');
+  if (!el) return;
+  var pending = (_tareasCache || []).filter(function(t){ return t.estado !== 'completada'; });
+  if (badge) badge.textContent = pending.length ? pending.length + ' pendiente' + (pending.length > 1 ? 's' : '') : 'al día ✓';
+  if (!pending.length) {
+    el.innerHTML = '<div style="color:var(--text-dim);font-size:0.82rem;padding:0.5rem 0;">Sin tareas pendientes. Buen trabajo.</div>';
+    return;
+  }
+  el.innerHTML = pending.map(function(t) {
+    var alta = t.prioridad === 'alta';
+    return '<div class="aq-tarea-item" onclick="goToTareas()" style="cursor:pointer;">'
+      + '<span class="aq-t-dot ' + (alta ? 'alta' : 'normal') + '"></span>'
+      + '<span class="aq-t-text" title="' + t.titulo.replace(/"/g,'&quot;') + '">' + t.titulo.replace(/</g,'&lt;') + '</span>'
+      + (t.comentarios && t.comentarios.length ? '<span style="font-size:0.68rem;color:#A855F7;">💬' + t.comentarios.length + '</span>' : '')
+      + '</div>';
+  }).join('');
+};
+
+window.showChart = function(type) {
+  if (window._sndTab) window._sndTab();
+  document.querySelectorAll('.analytics-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + type);
+  if (btn) btn.classList.add('active');
+
+  const panel = document.getElementById('chart-reveal-panel');
+  panel.classList.add('active');
+  setTimeout(function() { panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
+
+  if (activeChart) { activeChart.dispose(); activeChart = null; }
+  const dom = document.getElementById('active-chart');
+  activeChart = echarts.init(dom, 'dark');
+
+  const titleEl = document.getElementById('crp-title');
+
+  if (type === 'contactos') {
+    titleEl.textContent = 'DISTRIBUCIÓN POR RUBRO — CONTACTOS VÍA EMAIL (' + DATA.enviados + ' empresas)';
+    const cats = Object.keys(DATA.cat_enviados);
+    const vals = Object.values(DATA.cat_enviados);
+    if (cats.length === 0) {
+      activeChart.setOption({ backgroundColor:'transparent', title:{ text:'SIN DATOS AÚN', subtext:'Los datos aparecerán una vez enviados los correos', left:'center', top:'center', textStyle:{color:'#888',fontFamily:'Space Grotesk',fontSize:16}, subtextStyle:{color:'#555',fontFamily:'Inter',fontSize:12} } });
+      return;
+    }
+    activeChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(0,229,255,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+      grid: { left:'3%', right:'4%', bottom:'8%', top:'8%', containLabel:true },
+      xAxis: {
+        type:'category', data:cats,
+        axisLabel:{ color:'#00E5FF', fontFamily:'Space Grotesk', fontSize:11, fontWeight:'bold', rotate: cats.length>6 ? 25 : 0, interval:0 },
+        axisLine:{ lineStyle:{ color:'rgba(0,229,255,0.2)' } }
+      },
+      yAxis: {
+        type:'value',
+        splitLine:{ lineStyle:{ color:'rgba(0,229,255,0.05)', type:'dashed' } },
+        axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:11 }
+      },
+      series: [{
+        type:'bar', barWidth:'55%', data:vals,
+        itemStyle:{
+          borderRadius:[6,6,0,0],
+          color: function(p) {
+            const c = NEON[p.dataIndex % NEON.length];
+            return new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:c},{offset:1,color:c+'18'}]);
+          },
+          shadowBlur:15
+        },
+        label:{ show:true, position:'top', color:'#00E5FF', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:13 }
+      }]
+    });
+  }
+
+  else if (type === 'canal') {
+    titleEl.textContent = 'CONTACTOS POR CANAL';
+    const canalLabels = ['Correo', 'LinkedIn', 'Llamadas', 'Referidos'];
+    const canalColors = ['#00E5FF', '#B200FF', '#E5FF00', '#00FFAA'];
+    const canalVals = [
+      DATA.canal_correo   || 0,
+      DATA.canal_linkedin  || 0,
+      DATA.canal_llamadas  || 0,
+      DATA.canal_referidos || 0,
+    ];
+    activeChart.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger:'axis', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(229,255,0,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'} },
+      grid: { left:'3%', right:'4%', bottom:'5%', top:'8%', containLabel:true },
+      xAxis: {
+        type:'category', data:canalLabels,
+        axisLabel:{ color:'#E5FF00', fontFamily:'Space Grotesk', fontSize:12, fontWeight:'bold' },
+        axisLine:{ lineStyle:{ color:'rgba(229,255,0,0.2)' } }
+      },
+      yAxis: {
+        type:'value',
+        splitLine:{ lineStyle:{ color:'rgba(229,255,0,0.05)', type:'dashed' } },
+        axisLabel:{ color:'#888', fontFamily:'Inter', fontSize:11 }
+      },
+      series: [{
+        type:'bar', barWidth:'45%',
+        data: canalVals.map((v, i) => ({
+          value: v,
+          itemStyle: {
+            borderRadius:[6,6,0,0],
+            color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:canalColors[i]},{offset:1,color:canalColors[i]+'18'}]),
+            shadowBlur:15, shadowColor: canalColors[i]+'66'
+          }
+        })),
+        label:{ show:true, position:'top', color:'#E5FF00', fontFamily:'Space Grotesk', fontWeight:'bold', fontSize:14 }
+      }]
+    });
+  }
+
+  else if (type === 'reuniones') {
+    titleEl.textContent = 'REUNIONES CONCERTADAS';
+    const totalR   = reuniones;
+    const restante = Math.max(0, DATA.enviados - totalR);
+    if (totalR > 0) {
+      activeChart.setOption({
+        backgroundColor: 'transparent',
+        tooltip: { trigger:'item', backgroundColor:'rgba(10,10,15,0.95)', borderColor:'rgba(255,42,42,0.3)', textStyle:{color:'#fff',fontFamily:'Inter'}, formatter: '{b}: {c} ({d}%)' },
+        legend: { bottom:'2%', left:'center', textStyle:{color:'#888',fontFamily:'Inter',fontSize:11}, itemGap:20, icon:'circle' },
+        series: [{
+          name:'Campana', type:'pie',
+          radius:['50%','78%'], center:['50%','46%'],
+          itemStyle:{ borderRadius:10, borderColor:'#141414', borderWidth:3 },
+          label:{ show:false },
+          data:[
+            { value:totalR,   name:'Reuniones logradas',  itemStyle:{ color:'#FF2A2A', shadowColor:'rgba(255,42,42,0.5)', shadowBlur:15 } },
+            { value:restante, name:'Sin reunión aún',     itemStyle:{ color:'rgba(255,255,255,0.04)' } }
+          ]
+        }]
+      });
+    } else {
+      activeChart.setOption({
+        backgroundColor:'transparent',
+        title:{
+          text:'SIN REUNIONES REGISTRADAS',
+          subtext:'Usa los botones  −  +  de la tarjeta para registrar avances',
+          left:'center', top:'center',
+          textStyle:{ color:'#A0AEC0', fontFamily:'Space Grotesk', fontSize:16, fontWeight:'bold' },
+          subtextStyle:{ color:'rgba(160,174,192,0.45)', fontFamily:'Inter', fontSize:13 }
+        }
+      });
+    }
+  }
+};
+
+// ── Identidad de usuario ───────────────────────────────────────────────────
+function getUserName() {
+  return localStorage.getItem('oc_user_name') || '';
+}
+
+function askUserName(cb) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);opacity:0;transition:opacity 0.2s;';
+  setTimeout(function() { ov.style.opacity = '1'; }, 10);
+  ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:2rem 1.5rem 2.5rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
+    + '<div style="font-family:inherit;font-size:0.76rem;letter-spacing:2.5px;color:rgba(0,229,255,0.7);text-align:center;margin-bottom:0.75rem;text-transform:uppercase;">Identificarte</div>'
+    + '<div style="font-family:inherit;font-size:0.95rem;color:#ccc;text-align:center;margin-bottom:0.4rem;">¿Cuál es tu nombre y apellido?</div>'
+    + '<div style="font-family:inherit;font-size:0.78rem;color:#666;text-align:center;margin-bottom:1.4rem;">También puedes usar un apodo</div>'
+    + '<input id="_nameInp" type="text" maxlength="40" autocomplete="name" placeholder="Ej: Jorge Martínez, Juancho..." style="width:100%;box-sizing:border-box;background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:13px 14px;color:#fff;font-family:inherit;font-size:0.95rem;outline:none;margin-bottom:0.75rem;transition:border 0.2s;">'
+    + '<div style="font-family:inherit;font-size:0.68rem;color:#444;text-align:center;margin-bottom:1rem;letter-spacing:0.5px;">Solo se te preguntará una vez en este dispositivo</div>'
+    + '<button id="_nameSave" style="width:100%;padding:13px;border:none;background:var(--accent-cyan);color:#000;border-radius:10px;font-family:inherit;font-size:0.78rem;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">CONTINUAR →</button>'
+    + '</div>';
+  document.body.appendChild(ov);
+  const inp = ov.querySelector('#_nameInp');
+  setTimeout(function() { inp.focus(); }, 150);
+  const save = function() {
+    const name = inp.value.trim();
+    if (!name) { inp.style.borderColor = '#FF2A6D'; inp.focus(); return; }
+    localStorage.setItem('oc_user_name', name);
+    ov.style.opacity = '0';
+    setTimeout(function() { ov.remove(); cb(name); }, 200);
+  };
+  ov.querySelector('#_nameSave').onclick = save;
+  inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+}
+
+function withName(cb) {
+  const n = getUserName();
+  if (n) { cb(n); } else { askUserName(cb); }
+}
+
+// ── Comment helpers ────────────────────────────────────────────────────────
+const API_URL = 'https://opencore.cl/dashboard/api.php';
+let _commentCache = []; // cache local del servidor
+
+function saveComment(text, files) {
+  files = files || [];
+  withName(function(name) {
+    const today = new Date().toLocaleDateString('es-CL');
+    const entry = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), author: name, text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today };
+    _commentCache.push(entry);
+    if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
+    // Render instantly (optimistic)
+    renderComments();
+    checkCommentDot();
+    // Save in background
+    fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(_commentCache) })
+      .then(function() {
+        localStorage.setItem('oc_last_comment_day', today);
+        if (text) pushNotify('OpenCORE — Nuevo comentario de ' + name, text.slice(0, 80), 'speech_balloon');
+      })
+      .catch(function() {
+        _commentCache.splice(_commentCache.indexOf(entry), 1);
+        renderComments();
+      });
+  });
+}
+
+function checkCommentDot() {
+  const dot   = document.getElementById('comment-dot');
+  const toast = document.getElementById('comment-toast');
+  const last  = localStorage.getItem('oc_last_comment_day');
+  const today = new Date().toLocaleDateString('es-CL');
+  const seen  = localStorage.getItem('oc_dot_seen_day');
+  const hasNew = (last === today && seen !== today)
+               || (NOTAS_EXCEL.length > 0 && localStorage.getItem('oc_excel_notes_seen') !== String(NOTAS_EXCEL.length));
+  if (hasNew) {
+    dot.style.display   = 'block';
+    toast.style.display = 'flex';
+    const preview = NOTAS_EXCEL.length > 0
+      ? NOTAS_EXCEL[NOTAS_EXCEL.length - 1].texto.slice(0, 60)
+      : (_commentCache.slice(-1)[0]?.text || '').slice(0, 60);
+    document.getElementById('toast-text').textContent = preview || 'Nuevo comentario disponible';
+  } else {
+    dot.style.display   = 'none';
+    toast.style.display = 'none';
+  }
+}
+
+// ── Lightbox ───────────────────────────────────────────────────────────────
+window.openLightbox = function(src) {
+  const ov  = document.getElementById('lightbox-overlay');
+  const img = document.getElementById('lightbox-img');
+  img.src = src;
+  ov.style.display = 'flex';
+  requestAnimationFrame(() => { img.style.transform = 'scale(1)'; img.style.opacity = '1'; });
+  document.documentElement.style.overflow = 'hidden';
+};
+window.closeLightbox = function() {
+  const ov  = document.getElementById('lightbox-overlay');
+  const img = document.getElementById('lightbox-img');
+  img.style.transform = 'scale(0.85)';
+  img.style.opacity   = '0';
+  setTimeout(() => { ov.style.display = 'none'; img.src = ''; }, 200);
+  document.documentElement.style.overflow = '';
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+window.dismissToast = function() {
+  const today = new Date().toLocaleDateString('es-CL');
+  localStorage.setItem('oc_dot_seen_day', today);
+  localStorage.setItem('oc_excel_notes_seen', String(NOTAS_EXCEL.length));
+  document.getElementById('comment-toast').style.display = 'none';
+  document.getElementById('comment-dot').style.display   = 'none';
+};
+
+window.goToComments = function() {
+  if (window._sndNav) window._sndNav();
+  dismissToast();
+  document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
+};
+
+// ── Comment wall (inline) ─────────────────────────────────────────────────
+const NOTAS_EXCEL = [{"fecha": "17/03/2026", "texto": "Probando la funcionalidad"}];
+
+async function loadComments() {
+  try {
+    const res = await fetch(API_URL + '?t=' + Date.now());
+    if (res.ok) _commentCache = await res.json();
+  } catch(e) { /* offline — mantiene cache vacío */ }
+  // Migración: añadir id a comentarios antiguos que no lo tienen
+  _commentCache.forEach(function(c) {
+    if (!c.id) c.id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+  });
+  renderComments();
+  checkCommentDot();
+}
+
+function renderComments() {
+  const list  = _commentCache;
+  const el    = document.getElementById('comments-list');
+  const today = new Date().toLocaleDateString('es-CL');
+
+  // Items del servidor
+  const localItems = list.slice().reverse().map((c, ri) => {
+    const idx = list.length - 1 - ri;
+    const textEscaped = (c.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const isNew = c.day === today;
+    // Render attachments
+    let attachHtml = '';
+    if (c.files && c.files.length) {
+      attachHtml = '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem;">'
+        + c.files.map(function(f, fi) {
+          if (f.type === 'image') {
+            return '<img src="' + f.b64 + '" onclick="openLightbox(this.src)" style="max-height:80px;max-width:140px;border-radius:4px;border:1px solid rgba(0,229,255,0.2);object-fit:cover;cursor:zoom-in;transition:transform 0.15s;">';
+          } else {
+            return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid #333;border-radius:4px;padding:4px 8px;font-size:0.7rem;color:#aaa;text-decoration:none;">'
+              + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+              + f.name.slice(0,20) + '</a>';
+          }
+        }).join('') + '</div>';
+    }
+    // Render replies
+    const cid = c.id;
+    const replies = c.replies || [];
+    let repliesHtml = '';
+    if (replies.length) {
+      repliesHtml = '<div class="comment-replies">'
+        + replies.map(function(r, ri) {
+          return '<div class="comment-reply-item" id="reply-' + cid + '-' + ri + '">'
+            + '<div class="comment-reply-text">' + (r.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+            + '<div style="display:flex;align-items:center;gap:0.3rem;margin-top:3px;">'
+            + '<div class="comment-reply-meta">' + r.date + '</div>'
+            + '<button class="btn-edit-inline" data-cid="' + cid + '" data-ri="' + ri + '" onclick="editReply(this.dataset.cid,+this.dataset.ri)" title="Editar">✎</button>'
+            + '<button class="btn-edit-inline btn-edit-del" data-cid="' + cid + '" data-ri="' + ri + '" onclick="deleteReply(this.dataset.cid,+this.dataset.ri)" title="Borrar">✕</button>'
+            + '</div></div>';
+        }).join('')
+        + '</div>';
+    }
+    const replyRowId = 'reply-row-' + cid;
+    const replyInputId = 'reply-input-' + cid;
+    return '<div class="comment-item" id="cmt-' + cid + '" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
+      + '<div style="flex:1">'
+      + (textEscaped ? '<div class="comment-text" id="cmtxt-' + cid + '">' + textEscaped + '</div>' : '')
+      + '<div id="cmedit-' + cid + '" style="display:none;">'
+      + '<textarea class="comment-edit-area" id="cmta-' + cid + '"></textarea>'
+      + '<div class="edit-action-row">'
+      + '<button class="btn-save-edit" data-cid="' + cid + '" onclick="saveEditComment(this.dataset.cid)">GUARDAR</button>'
+      + '<button class="btn-cancel-edit" data-cid="' + cid + '" onclick="cancelEditComment(this.dataset.cid)">CANCELAR</button>'
+      + '</div></div>'
+      + attachHtml
+      + '<div class="comment-meta">' + (c.author ? '<span style="color:rgba(255,255,255,0.65);font-weight:600;">' + c.author.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '') + c.date + (isNew ? ' &nbsp;·&nbsp; <span style="color:var(--accent-cyan);font-size:0.65rem;">NUEVO HOY</span>' : '') + '</div>'
+      + repliesHtml
+      + '<button class="comment-reply-btn" data-cid="' + cid + '" onclick="showReplyInput(this.dataset.cid)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
+      + '<div class="reply-input-row" id="' + replyRowId + '">'
+      + '<textarea class="reply-input ar" data-cid="' + cid + '" id="' + replyInputId + '" maxlength="400" placeholder="Escribe tu respuesta..." rows="3" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addReply(this.dataset.cid);}"></textarea>'
+      + '<button class="reply-btn-send" data-cid="' + cid + '" onclick="addReply(this.dataset.cid)">ENVIAR →</button>'
+      + '</div>'
+      + '</div>'
+      + '<div class="comment-actions">'
+      + '<button class="comment-del" data-cid="' + cid + '" onclick="deleteComment(this.dataset.cid)">BORRAR</button>'
+      + '<button class="btn-edit-inline" data-cid="' + cid + '" onclick="editComment(this.dataset.cid)" style="border:1px solid rgba(255,255,255,0.1);padding:3px 8px;">EDITAR</button>'
+      + '</div>'
+      + '</div>';
+  });
+
+  // Items Excel (con botón borrar usando localStorage)
+  var _dismissedExcel = (function(){ try{ return JSON.parse(localStorage.getItem('oc_dismissed_excel')||'[]'); }catch(e){return[];} })();
+  const excelItems = NOTAS_EXCEL.map((n, idx) => {
+    if (_dismissedExcel.includes(idx)) return '';
+    const textEscaped = n.texto.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<div class="comment-item" style="border-left-color:#E5FF00;opacity:0.85;">'
+      + '<div style="flex:1"><div class="comment-text">' + textEscaped + '</div>'
+      + '<div class="comment-meta">' + (n.fecha || '') + ' &nbsp;·&nbsp; <span style="color:#E5FF00;font-size:0.65rem;">EXCEL</span></div></div>'
+      + '<div class="comment-actions"><button class="comment-del" onclick="dismissExcelNote(' + idx + ')">BORRAR</button></div>'
+      + '</div>';
+  });
+
+  const allItems = [...localItems, ...excelItems];
+  if (!allItems.length) {
+    el.innerHTML = '<div class="empty-state">Sin comentarios aún.</div>';
+    return;
+  }
+  el.innerHTML = allItems.join('');
+  setTimeout(_initAr, 10);
+}
+
+window.dismissExcelNote = function(idx) {
+  try {
+    var d = JSON.parse(localStorage.getItem('oc_dismissed_excel')||'[]');
+    if (!d.includes(idx)) d.push(idx);
+    localStorage.setItem('oc_dismissed_excel', JSON.stringify(d));
+  } catch(e) {}
+  renderComments();
+};
+
+function _bgSaveComments() {
+  fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }).catch(function(){});
+}
+
+window.deleteComment = function(cid) {
+  const i = _commentCache.findIndex(function(c) { return c.id === cid; });
+  if (i === -1) return;
+  _commentCache.splice(i, 1);
+  renderComments();
+  checkCommentDot();
+  _bgSaveComments();
+};
+
+window.showReplyInput = function(cid) {
+  const row = document.getElementById('reply-row-' + cid);
+  if (!row) return;
+  const visible = row.style.display !== 'none' && row.style.display !== '';
+  row.style.display = visible ? 'none' : 'flex';
+  if (!visible) {
+    const inp = document.getElementById('reply-input-' + cid);
+    if (inp) { _initAr(); inp.focus(); }
+  }
+};
+
+window.addReply = function(cid) {
+  const inp = document.getElementById('reply-input-' + cid);
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c) return;
+  if (!c.replies) c.replies = [];
+  c.replies.push({ text: text, date: new Date().toLocaleString('es-CL') });
+  inp.value = '';
+  renderComments();
+  _bgSaveComments();
+  pushNotify('OpenCORE — Nueva respuesta', text.slice(0, 100), 'speech_balloon');
+  // Scroll to the comment after posting reply
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+};
+
+// Enter key en reply inputs
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.classList.contains('reply-input')) {
+    e.preventDefault();
+    const cid = e.target.dataset.cid;
+    if (cid) addReply(cid);
+  }
+});
+
+// ── Editar comentario ─────────────────────────────────────────────────────
+window.editComment = function(cid) {
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c) return;
+  const ta = document.getElementById('cmta-' + cid);
+  if (ta) ta.value = c.text || '';
+  const txtEl  = document.getElementById('cmtxt-' + cid);
+  const editEl = document.getElementById('cmedit-' + cid);
+  if (txtEl)  txtEl.style.display  = 'none';
+  if (editEl) editEl.style.display = 'block';
+  if (ta) ta.focus();
+};
+window.cancelEditComment = function(cid) {
+  const txtEl  = document.getElementById('cmtxt-' + cid);
+  const editEl = document.getElementById('cmedit-' + cid);
+  if (editEl) editEl.style.display = 'none';
+  if (txtEl)  txtEl.style.display  = '';
+};
+window.saveEditComment = function(cid) {
+  const ta = document.getElementById('cmta-' + cid);
+  const c  = _commentCache.find(function(x) { return x.id === cid; });
+  if (!ta || !c) return;
+  const newText = ta.value.trim();
+  if (!newText) return;
+  c.text = newText;
+  if (window._sndSuccess) window._sndSuccess();
+  renderComments();
+  _bgSaveComments();
+  // Scroll to the comment after saving
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+};
+
+// ── Editar / borrar respuestas ────────────────────────────────────────────
+window.deleteReply = function(cid, ri) {
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c || !c.replies) return;
+  window.confirmDialog('¿Borrar esta respuesta?', 'Borrar', function() {
+    c.replies.splice(ri, 1);
+    renderComments();
+    _bgSaveComments();
+  });
+};
+window.editReply = function(cid, ri) {
+  const row = document.getElementById('reply-' + cid + '-' + ri);
+  const c   = _commentCache.find(function(x) { return x.id === cid; });
+  if (!row || !c || !c.replies || !c.replies[ri]) return;
+  const existing = (c.replies[ri].text || '').replace(/"/g,'&quot;');
+  row.innerHTML = '<textarea class="reply-input ar" id="riedit-' + cid + '-' + ri + '" rows="3">' + (c.replies[ri].text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
+    + '<button class="reply-btn-send" data-cid="' + cid + '" data-ri="' + ri + '" onclick="saveEditReply(this.dataset.cid,+this.dataset.ri)">→</button>'
+    + '<button class="btn-cancel-edit" onclick="renderComments()" style="margin-left:4px;">✕</button>';
+  const inp = document.getElementById('riedit-' + cid + '-' + ri);
+  if (inp) { _initAr(); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+};
+window.saveEditReply = function(cid, ri) {
+  const inp = document.getElementById('riedit-' + cid + '-' + ri);
+  if (!inp) return;
+  const text = inp.value.trim();
+  const c = _commentCache.find(function(x) { return x.id === cid; });
+  if (!c || !c.replies || !c.replies[ri] || !text) return;
+  c.replies[ri].text = text;
+  if (window._sndSuccess) window._sndSuccess();
+  renderComments();
+  _bgSaveComments();
+  // Scroll to the parent comment after saving
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+};
+
+// ── Editar tarea (título) ─────────────────────────────────────────────────
+window.editTarea = function(id) {
+  _editingTareaId = id;
+  _expandedTareaId = id;
+  renderTareas();
+  setTimeout(function() {
+    var inp = document.getElementById('tinp-' + id);
+    if (inp) { inp.select(); inp.focus(); }
+  }, 30);
+};
+window.cancelEditTarea = function(id) {
+  _editingTareaId = null;
+  renderTareas();
+};
+window.saveEditTarea = function(id) {
+  var inp = document.getElementById('tinp-' + id);
+  var t   = _tareasCache.find(function(x) { return x.id === id; });
+  if (!inp || !t) return;
+  var newTitle = inp.value.trim();
+  if (!newTitle) return;
+  t.titulo = newTitle;
+  if (window._sndSuccess) window._sndSuccess();
+  // Collapse + go to list instantly
+  _backToTaskList();
+  // Save in background
+  _saveTareas();
+};
+
+// ── Adjuntar / borrar archivos en tarea existente ─────────────────────────
+window.addFilesToTarea = function(id, files) {
+  var t = _tareasCache.find(function(x) { return x.id === id; });
+  if (!t) return;
+  if (!t.archivos) t.archivos = [];
+  var total = files.length, count = 0;
+  function done() { count++; if (count >= total) { _saveTareas(); renderTareas(); } }
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        t.archivos.push({name: file.name, type: 'image', b64: b64}); done();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); done(); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        t.archivos.push({name: file.name, type: 'file', b64: ev.target.result}); done();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+};
+window.viewTareaImage = function(tid, fi) {
+  var t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.archivos || !t.archivos[fi]) return;
+  openLightbox(t.archivos[fi].b64);
+};
+window.deleteTareaFile = function(tid, fi) {
+  var t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.archivos) return;
+  window.confirmDialog('¿Borrar este archivo?', 'Borrar', function() {
+    t.archivos.splice(fi, 1);
+    renderTareas();
+    _saveTareas();
+  });
+};
+
+// ── Editar / borrar comentarios de tarea ──────────────────────────────────
+window.deleteTareaComment = function(tid, ci) {
+  const t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.comentarios) return;
+  window.confirmDialog('¿Borrar este comentario?', 'Borrar', function() {
+    t.comentarios.splice(ci, 1);
+    renderTareas();
+    _saveTareas();
+  });
+};
+window.editTareaComment = function(tid, ci) {
+  const row = document.getElementById('tcc-' + tid + '-' + ci);
+  const t   = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!row || !t || !t.comentarios || !t.comentarios[ci]) return;
+  const existing = (t.comentarios[ci].texto || '').replace(/"/g,'&quot;');
+  row.innerHTML = '<textarea class="tarea-comment-input ar" id="tcinp-' + tid + '-' + ci + '" rows="3">'
+    + (t.comentarios[ci].texto||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
+    + '<button class="tarea-comment-send" data-tid="' + tid + '" data-ci="' + ci + '" onclick="saveEditTareaComment(this.dataset.tid,+this.dataset.ci)">→</button>'
+    + '<button class="btn-cancel-edit" onclick="renderTareas()" style="margin-left:2px;">✕</button>';
+  const inp = document.getElementById('tcinp-' + tid + '-' + ci);
+  if (inp) { _initAr(); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+};
+window.saveEditTareaComment = function(tid, ci) {
+  const inp = document.getElementById('tcinp-' + tid + '-' + ci);
+  if (!inp) return;
+  const text = inp.value.trim();
+  const t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.comentarios || !t.comentarios[ci] || !text) return;
+  t.comentarios[ci].texto = text;
+  if (window._sndSuccess) window._sndSuccess();
+  _backToTaskList();
+  _saveTareas();
+};
+
+let _localFiles = [];
+
+window.handleLocalFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1200, 0.75, function(b64) {
+        _localFiles.push({name: file.name, type: 'image', b64: b64});
+        renderLocalPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Archivo demasiado grande (máx 2MB)'); return; }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        _localFiles.push({name: file.name, type: 'file', b64: e.target.result});
+        renderLocalPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('local-file-input').value = '';
+};
+
+function renderLocalPreview() {
+  const prev = document.getElementById('local-attach-preview');
+  if (!_localFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _localFiles.map(function(f, i) {
+    const thumb = f.type === 'image'
+      ? '<img src="' + f.b64 + '" style="height:48px;width:48px;object-fit:cover;border-radius:4px;cursor:zoom-in;" onclick="openLightbox(this.src)">'
+      : '<span style="font-size:0.7rem;color:#aaa;">📄' + f.name.slice(0,16) + '</span>';
+    return '<div style="position:relative;display:inline-flex;align-items:center;">' + thumb
+      + '<button type="button" onclick="removeLocalFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#333;border:none;border-radius:50%;width:16px;height:16px;color:#fff;font-size:9px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;">✕</button></div>';
+  }).join('');
+}
+
+window.removeLocalFile = function(i) {
+  _localFiles.splice(i, 1);
+  renderLocalPreview();
+};
+
+document.getElementById('local-comment-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const text = document.getElementById('local-comment-text').value.trim();
+  if (!text && !_localFiles.length) return;
+  saveComment(text, _localFiles.slice());
+  document.getElementById('local-comment-text').value = '';
+  _localFiles = [];
+  renderLocalPreview();
+  // Scroll to show the new comment (it appears at the top of the list)
+  setTimeout(function() {
+    var list = document.getElementById('comments-list');
+    if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+});
+
+// ── Modal de comentario rápido ─────────────────────────────────────────────
+window.openCommentModal = function() {
+  if (window._sndModalOpen) window._sndModalOpen();
+  const overlay = document.getElementById('comment-modal-overlay');
+  overlay.style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-comment-text').focus(), 50);
+  // Marcar dot como visto al abrir
+  localStorage.setItem('oc_dot_seen_day', new Date().toLocaleDateString('es-CL'));
+  document.getElementById('comment-dot').style.display = 'none';
+};
+window.closeCommentModal = function() {
+  if (window._sndModalClose) window._sndModalClose();
+  document.getElementById('comment-modal-overlay').style.display = 'none';
+  document.getElementById('modal-comment-text').value = '';
+  _pendingFiles = [];
+  renderAttachPreview();
+};
+// ── File attachments ──────────────────────────────────────────────────────
+let _pendingFiles = []; // {name, type, b64}
+
+function compressImage(file, maxW, quality, cb) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+window.handleFiles = function(files) {
+  const preview = document.getElementById('attach-preview');
+  Array.from(files).forEach(function(file) {
+    const isImg = file.type.startsWith('image/');
+    if (isImg) {
+      compressImage(file, 1200, 0.75, function(b64) {
+        _pendingFiles.push({name: file.name, type: 'image', b64: b64});
+        renderAttachPreview();
+      });
+    } else {
+      // Non-image: read as base64, warn if too large
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Archivo demasiado grande. Usa archivos de menos de 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        _pendingFiles.push({name: file.name, type: 'file', b64: e.target.result});
+        renderAttachPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  // Reset input so same file can be re-selected
+  document.getElementById('modal-file-input').value = '';
+};
+
+function renderAttachPreview() {
+  const preview = document.getElementById('attach-preview');
+  if (!_pendingFiles.length) { preview.style.display = 'none'; return; }
+  preview.style.display = 'flex';
+  preview.innerHTML = _pendingFiles.map(function(f, i) {
+    if (f.type === 'image') {
+      return '<div style="position:relative;display:inline-block;">'
+        + '<img src="' + f.b64 + '" style="height:72px;border-radius:6px;border:1px solid rgba(0,229,255,0.3);object-fit:cover;">'
+        + '<button onclick="removeFile(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#141414;border:1px solid #444;color:#aaa;border-radius:50%;width:20px;height:20px;font-size:0.76rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>'
+        + '</div>';
+    } else {
+      return '<div style="background:rgba(255,255,255,0.06);border:1px solid #333;border-radius:6px;padding:6px 10px;font-size:0.76rem;color:#aaa;display:flex;align-items:center;gap:6px;position:relative;">'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+        + f.name.slice(0, 18)
+        + '<button onclick="removeFile(' + i + ')" style="background:none;border:none;color:#666;cursor:pointer;font-size:0.81rem;padding:0;margin-left:4px;">✕</button>'
+        + '</div>';
+    }
+  }).join('');
+}
+
+window.removeFile = function(i) {
+  _pendingFiles.splice(i, 1);
+  renderAttachPreview();
+};
+
+window.submitModalComment = function() {
+  const text = document.getElementById('modal-comment-text').value.trim();
+  if (!text && !_pendingFiles.length) return;
+  if (window._sndSuccess) window._sndSuccess();
+  saveComment(text, _pendingFiles.slice());
+  closeCommentModal();
+  document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
+};
+window.quickReply = function(text) {
+  saveComment(text, []);
+  closeCommentModal();
+  document.getElementById('muro-comentarios').scrollIntoView({behavior:'smooth'});
+};
+// Cerrar modal con Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeCommentModal();
+});
+// Cerrar modal al click fuera del panel
+document.getElementById('comment-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCommentModal();
+});
+
+// ── SISTEMA DE TAREAS ─────────────────────────────────────────────────────
+const TAREAS_URL = 'https://opencore.cl/dashboard/tareas.php';
+let _tareasCache = [];
+let _tareasLoaded = false;
+let _tareasTab = 'pendientes'; // 'pendientes' | 'completadas' | 'historial'
+
+// ── HISTORIAL (localStorage) ──────────────────────────────────────────────
+const HISTORIAL_KEY = 'oc_historial_v1';
+let _historialCache = [];
+function _loadHistorial() {
+  try { _historialCache = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]'); }
+  catch(e) { _historialCache = []; }
+}
+function _saveHistorial() {
+  localStorage.setItem(HISTORIAL_KEY, JSON.stringify(_historialCache));
+}
+_loadHistorial();
+
+// ── SISTEMA DE REUNIONES (localStorage) ─────────────────────────────────
+const REUNIONES_KEY = 'oc_reuniones_v2';
+let _reunionesCache = [];
+let _reunionFiles = [];
+
+function loadReuniones() {
+  try {
+    var raw = localStorage.getItem(REUNIONES_KEY);
+    _reunionesCache = raw ? JSON.parse(raw) : [];
+  } catch(e) { _reunionesCache = []; }
+  renderReuniones();
+  updateReunionesBadge();
+}
+
+function saveReuniones() {
+  localStorage.setItem(REUNIONES_KEY, JSON.stringify(_reunionesCache));
+}
+
+window.goToReuniones = function() {
+  if (window._sndNav) window._sndNav();
+  document.getElementById('btn-reuniones').classList.add('active');
+  openOverlay('ovl-reuniones', 'REUNIONES');
+  renderReuniones();
+};
+
+window.addReunion = function(e) {
+  e.preventDefault();
+  var empresa = document.getElementById('reunion-empresa').value.trim();
+  var fecha = document.getElementById('reunion-fecha').value;
+  var estado = document.getElementById('reunion-estado').value;
+  var desc = document.getElementById('reunion-desc').value.trim();
+  if (!empresa || !fecha) return;
+  withName(function(name) {
+    _reunionesCache.unshift({
+      id: Date.now().toString(),
+      empresa: empresa,
+      fecha: fecha,
+      estado: estado,
+      descripcion: desc,
+      autor: name,
+      fecha_creacion: new Date().toLocaleDateString('es-CL'),
+      archivos: _reunionFiles.slice(),
+      comentarios: []
+    });
+    saveReuniones();
+    _reunionFiles = [];
+    document.getElementById('reunion-empresa').value = '';
+    document.getElementById('reunion-fecha').value = '';
+    document.getElementById('reunion-desc').value = '';
+    document.getElementById('reunion-attach-preview').innerHTML = '';
+    document.getElementById('reunion-attach-preview').style.display = 'none';
+    updateReunionesBadge();
+    renderReuniones();
+  });
+};
+
+window.handleReunionFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        _reunionFiles.push({name: file.name, type: 'image', b64: b64});
+        renderReunionPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        _reunionFiles.push({name: file.name, type: 'file', b64: ev.target.result});
+        renderReunionPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('reunion-file-input').value = '';
+};
+
+function renderReunionPreview() {
+  var prev = document.getElementById('reunion-attach-preview');
+  if (!_reunionFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _reunionFiles.map(function(f, i) {
+    if (f.type === 'image') {
+      return '<div style="position:relative;display:inline-block;"><img src="' + f.b64 + '" style="height:44px;border-radius:6px;border:1px solid rgba(255,42,109,0.3);"><button onclick="_removeReunionFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#FF2A6D;border:none;border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:9px;color:#fff;padding:0;">✕</button></div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:4px;background:rgba(255,42,109,0.08);border:1px solid rgba(255,42,109,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(255,42,109,0.8);">📄 ' + f.name + '<button onclick="_removeReunionFile(' + i + ')" style="background:none;border:none;cursor:pointer;color:#FF2A6D;font-size:10px;padding:0;margin-left:4px;">✕</button></div>';
+  }).join('');
+}
+
+window._removeReunionFile = function(i) {
+  _reunionFiles.splice(i, 1);
+  renderReunionPreview();
+};
+
+window.setReunionEstado = async function(id, estado) {
+  var r = _reunionesCache.find(function(x){ return x.id === id; });
+  if (!r) return;
+  r.estado = estado;
+  saveReuniones();
+  updateReunionesBadge();
+  renderReuniones();
+};
+
+window.deleteReunion = function(id) {
+  window.confirmDialog('¿Eliminar esta reunión?', 'Eliminar', function() {
+    _reunionesCache = _reunionesCache.filter(function(x){ return x.id !== id; });
+    saveReuniones();
+    updateReunionesBadge();
+    renderReuniones();
+  });
+};
+
+window.addReunionComment = function(id) {
+  var inp = document.getElementById('rc-' + id);
+  var texto = inp ? inp.value.trim() : '';
+  if (!texto) return;
+  var r = _reunionesCache.find(function(x){ return x.id === id; });
+  if (!r) return;
+  if (!r.comentarios) r.comentarios = [];
+  r.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
+  saveReuniones();
+  renderReuniones();
+};
+
+function renderReuniones() {
+  var el = document.getElementById('reuniones-list');
+  if (!el) return;
+  if (!_reunionesCache.length) {
+    el.innerHTML = '<div class="empty-state" style="margin-top:1rem;">Sin reuniones registradas. Agrega la primera arriba.</div>';
+    return;
+  }
+  var estadoColor = { agendada: '#E5FF00', realizada: '#4ADE80', cancelada: '#FF2A6D' };
+  var estadoLabel = { agendada: 'AGENDADA', realizada: 'REALIZADA', cancelada: 'CANCELADA' };
+  el.innerHTML = _reunionesCache.map(function(r) {
+    var comments = r.comentarios || [];
+    var archivos = r.archivos || [];
+    var commentsHtml = comments.map(function(c, ci) {
+      return '<div class="tarea-comment-item">'
+        + '<span style="color:#FF2A6D;margin-right:4px;flex-shrink:0;">→</span>'
+        + '<span class="tci-text">' + c.texto.replace(/</g,'&lt;') + '</span>'
+        + '<span class="tarea-comment-date">' + c.fecha + '</span>'
+        + '</div>';
+    }).join('');
+    var archivosHtml = archivos.map(function(f) {
+      if (f.type === 'image') return '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(255,42,109,0.3);"></a>';
+      return '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,42,109,0.08);border:1px solid rgba(255,42,109,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(255,42,109,0.8);text-decoration:none;">📄 ' + f.name + '</a>';
+    }).join('');
+    var col = estadoColor[r.estado] || '#888';
+    return '<div class="tarea-card" style="border-left-color:' + col + ';margin-bottom:0.75rem;">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.8rem;">'
+      + '<div style="flex:1;">'
+      + '<div class="tarea-titulo">' + r.empresa.replace(/</g,'&lt;') + '</div>'
+      + '<div class="tarea-meta" style="margin-top:0.3rem;">'
+      + (r.autor ? '<span style="color:rgba(255,255,255,0.5);font-weight:600;">' + r.autor + '</span> &nbsp;·&nbsp; ' : '')
+      + r.fecha + ' &nbsp;·&nbsp; ' + r.fecha_creacion
+      + '</div>'
+      + (r.descripcion ? '<div class="tarea-desc-text" style="margin-top:0.6rem;">' + r.descripcion.replace(/</g,'&lt;').replace(/\n/g,'<br>') + '</div>' : '')
+      + '</div>'
+      + '<div style="flex-shrink:0;">'
+      + '<select onchange="setReunionEstado(\'' + r.id + '\', this.value)" style="background:rgba(' + (r.estado==='realizada'?'74,222,128':'r.estado===agendada'?'229,255,0':'255,42,109') + ',0.1);border:1px solid ' + col + '44;border-radius:6px;color:' + col + ';padding:4px 8px;font-size:0.72rem;font-family:var(--font-heading);cursor:pointer;">'
+      + '<option value="agendada"' + (r.estado==='agendada'?' selected':'') + '>AGENDADA</option>'
+      + '<option value="realizada"' + (r.estado==='realizada'?' selected':'') + '>REALIZADA</option>'
+      + '<option value="cancelada"' + (r.estado==='cancelada'?' selected':'') + '>CANCELADA</option>'
+      + '</select>'
+      + '</div></div>'
+      + (archivosHtml ? '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.7rem;">' + archivosHtml + '</div>' : '')
+      + '<div class="tarea-actions" style="margin-top:0.7rem;">'
+      + '<button class="tarea-btn tarea-btn-del btn-edit-del" data-id="' + r.id + '" onclick="deleteReunion(this.dataset.id)" style="font-size:0.72rem;">✕ Eliminar</button>'
+      + '</div>'
+      + '<div class="tarea-comments" style="margin-top:0.8rem;">'
+      + (commentsHtml || '<div style="font-size:0.88rem;color:var(--text-dim);margin-bottom:0.4rem;">Sin comentarios.</div>')
+      + '<div class="tarea-comment-input-row" style="margin-top:0.6rem;">'
+      + '<input class="tarea-comment-input" id="rc-' + r.id + '" placeholder="Comentario sobre esta reunión..." maxlength="300">'
+      + '<button class="tarea-comment-send" data-id="' + r.id + '" onclick="addReunionComment(this.dataset.id)">→ Guardar</button>'
+      + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Tareas: file attachments ────────────────────────────────────────────
+var _tareaFiles = [];
+
+window.handleTareaFiles = function(files) {
+  Array.from(files).forEach(function(file) {
+    if (file.type.startsWith('image/')) {
+      compressImage(file, 1000, 0.7, function(b64) {
+        _tareaFiles.push({name: file.name, type: 'image', b64: b64});
+        renderTareaPreview();
+      });
+    } else {
+      if (file.size > 2 * 1024 * 1024) { alert('Máx 2MB por archivo'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        _tareaFiles.push({name: file.name, type: 'file', b64: ev.target.result});
+        renderTareaPreview();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('tarea-file-input').value = '';
+};
+
+function renderTareaPreview() {
+  var prev = document.getElementById('tarea-attach-preview');
+  if (!_tareaFiles.length) { prev.style.display = 'none'; return; }
+  prev.style.display = 'flex';
+  prev.innerHTML = _tareaFiles.map(function(f, i) {
+    if (f.type === 'image') {
+      return '<div style="position:relative;display:inline-block;"><img src="' + f.b64 + '" style="height:44px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"><button onclick="_removeTareaFile(' + i + ')" style="position:absolute;top:-4px;right:-4px;background:#A855F7;border:none;border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:9px;color:#fff;padding:0;">✕</button></div>';
+    }
+    return '<div style="display:flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);">📄 ' + f.name + '<button onclick="_removeTareaFile(' + i + ')" style="background:none;border:none;cursor:pointer;color:#A855F7;font-size:10px;padding:0;margin-left:4px;">✕</button></div>';
+  }).join('');
+}
+
+window._removeTareaFile = function(i) {
+  _tareaFiles.splice(i, 1);
+  renderTareaPreview();
+};
+
+window.goToTareas = function() {
+  if (window._sndNav) window._sndNav();
+  _expandedTareaId = null;
+  _editingTareaId  = null;
+  _tareasTab = 'pendientes';
+  renderTareas();
+  document.getElementById('btn-tareas').classList.add('active');
+  openOverlay('ovl-tareas', 'TAREAS');
+  const pending = _tareasCache.filter(t => t.estado === 'pendiente').length;
+  localStorage.setItem('oc_tareas_seen', String(pending));
+  document.getElementById('tareas-dot').style.display = 'none';
+  document.getElementById('btn-tareas').classList.remove('has-pending');
+  const btn = document.getElementById('tareas-header-btn');
+  if (btn) btn.style.animation = 'none';
+};
+
+// -- CONTACTOS PERSONALES JS --
+var _DEFAULT_CONTACTOS = [
+  {id:"c1", nombre:"Juan Pablo Sobral", meta:"~28 años", notas:"Mejor contacto. Familia Falabella, conexión Luksic. Sin contacto +1 año. Invitó a asado cumple.", contactado:false, comentarios:[]},
+  {id:"c2", nombre:"Yair Meszaros", meta:"~25 años", notas:"Hijo de empresario chileno judío. Padre con contactos en minería. Sin contacto 4-5 años, hay respeto.", contactado:false, comentarios:[]},
+  {id:"c3", nombre:"Hugo Ayala", meta:"Compañero de estudios", notas:"Padre era gerente. Muy buena relación. Dispuesto a armar reuniones directamente.", contactado:false, comentarios:[]},
+  {id:"c4", nombre:"Ignacio Annun", meta:"~47 años", notas:"Jefatura administrativa en minería norte. Conocido del bar, le ofreció trabajo. Sin contacto ~2 años.", contactado:false, comentarios:[]},
+  {id:"c5", nombre:"Rodrigo Navarro", meta:"~50 años", notas:"Municipalidad Vitacura. Muy buen nivel, excelentes relaciones. Contacto en círculos de alto nivel.", contactado:false, comentarios:[]},
+  {id:"c6", nombre:"Damián Paredes", meta:"~35 años", notas:"Negocio familiar arriendo propiedades Santiago. Mentalidad empresarial. Sin contacto 2 años.", contactado:false, comentarios:[]},
+  {id:"c7", nombre:"Mauricio Cáceres", meta:"~44 años", notas:"Hijo de buena familia, varios departamentos. Conocido del bar. Buen nivel.", contactado:false, comentarios:[]},
+  {id:"c8", nombre:"Matías Sandoval", meta:"Red social", notas:"Contacto de red social/eventos. Útil para referidos y conexiones.", contactado:false, comentarios:[]},
+];
+var _contactosCache = [];
+var CONTACTOS_KEY = "opencore_contactos_v2";
+
+function _loadContactosLS() {
+  try {
+    var raw = localStorage.getItem(CONTACTOS_KEY);
+    _contactosCache = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(_DEFAULT_CONTACTOS));
+  } catch(e) { _contactosCache = JSON.parse(JSON.stringify(_DEFAULT_CONTACTOS)); }
+}
+
+function _saveContactosLS() {
+  try { localStorage.setItem(CONTACTOS_KEY, JSON.stringify(_contactosCache)); } catch(e) {}
+}
+
+function renderContactos() {
+  var el = document.getElementById("contactos-list");
+  if (!el) return;
+  var cnt = document.getElementById("cnt-contactos");
+  if (cnt) cnt.textContent = _contactosCache.length;
+  if (!_contactosCache.length) { el.innerHTML = "<p>Sin contactos</p>"; return; }
+  el.innerHTML = _contactosCache.map(function(c) {
+    var dc = c.contactado ? 'done' : '';
+    var bl = c.contactado ? 'Desmarcar' : 'Contactado';
+    var comms = (c.comentarios||[]).map(function(cm,ci) {
+      return '<div class="contacto-comment-item"><span>'+cm+'</span>'+
+             '<button class="contacto-btn danger" onclick="deleteContactoComment('+JSON.stringify(c.id)+','+ci+')" >x</button></div>';
+    }).join('');
+    return '<div class="contacto-card '+dc+'" id="cc-'+c.id+'">'+
+      '<div class="contacto-header"><div>'+
+      '<div class="contacto-nombre">'+c.nombre+'</div>'+
+      '<div class="contacto-meta">'+c.meta+'</div>'+
+      '<div class="contacto-notas">'+c.notas+'</div></div>'+
+      '<div class="contacto-actions">'+
+      '<button class="contacto-btn" onclick="toggleContacto('+JSON.stringify(c.id)+')">'+bl+'</button>'+
+      '<button class="contacto-btn" onclick="toggleContactoComments('+JSON.stringify(c.id)+')" >Notas</button>'+
+      '<button class="contacto-btn danger" onclick="deleteContacto('+JSON.stringify(c.id)+')" >Del</button>'+
+      '</div></div>'+
+      '<div class="contacto-comments" id="ccomm-'+c.id+'">'+ comms+
+      '<div class="contacto-add-form">'+
+      '<input id="cinp-'+c.id+'" placeholder="Agregar nota..."/>'+
+      '<button onclick="addContactoComment('+JSON.stringify(c.id)+')" >+</button>'+
+      '</div></div></div>';
+  }).join('');
+}
+
+function toggleContactoComments(id) {
+  var el = document.getElementById("ccomm-"+id);
+  if (el) el.style.display = el.style.display==="block" ? "none" : "block";
+}
+
+window.toggleContacto = function(id) {
+  var c = _contactosCache.find(function(x){return x.id===id;});
+  if (c) { c.contactado=!c.contactado; _saveContactosLS(); renderContactos(); }
+};
+
+window.deleteContacto = function(id) {
+  _contactosCache = _contactosCache.filter(function(x){return x.id!==id;});
+  _saveContactosLS(); renderContactos();
+};
+
+window.addContactoComment = function(id) {
+  var inp=document.getElementById("cinp-"+id);
+  if (!inp||!inp.value.trim()) return;
+  var c=_contactosCache.find(function(x){return x.id===id;});
+  if (c) { if(!c.comentarios)c.comentarios=[]; c.comentarios.push(inp.value.trim()); inp.value=""; _saveContactosLS(); renderContactos(); var el=document.getElementById("ccomm-"+id); if(el)el.style.display="block"; }
+};
+
+window.deleteContactoComment = function(id,ci) {
+  var c=_contactosCache.find(function(x){return x.id===id;});
+  if (c&&c.comentarios) { c.comentarios.splice(ci,1); _saveContactosLS(); renderContactos(); }
+};
+
+window.addContacto = function(e) {
+  if(e)e.preventDefault();
+  var nom=document.getElementById("nc-nombre"),met=document.getElementById("nc-meta"),not=document.getElementById("nc-notas");
+  if(!nom||!nom.value.trim()) return;
+  var newC={id:"c"+Date.now(),nombre:nom.value.trim(),meta:met?met.value.trim():"",notas:not?not.value.trim():"",contactado:false,comentarios:[]};
+  _contactosCache.unshift(newC); _saveContactosLS(); renderContactos();
+  if(nom)nom.value=""; if(met)met.value=""; if(not)not.value="";
+  var form=document.getElementById("new-contacto-form"); if(form)form.classList.remove("open");
+};
+
+window.goToContactos = function() {
+  openOverlay('ovl-contactos', 'CONTACTOS PERSONALES');
+};
+
+// -- OVERLAY ENGINE --
+window.openOverlay = function(panelId, title) {
+  ['ovl-tareas','ovl-contactos','ovl-reuniones'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var target = document.getElementById(panelId);
+  if (target) target.style.display = 'block';
+  var titleEl = document.getElementById('ovl-title');
+  if (titleEl) titleEl.textContent = title || '';
+  var ovl = document.getElementById('sections-overlay');
+  if (ovl) { ovl.classList.add('open'); ovl.scrollTop = 0; }
+  document.documentElement.style.overflow = 'hidden';
+};
+window.closeOverlay = function() {
+  var ovl = document.getElementById('sections-overlay');
+  if (ovl) ovl.classList.remove('open');
+  document.documentElement.style.overflow = '';
+  document.querySelectorAll('.analytics-btn').forEach(function(b){ b.classList.remove('active'); });
+};
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var ovl = document.getElementById('sections-overlay');
+    if (ovl && ovl.classList.contains('open')) closeOverlay();
+  }
+});
+
+async function loadTareas() {
+  try {
+    const res = await fetch(TAREAS_URL + '?t=' + Date.now());
+    if (res.ok) {
+      _tareasCache = await res.json();
+      _tareasLoaded = true;
+    }
+  } catch(e) { }
+  renderTareas();
+  checkTareasDot();
+  if (typeof renderTareasInline === 'function') renderTareasInline();
+}
+
+async function _saveTareas() {
+  if (!_tareasLoaded) {
+    _showTareasWarn('⚠ Sin conexión inicial — espera y vuelve a intentar');
+    return;
+  }
+  try {
+    const res = await fetch(TAREAS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(_tareasCache)
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error('tareas save error', res.status, body);
+      _showTareasWarn('⚠ Error servidor (' + res.status + ') — tarea guardada localmente');
+    }
+  } catch(e) {
+    console.error('tareas fetch error', e);
+    _showTareasWarn('⚠ Sin conexión — tarea guardada localmente');
+  }
+}
+function _showTareasWarn(msg) {
+  let warn = document.getElementById('tareas-save-warn');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'tareas-save-warn';
+    warn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid rgba(255,165,0,0.4);color:rgba(255,165,0,0.9);font-family:var(--font-heading);font-size:0.7rem;letter-spacing:1.5px;padding:10px 18px;z-index:9999;border-radius:4px;white-space:nowrap;';
+    document.body.appendChild(warn);
+  }
+  warn.textContent = msg;
+  warn.style.display = 'block';
+  setTimeout(() => { if (warn) warn.style.display = 'none'; }, 4000);
+}
+
+let _expandedTareaId = null;
+let _editingTareaId  = null;
+
+// Auto-resize: cualquier textarea.ar crece al escribir
+document.addEventListener('input', function(e) {
+  if (e.target.classList && e.target.classList.contains('ar')) {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 320) + 'px';
+  }
+});
+function _initAr() {
+  document.querySelectorAll('textarea.ar').forEach(function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 320) + 'px';
+  });
+}
+
+// After any save action → collapse all + scroll to top of list
+function _backToTaskList() {
+  _expandedTareaId = null;
+  _editingTareaId  = null;
+  _tareasTab = 'pendientes';
+  renderTareas();
+  // Scroll the overlay panel back to the top
+  var panel = document.querySelector('.ovl-panel');
+  if (panel) panel.scrollTop = 0;
+  var ovl = document.getElementById('sections-overlay');
+  if (ovl) ovl.scrollTop = 0;
+}
+
+window.expandTarea = function(id) {
+  _expandedTareaId = (_expandedTareaId === id) ? null : id;
+  renderTareas();
+  const list = document.getElementById('tareas-list');
+  if (list) list.classList.toggle('has-expanded', !!_expandedTareaId);
+  if (_expandedTareaId) {
+    // Focus comment input of expanded card
+    setTimeout(function() {
+      const inp = document.getElementById('tc-' + id);
+      // Don't auto-focus, just scroll into view
+      const card = document.getElementById('tcard-' + id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+};
+
+function _renderTareaCard(t) {
+    const isCompleted = t.estado === 'completada';
+    const alta = t.prioridad === 'alta';
+    const isExpanded = _expandedTareaId === t.id;
+    const comments = (t.comentarios || []);
+    const desc = (t.descripcion || '').trim();
+
+    // Comments HTML — con editar/borrar
+    let commentsHtml = '';
+    if (comments.length > 0) {
+      commentsHtml += comments.map(function(c, ci) {
+        return '<div class="tarea-comment-item" id="tcc-' + t.id + '-' + ci + '">'
+          + '<span style="color:#A855F7;margin-right:4px;flex-shrink:0;">→</span>'
+          + '<span class="tci-text">' + c.texto.replace(/</g,'&lt;') + '</span>'
+          + '<span class="tarea-comment-date">' + c.fecha + '</span>'
+          + '<button class="btn-edit-inline" data-tid="' + t.id + '" data-ci="' + ci + '" onclick="editTareaComment(this.dataset.tid,+this.dataset.ci)" title="Editar">✎</button>'
+          + '<button class="btn-edit-inline btn-edit-del" data-tid="' + t.id + '" data-ci="' + ci + '" onclick="deleteTareaComment(this.dataset.tid,+this.dataset.ci)" title="Borrar">✕</button>'
+          + '</div>';
+      }).join('');
+    }
+
+    const checkBtn = isCompleted
+      ? '<button class="tarea-btn tarea-btn-uncheck" data-snd-custom data-id="' + t.id + '" onclick="event.stopPropagation();toggleTarea(this.dataset.id)">↩ Reabrir</button>'
+      : '<button class="tarea-btn tarea-btn-check" data-snd-custom data-id="' + t.id + '" onclick="event.stopPropagation();toggleTarea(this.dataset.id)">✓ Marcar completa</button>';
+
+    const statusPill = isCompleted
+      ? '<span class="tarea-pill pill-completada">✓ LISTA</span>'
+      : '<span class="tarea-pill pill-pendiente">PENDIENTE</span>';
+
+    const commentBadge = comments.length
+      ? '<span class="tarea-comment-count">💬 ' + comments.length + '</span>'
+      : '';
+
+    // Collapsed header (always visible)
+    const header = '<div class="tarea-card-header" onclick="expandTarea(\'' + t.id + '\')">'
+      + '<div style="display:flex;align-items:flex-start;gap:0.6rem;flex:1;min-width:0;">'
+      + (!isCompleted ? '<span class="tarea-pending-dot"></span>' : '<span style="width:8px;height:8px;border-radius:50%;background:#4ADE80;flex-shrink:0;margin-top:5px;opacity:0.7;"></span>')
+      + '<span class="tarea-expand-arrow" style="color:#00E5FF;">' + (isExpanded ? '▼' : '▶') + '</span>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div class="tarea-titulo" id="ttxt-' + t.id + '">'
+      + (alta && !isCompleted ? '<span style="color:#FF2A6D;margin-right:6px;font-size:0.9rem;">↑</span>' : '')
+      + t.titulo.replace(/</g,'&lt;')
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">'
+      + commentBadge
+      + statusPill
+      + '</div>'
+      + '</div>';
+
+    // Expanded body (only when open)
+    const isEditing = _editingTareaId === t.id;
+    const editForm = isEditing
+      ? '<div class="tarea-edit-row" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
+        + '<textarea class="tarea-comment-input ar" id="tinp-' + t.id + '" maxlength="200" rows="3"'
+        + ' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
+        + t.titulo.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
+        + '<div class="tarea-edit-btns">'
+        + '<button class="reply-btn-send" onclick="saveEditTarea(\'' + t.id + '\')">→ Guardar</button>'
+        + '<button class="btn-cancel-edit" onclick="cancelEditTarea(\'' + t.id + '\')">✕</button>'
+        + '</div></div>'
+      : '';
+    const filesHtml = (function() {
+      var files = t.archivos || [];
+      if (!files.length) return '';
+      return '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">'
+        + files.map(function(f, fi) {
+            var delBtn = '<button onclick="deleteTareaFile(\'' + t.id + '\',' + fi + ')" title="Borrar archivo" style="background:rgba(255,42,42,0.15);border:1px solid rgba(255,42,42,0.3);border-radius:4px;color:#FF2A6D;cursor:pointer;font-size:0.65rem;padding:2px 5px;flex-shrink:0;">✕</button>';
+            if (f.type === 'image') {
+              return '<div style="display:inline-flex;align-items:center;gap:3px;">'
+                + '<img src="' + f.b64 + '" onclick="viewTareaImage(\'' + t.id + '\',' + fi + ')" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);cursor:zoom-in;" title="Ver imagen">'
+                + delBtn + '</div>';
+            }
+            return '<div style="display:inline-flex;align-items:center;gap:3px;">'
+              + '<a href="' + f.b64 + '" download="' + f.name + '" style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:6px;padding:4px 8px;font-size:0.75rem;color:rgba(168,85,247,0.8);text-decoration:none;">📄 ' + f.name + '</a>'
+              + delBtn + '</div>';
+          }).join('')
+        + '</div>';
+    })();
+    const body = '<div class="tarea-card-body">'
+      + editForm
+      + '<div class="tarea-meta">'
+      + (t.autor ? '<span style="color:rgba(255,255,255,0.55);font-weight:600;">' + t.autor.replace(/</g,'&lt;') + '</span> &nbsp;·&nbsp; ' : '')
+      + t.fecha_creacion
+      + (t.fecha_completada ? ' &nbsp;·&nbsp; ✓ completada ' + t.fecha_completada : '')
+      + '</div>'
+      + (desc ? '<div class="tarea-desc-text">' + desc.replace(/</g,'&lt;').replace(/\n/g,'<br>') + '</div>' : '')
+      + filesHtml
+      + '<div class="tarea-actions">'
+      + checkBtn
+      + '<button class="tarea-btn tarea-btn-del" onclick="event.stopPropagation();editTarea(\'' + t.id + '\')" style="border-color:rgba(168,85,247,0.3);color:#A855F7;">✎ Editar</button>'
+      + '<label class="tarea-btn" title="Adjuntar archivo o imagen" style="border-color:rgba(0,229,255,0.25);color:rgba(0,229,255,0.7);cursor:pointer;display:inline-flex;align-items:center;gap:0.3rem;" onclick="event.stopPropagation()">📎<input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;" onchange="addFilesToTarea(\'' + t.id + '\',this.files);this.value=\'\';"></label>'
+      + '<button class="tarea-btn tarea-btn-del" onclick="event.stopPropagation();deleteTarea(\'' + t.id + '\')" style="margin-left:auto;opacity:0.5;">✕ Eliminar</button>'
+      + '</div>'
+      + '<div class="tarea-comments" style="margin-top:1rem;">'
+      + (commentsHtml || '<div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem;">Sin comentarios aún.</div>')
+      + '<div class="tarea-comment-input-row" style="margin-top:0.8rem;">'
+      + '<textarea class="tarea-comment-input ar" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Agregar comentario o actualización..." maxlength="300" rows="3" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addTareaComment(this.dataset.id);}"></textarea>'
+      + '<button class="tarea-comment-send" data-id="' + t.id + '" onclick="event.stopPropagation();addTareaComment(this.dataset.id)">→ Guardar</button>'
+      + '</div></div>'
+      + '</div>';
+
+    const borderStyle = alta && !isCompleted ? 'border-left-color:#FF2A6D;' : '';
+    return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (isExpanded ? ' tc-expanded' : '') + '" id="tcard-' + t.id + '" style="' + borderStyle + '">'
+      + header + body
+      + '</div>';
+}
+
+function renderTareas() {
+  const el = document.getElementById('tareas-list');
+  const byNewest  = (a, b) => Number(b.id) - Number(a.id);
+  const pending   = _tareasCache.filter(t => t.estado !== 'completada').sort(byNewest);
+  const completed = _tareasCache.filter(t => t.estado === 'completada').sort(byNewest);
+
+  // Sync has-expanded class after re-render
+  setTimeout(function() {
+    if (el) el.classList.toggle('has-expanded', !!_expandedTareaId);
+  }, 0);
+
+  // ── Tabs header ────────────────────────────────────────────────────────
+  const totalHist = completed.length + _historialCache.length;
+  let html = '<div class="tareas-tabs">'
+    + '<button class="tareas-tab' + (_tareasTab === 'pendientes'  ? ' active-pendientes'  : '') + '" onclick="_setTareasTab(\'pendientes\')">'
+    +   pending.length + ' PENDIENTE' + (pending.length !== 1 ? 'S' : '')
+    + '</button>'
+    + '<button class="tareas-tab' + (_tareasTab === 'completadas' ? ' active-completadas' : '') + '" onclick="_setTareasTab(\'completadas\')">'
+    +   completed.length + ' COMPLETADA' + (completed.length !== 1 ? 'S' : '')
+    + '</button>'
+    + '<button class="tareas-tab' + (_tareasTab === 'historial'   ? ' active-historial'   : '') + '" onclick="_setTareasTab(\'historial\')">'
+    +   'HISTORIAL' + (totalHist ? ' (' + totalHist + ')' : '')
+    + '</button>'
+    + '</div>';
+
+  // ── PENDIENTES tab ─────────────────────────────────────────────────────
+  if (_tareasTab === 'pendientes') {
+    if (!pending.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">No hay tareas pendientes. Todo al día.</div>';
+    } else {
+      html += pending.map(_renderTareaCard).join('');
+    }
+
+  // ── COMPLETADAS tab ────────────────────────────────────────────────────
+  } else if (_tareasTab === 'completadas') {
+    if (!completed.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">Sin tareas completadas aún.</div>';
+    } else {
+      html += completed.map(_renderTareaCard).join('');
+    }
+
+  // ── HISTORIAL tab ──────────────────────────────────────────────────────
+  } else {
+    _loadHistorial();
+    if (!completed.length && !_historialCache.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">El historial está vacío.</div>';
+    } else {
+      // Completadas (en historial de forma compacta)
+      if (completed.length) {
+        html += '<div style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#4ADE80;margin-bottom:8px;opacity:0.8;">COMPLETADAS</div>';
+        html += completed.map(function(t) {
+          return '<div class="hist-item">'
+            + '<span class="hist-badge done">LISTA</span>'
+            + '<span style="flex:1;color:var(--text-main);font-size:0.88rem;">' + t.titulo.replace(/</g,'&lt;') + '</span>'
+            + (t.fecha_completada ? '<span style="font-size:0.72rem;color:var(--text-dim);flex-shrink:0;">' + t.fecha_completada + '</span>' : '')
+            + '<button class="hist-del-btn" onclick="eliminarDeHistorial(\'comp\',\'' + t.id + '\')">✕</button>'
+            + '</div>';
+        }).join('');
+      }
+      // Eliminadas
+      if (_historialCache.length) {
+        html += '<div style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#FF2A6D;margin:14px 0 8px;opacity:0.8;">ELIMINADAS</div>';
+        html += _historialCache.slice().reverse().map(function(h) {
+          return '<div class="hist-item">'
+            + '<span class="hist-badge del">ELIM.</span>'
+            + '<span style="flex:1;color:var(--text-dim);font-size:0.88rem;">' + (h.titulo||'').replace(/</g,'&lt;') + '</span>'
+            + (h.fecha_eliminada ? '<span style="font-size:0.72rem;color:var(--text-dim);flex-shrink:0;">' + h.fecha_eliminada + '</span>' : '')
+            + '<button class="hist-del-btn" onclick="eliminarDeHistorial(\'del\',\'' + h.id + '\')">✕</button>'
+            + '</div>';
+        }).join('');
+        html += '<div style="margin-top:10px;text-align:right;">'
+          + '<button onclick="limpiarHistorialEliminadas()" style="background:transparent;border:1px solid rgba(255,42,109,0.2);border-radius:6px;color:rgba(255,42,109,0.4);font-size:0.72rem;padding:4px 10px;cursor:pointer;">Limpiar eliminadas</button>'
+          + '</div>';
+      }
+    }
+  }
+
+  el.innerHTML = html;
+  setTimeout(_initAr, 10);
+}
+
+window._setTareasTab = function(tab) {
+  _tareasTab = tab;
+  _expandedTareaId = null;
+  _editingTareaId = null;
+  renderTareas();
+};
+
+window.eliminarDeHistorial = function(tipo, id) {
+  if (tipo === 'comp') {
+    const t = _tareasCache.find(x => x.id === id);
+    if (!t) return;
+    _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
+    _saveHistorial();
+    _tareasCache = _tareasCache.filter(x => x.id !== id);
+    renderTareas();
+    checkTareasDot();
+    _saveTareas();
+  } else {
+    _historialCache = _historialCache.filter(x => x.id !== id);
+    _saveHistorial();
+    renderTareas();
+    checkTareasDot();
+  }
+};
+
+window.limpiarHistorialEliminadas = function() {
+  _historialCache = [];
+  _saveHistorial();
+  renderTareas();
+};
+
+function checkTareasDot() {
+  const total    = _tareasCache.length;
+  const pending  = _tareasCache.filter(t => t.estado === 'pendiente').length;
+  const done     = _tareasCache.filter(t => t.estado === 'completada').length;
+  document.getElementById('nav-tareas-count').textContent = pending;
+
+  // Dot en card analytics
+  const seen = parseInt(localStorage.getItem('oc_tareas_seen') || '0');
+  const showDot = pending > seen;
+  document.getElementById('tareas-dot').style.display = showDot ? 'block' : 'none';
+  // Hint visual (borde + scan) cuando hay pendientes
+  document.getElementById('btn-tareas').classList.toggle('has-pending', pending > 0);
+
+  // Indicador en header
+  const btn = document.getElementById('tareas-header-btn');
+  if (total === 0) {
+    btn.style.display = 'none';
+  } else if (pending > 0) {
+    btn.style.display = 'inline-block';
+    btn.textContent = '● ' + pending + ' PENDIENTE' + (pending > 1 ? 'S' : '');
+    btn.style.color = '#FF2A6D';
+    btn.style.borderColor = 'rgba(255,42,109,0.5)';
+    btn.style.boxShadow = '0 0 10px rgba(255,42,109,0.2)';
+    btn.style.animation = 'pulseDot 1.5s infinite';
+  } else {
+    // Todas completadas
+    btn.style.display = 'inline-block';
+    btn.textContent = '✓ COMPLETADAS';
+    btn.style.color = '#4ADE80';
+    btn.style.borderColor = 'rgba(74,222,128,0.5)';
+    btn.style.boxShadow = '0 0 10px rgba(74,222,128,0.2)';
+    btn.style.animation = 'pulseDot 1.5s infinite';
+  }
+}
+
+window.addTarea = function(e) {
+  e.preventDefault();
+  const titulo = document.getElementById('tarea-titulo').value.trim();
+  if (!titulo) return;
+  const prioBtn = document.getElementById('tarea-prio-btn');
+  withName(function(name) {
+    const descEl = document.getElementById('tarea-desc');
+    _tareasCache.push({
+      id: Date.now().toString(),
+      titulo: titulo,
+      descripcion: descEl ? descEl.value.trim() : '',
+      autor: name,
+      prioridad: prioBtn.dataset.alta === '1' ? 'alta' : 'normal',
+      estado: 'pendiente',
+      fecha_creacion: new Date().toLocaleDateString('es-CL'),
+      fecha_completada: null,
+      archivos: _tareaFiles.slice(),
+      comentarios: []
+    });
+    _tareaFiles = [];
+    // Clear form + render instantly
+    document.getElementById('tarea-titulo').value = '';
+    if (descEl) descEl.value = '';
+    const prevEl = document.getElementById('tarea-attach-preview');
+    if (prevEl) { prevEl.innerHTML = ''; prevEl.style.display = 'none'; }
+    prioBtn.dataset.alta = '0';
+    prioBtn.style.color = 'rgba(255,42,45,0.25)';
+    prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+    _backToTaskList();
+    checkTareasDot();
+    // Save in background
+    _saveTareas();
+    pushNotify('OpenCORE — Nueva tarea asignada', name + ': ' + titulo, 'clipboard');
+  });
+};
+
+window.toggleTarea = function(id) {
+  const t = _tareasCache.find(t => t.id === id);
+  if (!t) return;
+  const wasCompleted = t.estado === 'completada';
+  t.estado = wasCompleted ? 'pendiente' : 'completada';
+  t.fecha_completada = t.estado === 'completada' ? new Date().toLocaleDateString('es-CL') : null;
+  if (t.estado === 'completada') { if (window._sndToggleOn) window._sndToggleOn(); }
+  else { if (window._sndToggleOff) window._sndToggleOff(); }
+  // Render instantly
+  renderTareas();
+  checkTareasDot();
+  if (typeof renderTareasInline === 'function') renderTareasInline();
+  // Save in background
+  _saveTareas();
+  if (t.estado === 'completada') pushNotify('OpenCORE — Tarea completada ✓', t.titulo, 'white_check_mark');
+};
+
+window.addTareaComment = function(id) {
+  const input = document.getElementById('tc-' + id);
+  const texto = input ? input.value.trim() : '';
+  if (!texto) return;
+  const t = _tareasCache.find(function(x){ return x.id === id; });
+  if (!t) return;
+  if (!t.comentarios) t.comentarios = [];
+  t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
+  // Collapse + go to list instantly
+  _backToTaskList();
+  // Save in background
+  _saveTareas();
+};
+
+// Enter key on tarea comment inputs
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.target.classList.contains('tarea-comment-input')) {
+    e.preventDefault();
+    const id = e.target.dataset.id;
+    if (id) addTareaComment(id);
+  }
+});
+
+window._deleteTareaConfirmed = function(id) {
+  const t = _tareasCache.find(x => x.id === id);
+  if (t) {
+    _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada || null, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
+    _saveHistorial();
+  }
+  _tareasCache = _tareasCache.filter(t => t.id !== id);
+  // Render instantly
+  renderTareas();
+  checkTareasDot();
+  // Save in background
+  _saveTareas();
+};
+
+// ── Notificaciones del sistema ────────────────────────────────────────────
+function pushNotify(title, body) {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  try {
+    const n = new Notification(title, {
+      body: body,
+      icon: '/opencore-dashboard/icon-192.png',
+      badge: '/opencore-dashboard/icon-192.png',
+      silent: false
+    });
+    setTimeout(() => n.close(), 9000);
+  } catch(e) {}
+}
+
+async function _askNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+
+// Polling: detecta nuevas tareas y comentarios cada 60 s
+let _pollActive = false;
+async function _startPolling() {
+  if (_pollActive) return;
+  _pollActive = true;
+  // Inicializar conteos sin notificar (sesión actual)
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(TAREAS_URL + '?t=' + Date.now()),
+      fetch(API_URL   + '?t=' + Date.now())
+    ]);
+    if (r1.ok) localStorage.setItem('oc_pn_t', String((await r1.json()).length));
+    if (r2.ok) localStorage.setItem('oc_pn_c', String((await r2.json()).length));
+  } catch(e) {}
+
+  setInterval(async function() {
+    try {
+      // ── Tareas ──
+      const r1 = await fetch(TAREAS_URL + '?t=' + Date.now());
+      if (r1.ok) {
+        const tareas = await r1.json();
+        const prev = parseInt(localStorage.getItem('oc_pn_t') || '0');
+        if (tareas.length > prev && prev > 0) {
+          tareas.slice(prev).forEach(t => pushNotify('📋 Nueva tarea', t.titulo));
+          _tareasCache = tareas; renderTareas(); checkTareasDot();
+        }
+        localStorage.setItem('oc_pn_t', String(tareas.length));
+      }
+      // ── Comentarios ──
+      const r2 = await fetch(API_URL + '?t=' + Date.now());
+      if (r2.ok) {
+        const coms = await r2.json();
+        const prev = parseInt(localStorage.getItem('oc_pn_c') || '0');
+        if (coms.length > prev && prev > 0) {
+          coms.slice(prev).forEach(c =>
+            pushNotify('💬 Nuevo comentario — ' + (c.author || ''), (c.text || '').slice(0, 90))
+          );
+          _commentCache = coms; renderComments(); checkCommentDot();
+        }
+        localStorage.setItem('oc_pn_c', String(coms.length));
+      }
+    } catch(e) {}
+  }, 60000);
+}
+
+// ── Service Worker (PWA) ──────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  animateVal('kpi-total-val', DATA.total, 1500);
+  const pctContactadas = DATA.total > 0 ? parseFloat((getTotalContactadas() / DATA.total * 100).toFixed(1)) : 0;
+  animateRing(pctContactadas);
+  const totalC = getTotalContactadas();
+  animateVal('nav-contactadas', totalC, 1500);
+  updateReunionesBadge();
+  updateCanalBadges();
+  loadComments();
+  checkCommentDot();
+  _loadContactosLS();
+  renderContactos();
+    loadTareas();
+  loadReuniones();
+  initAnalyticsCharts();
+
+  // ── Detectar cambios vs sesión anterior ────────────────────────────────
+  const snap = {
+    total:    localStorage.getItem('oc_snap_total'),
+    correo:   localStorage.getItem('oc_snap_correo'),
+    linkedin: localStorage.getItem('oc_snap_linkedin'),
+    llamadas: localStorage.getItem('oc_snap_llamadas'),
+    referidos:localStorage.getItem('oc_snap_referidos'),
+    reuniones:localStorage.getItem('oc_snap_reuniones')
+  };
+  const firstVisit = !snap.total;
+
+  function markUpdated(el) {
+    if (el && !firstVisit) el.classList.add('data-updated');
+  }
+
+  if (!firstVisit) {
+    // KPI card Base Total
+    if (String(DATA.total) !== snap.total)
+      markUpdated(document.getElementById('kpi-total-val')?.closest('.kpi-card'));
+
+    // Analytics btn contactos
+    const contactasChanged = String(DATA.total) !== snap.total || String(DATA.canal_correo) !== snap.correo;
+    if (contactasChanged) markUpdated(document.getElementById('btn-contactos'));
+
+    // Analytics btn canal
+    const canalChanged = String(DATA.canal_correo)   !== snap.correo   ||
+                         String(DATA.canal_linkedin)  !== snap.linkedin ||
+                         String(DATA.canal_llamadas)  !== snap.llamadas ||
+                         String(DATA.canal_referidos) !== snap.referidos;
+    if (canalChanged) markUpdated(document.getElementById('btn-canal'));
+
+    // Analytics btn reuniones
+    if (String(reuniones) !== snap.reuniones)
+      markUpdated(document.getElementById('btn-reuniones'));
+  }
+
+  // Guardar snapshot actual
+  localStorage.setItem('oc_snap_total',     String(DATA.total));
+  localStorage.setItem('oc_snap_correo',    String(DATA.canal_correo   || 0));
+  localStorage.setItem('oc_snap_linkedin',  String(DATA.canal_linkedin  || 0));
+  localStorage.setItem('oc_snap_llamadas',  String(DATA.canal_llamadas  || 0));
+  localStorage.setItem('oc_snap_referidos', String(DATA.canal_referidos || 0));
+  localStorage.setItem('oc_snap_reuniones', String(reuniones));
+});
+
+window.addEventListener('resize', () => { if (activeChart) activeChart.resize(); });
+
+// ── Touch ripple on cards ─────────────────────────────────────────────────
+(function() {
+  function addRipple(el) {
+    el.style.position = 'relative';
+    el.style.overflow = 'hidden';
+    el.addEventListener('touchstart', function(e) {
+      const r   = el.getBoundingClientRect();
+      const t   = e.touches[0];
+      const rip = document.createElement('span');
+      const size = Math.max(r.width, r.height) * 1.5;
+      rip.className = 'ripple';
+      rip.style.cssText = `width:${size}px;height:${size}px;left:${t.clientX - r.left - size/2}px;top:${t.clientY - r.top - size/2}px;`;
+      el.appendChild(rip);
+      setTimeout(() => rip.remove(), 600);
+    }, {passive:true});
+  }
+  document.querySelectorAll('.analytics-btn, .kpi-card').forEach(addRipple);
+})();
+
+// ── Mouse-tilt (desktop only) + cursor glow ──────────────────────────────
+(function() {
+  const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  if (isMobile) return; // skip on touch devices
+
+  const TILT = 7;
+  function addTilt(el) {
+    el.addEventListener('mousemove', function(e) {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      el.style.transform  = `perspective(600px) rotateY(${x*TILT*2}deg) rotateX(${-y*TILT}deg) translateY(-3px)`;
+      el.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.3s';
+      el.style.boxShadow  = `${x*8}px ${y*8}px 30px rgba(0,229,255,0.12),0 12px 40px rgba(0,0,0,0.5)`;
+    });
+    el.addEventListener('mouseleave', function() {
+      el.style.transform  = '';
+      el.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1),box-shadow 0.5s,background 0.3s';
+      el.style.boxShadow  = '';
+    });
+  }
+  document.querySelectorAll('.analytics-btn, .kpi-card').forEach(addTilt);
+
+  // Cursor glow
+  const glow = document.createElement('div');
+  glow.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.06) 0%,transparent 70%);transform:translate(-50%,-50%);';
+  document.body.appendChild(glow);
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top  = e.clientY + 'px';
+  });
+})();
+
+// ── Device orientation tilt (mobile gyroscope) ────────────────────────────
+(function() {
+  if (!window.DeviceOrientationEvent) return;
+  const cards = document.querySelectorAll('.analytics-btn, .kpi-card');
+  let lastGamma = 0, lastBeta = 0;
+  window.addEventListener('deviceorientation', function(e) {
+    const gamma = Math.max(-20, Math.min(20, e.gamma || 0)); // left-right
+    const beta  = Math.max(-20, Math.min(20, (e.beta || 0) - 40)); // front-back offset
+    lastGamma += (gamma - lastGamma) * 0.1;
+    lastBeta  += (beta  - lastBeta)  * 0.1;
+    cards.forEach(el => {
+      el.style.transform  = `perspective(800px) rotateY(${lastGamma * 0.3}deg) rotateX(${-lastBeta * 0.2}deg)`;
+      el.style.transition = 'transform 0.3s ease-out';
+    });
+  }, {passive:true});
+})();
+
+// ══════════════════════════════════════════════════════
+//   AUDIO + HAPTICS + CONFIRM DIALOG
+// ══════════════════════════════════════════════════════
+(function() {
+
+  // ── Audio engine (Web Audio API) ───────────────────
+  let _ac = null;
+  function getAC() {
+    if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ac.state === 'suspended') _ac.resume();
+    return _ac;
+  }
+  // freqEnd: si se pasa, hace ramp descendente → crea sensación de "peso" / graves
+  function playTone(freq, dur, vol, type, freqEnd) {
+    try {
+      const ac   = getAC();
+      const osc  = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, ac.currentTime);
+      if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, ac.currentTime + dur * 0.75);
+      gain.gain.setValueAtTime(0.001, ac.currentTime);
+      gain.gain.linearRampToValueAtTime(vol || 0.10, ac.currentTime + 0.006); // ataque rápido
+      gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime + dur + 0.02);
+    } catch(e) {}
+  }
+
+  // ── Haptics ────────────────────────────────────────
+  function haptic(ms) {
+    try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch(e) {}
+  }
+  window.haptic = haptic; // exponer para el sistema de voz
+
+  // ── Sound presets ──────────────────────────────────
+  // Click de acción: "thud" sutil — pitch cae 190→85 Hz (parlantes lo reproducen, da sensación de graves)
+  window._sndClick = function() {
+    haptic(8);
+    playTone(190, 0.13, 0.09, 'sine', 85);
+  };
+
+  // Botón splash (presionar): golpe más pesado
+  window._sndSplash = function() {
+    haptic(18);
+    playTone(210, 0.22, 0.12, 'sine', 75);
+    setTimeout(function() { playTone(420, 0.10, 0.04, 'sine'); }, 70);
+  };
+
+  // Entrada al dashboard: 3 notas suaves ascendentes — "despertar"
+  window._sndEnter = function() {
+    playTone(138, 0.30, 0.07, 'sine');
+    setTimeout(function() { playTone(185, 0.26, 0.06, 'sine'); }, 140);
+    setTimeout(function() { playTone(246, 0.22, 0.05, 'sine'); }, 270);
+  };
+
+  // Delete / acción destructiva: caída ominosa de dos tonos
+  window._sndDelete = function() {
+    haptic(20);
+    playTone(230, 0.24, 0.10, 'sine', 65);
+    setTimeout(function() { playTone(160, 0.22, 0.08, 'sine', 55); }, 130);
+  };
+
+  // Navegación / scroll a sección: "whoosh" suave descendente
+  window._sndNav = function() {
+    haptic(7);
+    playTone(165, 0.20, 0.065, 'sine', 95);
+  };
+
+  // Cambio de tab analytics: tick ligero
+  window._sndTab = function() {
+    haptic(5);
+    playTone(210, 0.12, 0.060, 'sine', 170);
+  };
+
+  // Apertura de modal: tono que sube — "emerge"
+  window._sndModalOpen = function() {
+    haptic(10);
+    playTone(145, 0.22, 0.07, 'sine', 200);
+  };
+
+  // Cierre de modal: tono que cae — "se cierra"
+  window._sndModalClose = function() {
+    haptic(6);
+    playTone(195, 0.18, 0.06, 'sine', 120);
+  };
+
+  // Guardado exitoso (comentario / tarea): dos notas suaves ascendentes
+  window._sndSuccess = function() {
+    haptic(12);
+    playTone(220, 0.20, 0.07, 'sine');
+    setTimeout(function() { playTone(330, 0.17, 0.05, 'sine'); }, 120);
+  };
+
+  // Tarea marcada completa: acorde positivo ligero
+  window._sndToggleOn = function() {
+    haptic(15);
+    playTone(255, 0.18, 0.07, 'sine', 195);
+    setTimeout(function() { playTone(385, 0.15, 0.045, 'sine'); }, 110);
+  };
+
+  // Tarea reabierta: tono descendente neutro
+  window._sndToggleOff = function() {
+    haptic(8);
+    playTone(200, 0.17, 0.06, 'sine', 135);
+  };
+
+  // ── Splash button ──────────────────────────────────
+  const splashBtn = document.getElementById('splash-btn');
+  if (splashBtn) {
+    splashBtn.addEventListener('click', function() { window._sndSplash(); }, true);
+  }
+
+  // ── Global click sound + haptic ───────────────────
+  // Fires on any interactive element EXCEPT splash (already handled)
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('button:not(.analytics-btn):not([data-snd-custom]), .kpi-card:not(.kpi-action-card)');
+    if (!el || el.id === 'splash-btn') return;
+    window._sndClick();
+  }, true);
+
+  // ── Custom confirm dialog ─────────────────────────
+  window.confirmDialog = function(msg, label, onYes) {
+    window._sndDelete();
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);';
+    ov.innerHTML = '<div style="background:#111;border:1px solid #2a2a2a;border-radius:16px 16px 0 0;padding:1.8rem 1.5rem 2rem;width:100%;max-width:500px;animation:slideUp 0.22s cubic-bezier(0.34,1.2,0.64,1);">'
+      + '<div style="font-family:inherit;font-size:0.89rem;letter-spacing:1.5px;color:#ccc;margin-bottom:1.4rem;text-align:center;text-transform:uppercase;">' + msg + '</div>'
+      + '<div style="display:flex;gap:0.75rem;">'
+      + '<button id="_cdCancel" style="flex:1;padding:13px;border:1px solid #2a2a2a;background:transparent;color:#666;border-radius:10px;font-family:inherit;font-size:0.78rem;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">Cancelar</button>'
+      + '<button id="_cdConfirm" style="flex:1;padding:13px;border:none;background:#FF2A6D;color:#fff;border-radius:10px;font-family:inherit;font-size:0.78rem;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;">' + (label || 'Eliminar') + '</button>'
+      + '</div></div>';
+    document.body.appendChild(ov);
+    const close = function() { ov.style.opacity = '0'; setTimeout(function() { ov.remove(); }, 200); };
+    ov.querySelector('#_cdCancel').onclick  = close;
+    ov.querySelector('#_cdConfirm').onclick = function() { close(); onYes(); };
+    ov.onclick = function(e) { if (e.target === ov) close(); };
+  };
+
+  // ── Wire up delete functions with confirm ─────────
+  window.deleteComment = (function(orig) {
+    return function(cid) {
+      window.confirmDialog('¿Eliminar este comentario?', 'Eliminar', function() { orig(cid); });
+    };
+  })(window.deleteComment);
+
+  window.deleteTarea = function(id) {
+    window.confirmDialog('¿Eliminar esta tarea?', 'Eliminar', function() {
+      window._deleteTareaConfirmed(id);
+    });
+  };
+
+})();
+
+// ── SISTEMA DE COMANDOS DE VOZ (solo mobile/touch) ────────────────────────
+(function() {
+  if (!('ontouchstart' in window) && window.innerWidth > 900) return;
+
+  // Inyectar FAB + toast si no existen ya
+  (function injectUI() {
+    if (document.getElementById('voice-fab')) return;
+    const fab = document.createElement('div');
+    fab.id = 'voice-fab';
+    fab.title = 'Comando de voz';
+    fab.innerHTML = '<svg id="vf-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,229,255,0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+    document.body.appendChild(fab);
+    const vt = document.createElement('div');
+    vt.id = 'voice-toast';
+    document.body.appendChild(vt);
+    fab.onclick = function() { window._voiceToggle && window._voiceToggle(); };
+  })();
+
+  const fab   = document.getElementById('voice-fab');
+  const toast = document.getElementById('voice-toast');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { fab && (fab.style.display = 'none'); return; }
+
+  const rec = new SR();
+  rec.lang = 'es-ES';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+
+  const SILENCE_MS = 3200;
+  let _on = false, _ftimer = null, _silenceTimer = null, _finalText = '';
+  function stopRec() { clearTimeout(_silenceTimer); try { rec.stop(); } catch(e) {} }
+
+  function vShow(msg, ms) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(_ftimer);
+    if (ms !== false) _ftimer = setTimeout(function() { toast.style.display = 'none'; }, ms || 3000);
+  }
+
+  window._voiceToggle = function() {
+    if (_on) { stopRec(); return; }
+    _finalText = '';
+    try { rec.start(); } catch(e) { vShow('Error al iniciar micrófono', 2500); }
+  };
+
+  rec.onstart = function() {
+    _on = true; _finalText = ''; fab.classList.add('vf-on');
+    vShow('🎙 Habla...', false);
+    if (typeof haptic === 'function') haptic(12);
+    _silenceTimer = setTimeout(stopRec, 15000);
+  };
+  rec.onerror = function(e) {
+    _on = false; fab.classList.remove('vf-on'); clearTimeout(_silenceTimer);
+    var msgs = {'no-speech':'Sin voz detectada','not-allowed':'Activa el micrófono','network':'Error de red'};
+    vShow(msgs[e.error] || ('Error: ' + e.error), 3500);
+  };
+  rec.onresult = function(ev) {
+    clearTimeout(_silenceTimer);
+    _silenceTimer = setTimeout(stopRec, SILENCE_MS);
+    var interim = '';
+    for (var i = ev.resultIndex; i < ev.results.length; i++) {
+      if (ev.results[i].isFinal) { _finalText += ev.results[i][0].transcript + ' '; }
+      else { interim = ev.results[i][0].transcript; }
+    }
+    vShow('🎙 ' + (_finalText + interim).trim(), false);
+  };
+  rec.onend = function() {
+    _on = false; fab.classList.remove('vf-on'); clearTimeout(_silenceTimer);
+    var toProcess = _finalText.trim(); _finalText = '';
+    if (toProcess) { processVoice(toProcess); }
+    else if (toast.textContent.startsWith('🎙')) { toast.style.display = 'none'; }
+  };
+
+  function n(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+  function navTo(id) { var el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
+  function clickBtn(id) { var b=document.getElementById(id); if(b) b.click(); }
+
+  // ── PARSER DE INTENCIÓN: TAREAS ───────────────────────────────────────────
+  function _tryTarea(t) {
+    // Capa 1: filler de cortesía (sin "vamos" para no orphanar "a" de "vamos a")
+    var s = t
+      .replace(/^(?:oye|mira|che|a ver|bueno|ok|bien|entonces|ahora|rapidito?|urgente|porfavor|por favor|pfv|anda|espera|oiga|venga|escucha|fijate)\s+/, '')
+      .replace(/^(?:quiero?|quisiera|me gustaria|necesito|deberia|podemos?|me puedes?|me podrias?|podrias?|puedes?|pudieras?|hay que|tienes que|tenes que|tengo que|voy a|vamos a|vamos que|necesitamos|te pido(?:\s+que)?|me ayudas? a|seria bueno)\s+/, '')
+      .replace(/^(?:que|si puedes?)\s+(?:me\s+|nos\s+|le\s+)?/, '');
+
+    // Capa 2: verbo de acción — infinitivo, imperativo, subjuntivo + enclítico
+    // Bug fixes: + hagamos/hagas (moved from prefix), + nuevo/nuevos (masculine)
+    var VT = /^(?:pongas?|ponga|crees?|cree|agregues?|agregue|asignes?|asigne|anotes?|anote|guardes?|guarde|metas?|meta|registres?|registre|subas?|suba|escribas?|escriba|hagas?|haga|hagamos?|generes?|genere|ingreses?|ingrese|cargues?|cargue|coloques?|coloque|insertes?|inserte|establezcas?|establezca|ponle|poner?|pon|dales?|dale|darle|darles?|dar|anadir?|anade|agregar?|agrega|crear?|crea|nuev[oa]s?|nueva?|asignar?|asigna|meter?|mete|registrar?|registra|apuntar?|apunta|anotar?|anota|guardar?|guarda|subir?|sube|incluir?|incluye|escribir?|escribe|haz|hacer?|genera(?:r)?|ingresa(?:r)?|carga(?:r)?|coloca(?:r)?|inserta(?:r)?|establece(?:r)?|fija(?:r)?|marca(?:r)?|introduce|introduci(?:r)?|agenda(?:r)?|agendas?|cargame|ingresar?)(?:le|me|nos|les|te)?(?:\s+|$)/;
+    var after = s.replace(VT, '');
+    if (after === s) return false; // sin verbo → no es comando de tarea
+    s = after;
+
+    // Capa 3: artículo / determinante — dos pasadas para cubrir "una nueva", "el nuevo"
+    var _artRx = /^(?:una?|un|la|el|los|las|esta?|ese?|esa|aquel(?:la)?|dicha?|nuev[oa]|otro|otra|siguiente|proxima?)\s+/;
+    s = s.replace(_artRx, '').replace(_artRx, '');
+
+    // Capa 4: keyword "tarea" (y sinónimos)
+    if (!/^(?:tarea[s]?|pendiente[s]?|actividad|encargo|encomienda)/.test(s)) return false;
+    s = s.replace(/^(?:tarea[s]?|pendiente[s]?|actividad|encargo|encomienda)\s*/, '').trim();
+
+    // Sin contenido → solo navegar y enfocar campo
+    if (!s) {
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      setTimeout(function() { var i=document.getElementById('tarea-titulo'); if(i) i.focus(); }, 430);
+      vShow('✏ Escribe o dicta la tarea', 3500);
+      return true;
+    }
+
+    // Solo persona sin contenido → navegar + pre-rellenar "Nombre: "
+    var soloP = s.match(/^(?:para|al?|a|con|de)\s+(\w+)$/);
+    if (soloP) {
+      var pn = soloP[1].charAt(0).toUpperCase()+soloP[1].slice(1)+': ';
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      setTimeout(function(pf) { return function() {
+        var i=document.getElementById('tarea-titulo');
+        if(i) { i.value=pf; i.focus(); i.setSelectionRange(pf.length,pf.length); }
+      }; }(pn), 430);
+      vShow('✏ Para '+soloP[1].charAt(0).toUpperCase()+soloP[1].slice(1)+', di la tarea', 3500);
+      return true;
+    }
+
+    // Persona + contenido — "senor/senora" ya normalizado sin tildes
+    var mp = s.match(/^(?:para|al?|a|con|de)(?:\s+(?:don|dona?|sr|sra|ing|lic|dr|senor|senora))?\s+(\w+)(?:\s*[,:\-]\s*|\s+(?:(?:para\s+)?que\s+)|\s+(?:lo que es\s+)?|\s+)(.+)/);
+    var titulo;
+    if (mp && mp[2] && mp[2].trim().length > 1) {
+      titulo = mp[1].charAt(0).toUpperCase()+mp[1].slice(1)+': '+mp[2].trim();
+    } else {
+      titulo = s;
+    }
+    titulo = titulo.charAt(0).toUpperCase()+titulo.slice(1);
+    if (titulo.length < 3) return false;
+
+    if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+    setTimeout(function(tt) { return function() {
+      var inp=document.getElementById('tarea-titulo'); if(!inp) return;
+      inp.value=tt;
+      var form=document.getElementById('tarea-form');
+      if(form) form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    }; }(titulo), 450);
+    vShow('✓ Tarea creada: '+titulo, 4000);
+    return true;
+  }
+
+  // ── PARSER DE INTENCIÓN: COMENTARIOS ─────────────────────────────────────
+  function _tryComentario(t) {
+    var s = t
+      .replace(/^(?:oye|mira|che|a ver|bueno|ok|entonces|porfavor|por favor|pfv|anda|espera)\s+/, '')
+      .replace(/^(?:quiero?|quisiera|necesito|deberia|podemos?|me puedes?|podrias?|puedes?|hay que|tienes que|tengo que|voy a|vamos a|te pido(?:\s+que)?)\s+/, '')
+      .replace(/^(?:que|si puedes?)\s+(?:me\s+|nos\s+|le\s+)?/, '');
+
+    // SHORTCUT: "nota/notas solo" → abrir modal
+    if (/^(?:nota[s]?|anotar?|apuntar?)$/.test(s)) {
+      if (typeof openCommentModal==='function') openCommentModal();
+      vShow('✏ Escribe o dicta la nota', 3500); return true;
+    }
+
+    // SHORTCUT: "nota texto" sin separador (speech recognition nunca produce ":")
+    var mNotaDir = s.match(/^notas?\s+(.+)/);
+    if (mNotaDir && mNotaDir[1].trim().length > 2) {
+      var _tx = mNotaDir[1].trim(); _tx = _tx.charAt(0).toUpperCase()+_tx.slice(1);
+      if (typeof openCommentModal==='function') openCommentModal();
+      setTimeout(function(tx) { return function() {
+        var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+        inp.value=tx; if(typeof submitModalComment==='function') submitModalComment();
+      }; }(_tx), 400);
+      vShow('✓ Comentario enviado', 3500); return true;
+    }
+
+    // SHORTCUT: "comentario texto" directo (comentario como trigger + contenido)
+    var mComDir = s.match(/^comentarios?\s+(.+)/);
+    if (mComDir && mComDir[1].trim().length > 2) {
+      var _tx = mComDir[1].trim(); _tx = _tx.charAt(0).toUpperCase()+_tx.slice(1);
+      if (typeof openCommentModal==='function') openCommentModal();
+      setTimeout(function(tx) { return function() {
+        var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+        inp.value=tx; if(typeof submitModalComment==='function') submitModalComment();
+      }; }(_tx), 400);
+      vShow('✓ Comentario enviado', 3500); return true;
+    }
+
+    // Anotar/apuntar/nota con separador opcional (fix: [:·\-]? en lugar de [:·\-])
+    var mAnota = s.match(/^(?:anotar?|anota|apuntar?|apunta|guardar?|guarda|fijar?|fija|nota)\s*[:·\-]?\s*(.+)/);
+    if (mAnota && mAnota[1] && mAnota[1].trim().length > 2) {
+      var tx = mAnota[1].trim().charAt(0).toUpperCase()+mAnota[1].trim().slice(1);
+      if (typeof openCommentModal==='function') openCommentModal();
+      setTimeout(function(txt) { return function() {
+        var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+        inp.value=txt; if(typeof submitModalComment==='function') submitModalComment();
+      }; }(tx), 400);
+      vShow('✓ Comentario enviado', 3500); return true;
+    }
+
+    // Verbo de acción para comentario
+    var VC = /^(?:pongas?|ponga|dejes?|deje|escribas?|escriba|agregues?|agregue|crees?|cree|publiques?|publique|envies?|envie|anotes?|anote|apuntes?|apunte|guardes?|guarde|comentes?|comente|registres?|registre|metas?|meta|ponle|poner?|pon|dejar?|deja|escribir?|escribe|agregar?|agrega|crear?|crea|nuevos?|nueva|anadir?|anade|meter?|mete|registrar?|registra|comentar?|comenta|publicar?|publica|enviar?|envia|notar?|nota)(?:le|me|nos)?(?:\s+|$)/;
+    var after = s.replace(VC, '');
+    if (after === s) return false;
+    s = after;
+
+    // Artículo
+    s = s.replace(/^(?:una?|un|el|la|este?|ese?|nuevo?|nueva)\s+/, '');
+
+    // Keyword comentario (y sinónimos)
+    if (!/^(?:comentarios?|nota[s]?|observacion(?:es)?|anotacion(?:es)?|mensaje[s]?|novedad|muro|publicacion)/.test(s)) return false;
+    s = s.replace(/^(?:comentarios?|nota[s]?|observacion(?:es)?|anotacion(?:es)?|mensaje[s]?|novedad|muro|publicacion)\s*/, '').replace(/^[:·\-]?\s*/, '').trim();
+
+    // Sin texto → abrir modal
+    if (!s) {
+      if (typeof openCommentModal==='function') openCommentModal();
+      vShow('✏ Escribe o dicta el comentario', 3500); return true;
+    }
+
+    // Con texto → auto-enviar
+    var texto = s.charAt(0).toUpperCase()+s.slice(1);
+    if (typeof openCommentModal==='function') openCommentModal();
+    setTimeout(function(tx) { return function() {
+      var inp=document.getElementById('modal-comment-text'); if(!inp) return;
+      inp.value=tx; if(typeof submitModalComment==='function') submitModalComment();
+    }; }(texto), 400);
+    vShow('✓ Comentario enviado', 3500);
+    return true;
+  }
+
+  function processVoice(raw) {
+    var t = n(raw);
+    vShow('"' + raw + '"', false);
+
+    // ── INICIO ────────────────────────────────────────────────────────────
+    if (/^(inicio|arriba|subir|volver|home|portada)/.test(t)) {
+      window.scrollTo({top:0,behavior:'smooth'});
+      vShow('↑ Inicio', 2000); return;
+    }
+
+    // ── DESCARGAR EXCEL ───────────────────────────────────────────────────
+    if (/(descargar|exportar).*(excel|archivo)|^excel$/.test(t)) {
+      var a = document.querySelector('a[download]'); if (a) a.click();
+      vShow('↓ Descargando Excel...', 3000); return;
+    }
+
+    // ── CREAR TAREA / COMENTARIO (parser robusto) ─────────────────────────
+    if (_tryTarea(t)) return;
+    if (_tryComentario(t)) return;
+
+    // ── VER TAREAS (solo navegación, sin verbo de acción) ─────────────────
+    if (/tarea[s]?/.test(t) && !/borrar|elimina/.test(t)) {
+      if (typeof goToTareas==='function') goToTareas(); else navTo('seccion-tareas');
+      vShow('✓ Tareas', 2000); return;
+    }
+
+    // ── VER COMENTARIOS (solo navegación) ─────────────────────────────────
+    if (/comentario[s]?|muro/.test(t) && !/borrar|elimina/.test(t)) {
+      if (typeof goToComments==='function') goToComments(); else navTo('muro-comentarios');
+      vShow('✓ Comentarios', 2000); return;
+    }
+
+    // ── VER CONTACTADAS ───────────────────────────────────────────────────
+    if (/(contactada|empresa|prospecto|base total)/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-contactos'); navTo('analytics-section');
+      vShow('✓ Contactadas', 2000); return;
+    }
+
+    // ── VER REUNIONES ─────────────────────────────────────────────────────
+    if (/reunion(es)?|cierre/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-reuniones'); navTo('analytics-section');
+      vShow('✓ Reuniones', 2000); return;
+    }
+
+    // ── VER CANAL ─────────────────────────────────────────────────────────
+    if (/canal/.test(t) && !/tarea|comentario/.test(t)) {
+      clickBtn('btn-canal'); navTo('analytics-section');
+      vShow('✓ Canal de contacto', 2000); return;
+    }
+
+    // ── RESPONDER ÚLTIMO COMENTARIO ───────────────────────────────────────
+    // "responder: muy bien hecho"
+    // "responder al último comentario: de acuerdo"
+    var respRx = [
+      /(?:responder|responde|contestar|contesta)\s*(?:al?\s+(?:ultimo|uultimo)\s+comentario\s*)?[:·\-]\s*(.+)/,
+      /(?:responder|responde|contestar)\s+(.+)/
+    ];
+    for (var i=0; i<respRx.length; i++) {
+      var m = t.match(respRx[i]);
+      if (m) {
+        var texto = m[1].trim();
+        if (texto.length > 2 && typeof _commentCache!=='undefined' && _commentCache.length > 0) {
+          var last = _commentCache[_commentCache.length-1];
+          if (last && last.id) {
+            if (typeof goToComments==='function') goToComments(); else navTo('muro-comentarios');
+            setTimeout(function(cid, tx) { return function() {
+              if (typeof showReplyInput==='function') showReplyInput(cid);
+              setTimeout(function() {
+                var inp = document.getElementById('reply-input-'+cid);
+                if (inp) { inp.value = tx.charAt(0).toUpperCase()+tx.slice(1); inp.focus(); }
+              }, 220);
+            }; }(last.id, texto), 520);
+            vShow('✓ Respuesta lista → pulsa Enviar', 4000); return;
+          }
+        }
+      }
+    }
+
+    // ── MARCAR ÚLTIMA TAREA COMPLETA ──────────────────────────────────────
+    if (/(completar|marcar.completa|lista|terminar|terminada)\s*(?:la\s+)?(?:ultima|última)?\s*tarea/.test(t)) {
+      if (typeof _tareasCache!=='undefined') {
+        var pend = _tareasCache.filter(function(x){return x.estado!=='completada';}).sort(function(a,b){return Number(b.id)-Number(a.id);});
+        if (pend.length && typeof toggleTarea==='function') { toggleTarea(pend[0].id); vShow('✓ Tarea marcada completa', 2500); }
+        else vShow('Sin tareas pendientes', 2500);
+      } return;
+    }
+
+    // ── BORRAR ÚLTIMA TAREA ───────────────────────────────────────────────
+    if (/(borrar|eliminar)\s*(?:la\s+)?(?:ultima|última)?\s*tarea/.test(t)) {
+      if (typeof _tareasCache!=='undefined' && _tareasCache.length > 0) {
+        var last = _tareasCache.slice().sort(function(a,b){return Number(b.id)-Number(a.id);})[0];
+        if (typeof deleteTarea==='function') deleteTarea(last.id);
+        vShow('⚠ Confirma eliminación', 3000);
+      } else vShow('Sin tareas para borrar', 2500);
+      return;
+    }
+
+    // ── BORRAR ÚLTIMO COMENTARIO ──────────────────────────────────────────
+    if (/(borrar|eliminar)\s*(?:el\s+)?(?:ultimo|último)?\s*comentario/.test(t)) {
+      if (typeof _commentCache!=='undefined' && _commentCache.length > 0) {
+        var last = _commentCache[_commentCache.length-1];
+        if (typeof deleteComment==='function') deleteComment(last.id);
+        vShow('⚠ Confirma eliminación', 3000);
+      } else vShow('Sin comentarios para borrar', 2500);
+      return;
+    }
+
+    // ── AYUDA ─────────────────────────────────────────────────────────────
+    if (/^(ayuda|comandos|que puedo|help)/.test(t)) {
+      vShow('Comandos: crear tarea, agregar comentario, ver reuniones, borrar tarea...', 5500); return;
+    }
+
+    // ── NO RECONOCIDO ─────────────────────────────────────────────────────
+    vShow('? "' + raw + '" — di ayuda para ver comandos', 3500);
+  }
+
+})();
+</script>
+</body>
+</html>
