@@ -1229,9 +1229,9 @@ function draw() {
 
   var gradX = W*0.5 + Math.sin(time*0.3) * W*0.15;
   var gradY = H*0.5 + Math.cos(time*0.2) * H*0.15;
-  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.9);
-  bgGradient.addColorStop(0, '#040B1A');  
-  bgGradient.addColorStop(0.5, '#01030B'); 
+  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.7);
+  bgGradient.addColorStop(0, '#020306'); // Barely perceptible organic core glow
+  bgGradient.addColorStop(0.3, '#000000'); // 70% of the screen is pure black 
   bgGradient.addColorStop(1, '#000000');   
   ctx.fillStyle = bgGradient;
   ctx.fillRect(0, 0, W, H);
