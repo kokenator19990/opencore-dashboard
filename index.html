@@ -2340,7 +2340,7 @@ function renderComments() {
     }
     const replyRowId = 'reply-row-' + cid;
     const replyInputId = 'reply-input-' + cid;
-    return '<div class="comment-item" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
+    return '<div class="comment-item" id="cmt-' + cid + '" style="' + (isNew ? 'border-left-color:var(--accent-cyan);' : '') + '">'
       + '<div style="flex:1">'
       + (textEscaped ? '<div class="comment-text" id="cmtxt-' + cid + '">' + textEscaped + '</div>' : '')
       + '<div id="cmedit-' + cid + '" style="display:none;">'
@@ -2431,6 +2431,11 @@ window.addReply = function(cid) {
   renderComments();
   _bgSaveComments();
   pushNotify('OpenCORE — Nueva respuesta', text.slice(0, 100), 'speech_balloon');
+  // Scroll to the comment after posting reply
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
 };
 
 // Enter key en reply inputs
@@ -2470,6 +2475,11 @@ window.saveEditComment = function(cid) {
   if (window._sndSuccess) window._sndSuccess();
   renderComments();
   _bgSaveComments();
+  // Scroll to the comment after saving
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
 };
 
 // ── Editar / borrar respuestas ────────────────────────────────────────────
@@ -2503,6 +2513,11 @@ window.saveEditReply = function(cid, ri) {
   if (window._sndSuccess) window._sndSuccess();
   renderComments();
   _bgSaveComments();
+  // Scroll to the parent comment after saving
+  setTimeout(function() {
+    var el = document.getElementById('cmt-' + cid);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
 };
 
 // ── Editar tarea (título) ─────────────────────────────────────────────────
@@ -2526,10 +2541,9 @@ window.saveEditTarea = function(id) {
   var newTitle = inp.value.trim();
   if (!newTitle) return;
   t.titulo = newTitle;
-  _editingTareaId = null;
   if (window._sndSuccess) window._sndSuccess();
-  // Render instantly
-  renderTareas();
+  // Collapse + go to list instantly
+  _backToTaskList();
   // Save in background
   _saveTareas();
 };
@@ -2600,7 +2614,7 @@ window.saveEditTareaComment = function(tid, ci) {
   if (!t || !t.comentarios || !t.comentarios[ci] || !text) return;
   t.comentarios[ci].texto = text;
   if (window._sndSuccess) window._sndSuccess();
-  renderTareas();
+  _backToTaskList();
   _saveTareas();
 };
 
@@ -2652,6 +2666,11 @@ document.getElementById('local-comment-form').addEventListener('submit', functio
   document.getElementById('local-comment-text').value = '';
   _localFiles = [];
   renderLocalPreview();
+  // Scroll to show the new comment (it appears at the top of the list)
+  setTimeout(function() {
+    var list = document.getElementById('comments-list');
+    if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
 });
 
 // ── Modal de comentario rápido ─────────────────────────────────────────────
@@ -3202,6 +3221,19 @@ function _showTareasWarn(msg) {
 let _expandedTareaId = null;
 let _editingTareaId  = null;
 
+// After any save action → collapse all + scroll to top of list
+function _backToTaskList() {
+  _expandedTareaId = null;
+  _editingTareaId  = null;
+  _tareasTab = 'pendientes';
+  renderTareas();
+  // Scroll the overlay panel back to the top
+  var panel = document.querySelector('.ovl-panel');
+  if (panel) panel.scrollTop = 0;
+  var ovl = document.getElementById('sections-overlay');
+  if (ovl) ovl.scrollTop = 0;
+}
+
 window.expandTarea = function(id) {
   _expandedTareaId = (_expandedTareaId === id) ? null : id;
   renderTareas();
@@ -3499,7 +3531,7 @@ window.addTarea = function(e) {
     prioBtn.dataset.alta = '0';
     prioBtn.style.color = 'rgba(255,42,45,0.25)';
     prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
-    renderTareas();
+    _backToTaskList();
     checkTareasDot();
     // Save in background
     _saveTareas();
@@ -3532,9 +3564,8 @@ window.addTareaComment = function(id) {
   if (!t) return;
   if (!t.comentarios) t.comentarios = [];
   t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
-  _expandedTareaId = null;
-  // Render instantly
-  renderTareas();
+  // Collapse + go to list instantly
+  _backToTaskList();
   // Save in background
   _saveTareas();
 };
