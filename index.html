@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Opencore Stats</title>
 
 <!-- PWA -->
@@ -57,6 +57,15 @@ body {
   max-width: 100vw;
 }
 html { overflow-x: hidden; max-width: 100vw; }
+
+/* Prevenir zoom automático de iOS en inputs (trigger: font-size < 16px) */
+input, textarea, select {
+  font-size: 16px !important;
+}
+/* Permitir pinch-zoom solo en el lightbox de fotos */
+#lightbox-overlay {
+  touch-action: pinch-zoom;
+}
 
 /* ANIMATED GRID */
 .particles-bg {
