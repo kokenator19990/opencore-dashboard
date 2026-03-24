@@ -30,7 +30,7 @@
 <style>html,body{background:#000!important}</style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0a;
@@ -1107,17 +1107,17 @@ function buildParticles() {
 
   // OPENCORE — fills ~85% width on desktop, ~82% on mobile
   var fs1 = Math.floor(W * (isMob ? 0.20 : 0.175));
-  c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+  c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   var mw1 = c.measureText('OPENCORE').width;
   var tw1 = W * (isMob ? 0.82 : 0.85);
   if (Math.abs(mw1 - tw1) > 8) {
     fs1 = Math.floor(fs1 * tw1 / mw1);
-    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+    c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   }
 
   // SOFTWARE — proportionally smaller
   var fs2 = Math.floor(fs1 * 0.46);
-  c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
+  c.font = '900 ' + fs2 + 'px "Orbitron", sans-serif';
   var mw2 = c.measureText('SOFTWARE').width;
   var tw2 = W * (isMob ? 0.62 : 0.63);
   if (Math.abs(mw2 - tw2) > 8) fs2 = Math.floor(fs2 * tw2 / mw2);
@@ -1126,9 +1126,9 @@ function buildParticles() {
   var y1 = H * (isMob ? 0.38 : 0.40);
   var y2 = H * (isMob ? 0.58 : 0.65);
 
-  c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+  c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   c.fillText('OPENCORE', W * 0.5, y1);
-  c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
+  c.font = '900 ' + fs2 + 'px "Orbitron", sans-serif';
   c.fillText('SOFTWARE', W * 0.5, y2);
 
   var imgData = c.getImageData(0, 0, W, H).data;
