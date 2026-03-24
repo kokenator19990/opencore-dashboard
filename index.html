@@ -1018,27 +1018,20 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </script>
 
 <!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
-<div id="splash" style="
-  position:fixed;inset:0;z-index:9000;
-  background:#000;
-  overflow:hidden;
-  touch-action:none;
-">
+<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#020810;overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
 
-  <!-- Corner accents -->
-  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.25;" xmlns="http://www.w3.org/2000/svg">
-    <line x1="0" y1="0" x2="80" y2="0" stroke="#00E5FF" stroke-width="0.8"/>
-    <line x1="0" y1="0" x2="0" y2="50" stroke="#00E5FF" stroke-width="0.8"/>
-    <line x1="100%" y1="100%" x2="calc(100% - 80px)" y2="100%" stroke="#00E5FF" stroke-width="0.8"/>
-    <line x1="100%" y1="100%" x2="100%" y2="calc(100% - 50px)" stroke="#00E5FF" stroke-width="0.8"/>
-  </svg>
+  <!-- Brand text — fades in when diamond is assembled -->
+  <div id="splash-text" style="position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity 1s ease;z-index:3;white-space:nowrap;">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(18px,3.4vw,54px);font-weight:900;letter-spacing:0.07em;color:rgba(238,248,255,0.96);text-shadow:0 0 50px rgba(120,200,255,0.40),0 2px 18px rgba(0,0,0,0.65);">OPENCORE</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(7px,1.4vw,20px);font-weight:600;letter-spacing:0.48em;color:rgba(185,222,255,0.88);margin-top:0.35em;text-shadow:0 0 22px rgba(100,175,255,0.32);">SOFTWARE</div>
+  </div>
 
-  <!-- UI -->
-  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(7vh,44px);pointer-events:none;user-select:none;z-index:2;">
-    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:3.5px;color:rgba(0,229,255,0.38);text-transform:uppercase;margin-bottom:1.6rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
-    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#00E5FF;background:transparent;border:1px solid rgba(0,229,255,0.4);padding:16px 60px;cursor:pointer;border-radius:8px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(0,229,255,0.07)';this.style.borderColor='rgba(0,229,255,0.85)';this.style.boxShadow='0 0 32px rgba(0,229,255,0.22)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.4)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
-    <div style="margin-top:1.4rem;font-family:'Inter',sans-serif;font-size:0.52rem;letter-spacing:2.5px;color:rgba(255,255,255,0.13);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
+  <!-- Bottom UI -->
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
+    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:3.5px;color:rgba(160,210,255,0.36);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#a8d8f8;background:transparent;border:1px solid rgba(140,200,255,0.32);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(100,180,255,0.06)';this.style.borderColor='rgba(140,200,255,0.75)';this.style.boxShadow='0 0 28px rgba(100,180,255,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(140,200,255,0.32)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
+    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.09);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
   </div>
 </div>
 
@@ -1047,16 +1040,20 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </style>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════
-//  OPENCORE — DIAMOND CRYSTAL PARTICLE SCULPTURE
-//  Thousands of geometric shapes form bold text + gem-cut diamond frame
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+//  OPENCORE — DIAMOND CRYSTAL FRAGMENT SYSTEM
+//
+//  A gem-cut diamond shatters into triangular facets and reassembles
+//  on scroll. Rectangular cell grid clipped to diamond silhouette.
+//  Direct lerp ensures zero-gap perfect assembly at prog = 1.
+//  Facet colors simulate real diamond light refraction.
+// ═══════════════════════════════════════════════════════════════════════
 (function() {
   var canvas = document.getElementById('nucleus-canvas');
   var ctx    = canvas.getContext('2d');
   var splash = document.getElementById('splash');
   var W, H, dpr, isMobile;
-  var particles = [];
+  var facets = [];
   var prog = 0, targetProg = 0;
   var exploding = false;
   var time = 0, raf;
@@ -1074,323 +1071,246 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   }
   resize();
 
-  // ── Color palettes ────────────────────────────────────────────────────────
-  var PAL_TEXT = [
-    [0,229,255],[0,229,255],[0,229,255],[0,229,255],[0,229,255],
-    [10,210,248],[20,200,240],
-    [160,20,255],[190,40,255],
-    [255,38,110],[255,65,130],
-    [57,255,20],[229,255,0]
-  ];
-  var PAL_SCULPT = [
-    [255,184,0],[255,168,0],[255,152,0],[255,140,0],
-    [255,255,255],[230,245,255],
-    [0,229,255],
-    [0,255,140],[20,255,120]
-  ];
-  var SHAPES_TEXT   = ['tri','sq','dia','hex','ring','sq','tri','dia','sq','tri'];
-  var SHAPES_SCULPT = ['dia','ring','dia','tri','ring','dia'];
+  // Deterministic per-facet random (stable across frames, no flicker)
+  function frand(x, y) {
+    var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+    return n - Math.floor(n);
+  }
 
-  // ── Dense text pixel sampling (step 2 = very thick filled letters) ────────
-  function sampleText() {
-    var off = document.createElement('canvas');
-    off.width = W; off.height = H;
-    var c = off.getContext('2d');
-    c.fillStyle = '#fff';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
+  // Diamond gem color: blue-white spectrum with specular highlights
+  // nx, ny: normalized position in diamond (-1..1), cx/cy: world centroid
+  function facetColor(nx, ny, cx, cy) {
+    // Light source from upper-right corner
+    var base = 0.42 + (-nx * 0.20 + (-ny) * 0.40);
+    // Per-facet random variation (facets catch light independently)
+    var rand = frand(cx * 0.93, cy * 1.17) - 0.5;
+    var lum  = Math.max(0.04, Math.min(1.0, base + rand * 0.58));
 
-    var fs1  = isMobile ? Math.floor(W * 0.175) : Math.min(Math.floor(W * 0.152), 225);
-    var fs2  = isMobile ? Math.floor(W * 0.078) : Math.min(Math.floor(W * 0.065), 100);
-    var step = isMobile ? 3 : 2;
+    // 6% chance: pure specular highlight (near-white flash)
+    if (frand(cx * 1.31, cy * 0.87) < 0.06) {
+      lum = 0.88 + frand(cy, cx) * 0.12;
+    }
 
-    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
-    c.fillText('OPENCORE', W * 0.5, H * 0.385);
-    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
-    c.fillText('SOFTWARE', W * 0.5, H * 0.618);
+    var r, g, b;
+    if (lum > 0.82) {
+      // Specular: almost white with blue tint
+      r = Math.round(228 + lum * 27); g = Math.round(240 + lum * 15); b = 255;
+    } else if (lum > 0.50) {
+      // Midtone: pale ice-blue
+      r = Math.round(130 + lum * 105); g = Math.round(168 + lum * 78); b = Math.round(210 + lum * 42);
+    } else {
+      // Shadow: deep ocean blue
+      r = Math.round(18  + lum * 118); g = Math.round(45  + lum * 148); b = Math.round(105 + lum * 125);
+    }
+    return [Math.min(255,r), Math.min(255,g), Math.min(255,b)];
+  }
 
-    var data = c.getImageData(0, 0, W, H).data;
-    var pts  = [];
-    for (var y = 0; y < H; y += step) {
-      for (var x = 0; x < W; x += step) {
-        if (data[(y * W + x) * 4 + 3] > 85) {
-          pts.push([
-            x + (Math.random()-0.5)*step*0.45,
-            y + (Math.random()-0.5)*step*0.45
-          ]);
+  // Build triangular facet grid clipped to diamond silhouette
+  function buildFacets() {
+    var s   = isMobile ? 13 : 15;   // cell edge (px) — smaller = more facets
+    var hw  = isMobile ? Math.min(W*0.42, 155) : Math.min(W*0.285, 410);
+    var hh  = isMobile ? Math.min(H*0.38, 290) : Math.min(H*0.445, 490);
+    var dcx = W * 0.5;
+    var dcy = H * 0.44;
+    var exp = 0.72; // px to expand each vertex outward (closes sub-pixel gaps)
+
+    var arr = [];
+    var x0  = dcx - hw - s * 2;
+    var y0  = dcy - hh - s * 2;
+    var x1  = dcx + hw + s * 2;
+    var y1  = dcy + hh + s * 2;
+
+    for (var gy = y0; gy < y1; gy += s) {
+      for (var gx = x0; gx < x1; gx += s) {
+        var v00 = [gx,   gy  ];
+        var v10 = [gx+s, gy  ];
+        var v11 = [gx+s, gy+s];
+        var v01 = [gx,   gy+s];
+
+        // Alternate diagonal direction in checkerboard pattern
+        var col = Math.round((gx - x0) / s);
+        var row = Math.round((gy - y0) / s);
+        var alt = (col + row) & 1;
+
+        var pairs = alt === 0
+          ? [[v00,v10,v01],[v10,v11,v01]]   // upper-left + lower-right
+          : [[v00,v10,v11],[v00,v11,v01]];  // upper-right + lower-left
+
+        for (var pi = 0; pi < 2; pi++) {
+          var verts = pairs[pi];
+          var tcx = (verts[0][0] + verts[1][0] + verts[2][0]) / 3;
+          var tcy = (verts[0][1] + verts[1][1] + verts[2][1]) / 3;
+          var nx  = (tcx - dcx) / hw;
+          var ny  = (tcy - dcy) / hh;
+
+          // Diamond silhouette filter (rhombus: |nx|+|ny| <= 1)
+          if (Math.abs(nx) + Math.abs(ny) > 0.990) continue;
+
+          // Expand vertices slightly outward from centroid to close sub-pixel gaps
+          var ev = [0,1,2].map(function(i) {
+            var dx = verts[i][0] - tcx, dy = verts[i][1] - tcy;
+            var len = Math.sqrt(dx*dx+dy*dy) || 1;
+            return [tcx + dx*(1+exp/len), tcy + dy*(1+exp/len)];
+          });
+
+          var col2 = facetColor(nx, ny, tcx, tcy);
+          // Scatter: start at random distance/angle from assembled position
+          var ang  = Math.random() * Math.PI * 2;
+          var dist = (0.55 + Math.random() * 0.9) * Math.max(W, H) * 0.72;
+
+          arr.push({
+            tx: tcx, ty: tcy,
+            sx: tcx + Math.cos(ang) * dist,
+            sy: tcy + Math.sin(ang) * dist,
+            srot: (Math.random() - 0.5) * Math.PI * 3.2,
+            // vertices relative to centroid (constant, used for drawing)
+            verts: ev.map(function(v){ return [v[0]-tcx, v[1]-tcy]; }),
+            col: col2,
+            d:   Math.random() * 0.26   // stagger delay per fragment
+          });
         }
       }
     }
-    for (var i = pts.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
-    }
-    return pts.slice(0, isMobile ? 1800 : 3800);
+    return arr;
   }
 
-  // ── Gem-cut diamond sculpture ─────────────────────────────────────────────
-  function buildSculpture() {
-    var cx = W * 0.5;
-    var cy = H * 0.5;
-    var hw = W * 0.46;
-    var hh = H * 0.455;
-
-    var vT = [cx,      cy - hh];
-    var vR = [cx + hw, cy     ];
-    var vB = [cx,      cy + hh];
-    var vL = [cx - hw, cy     ];
-
-    var mTR = [(vT[0]+vR[0])/2, (vT[1]+vR[1])/2];
-    var mRB = [(vR[0]+vB[0])/2, (vR[1]+vB[1])/2];
-    var mBL = [(vB[0]+vL[0])/2, (vB[1]+vL[1])/2];
-    var mLT = [(vL[0]+vT[0])/2, (vL[1]+vT[1])/2];
-
-    var pts = [];
-
-    function linePts(x1, y1, x2, y2, n, jit) {
-      jit = jit || 0;
-      for (var i = 0; i <= n; i++) {
-        var t = i / n;
-        pts.push([
-          x1 + (x2-x1)*t + (Math.random()-0.5)*jit,
-          y1 + (y2-y1)*t + (Math.random()-0.5)*jit
-        ]);
-      }
-    }
-
-    var ne = isMobile ? 52 : 90;
-    var nf = isMobile ? 30 : 55;
-    var ni = isMobile ? 22 : 42;
-
-    // 1. Outer diamond outline (4 edges)
-    linePts(vT[0],vT[1], vR[0],vR[1], ne, 2);
-    linePts(vR[0],vR[1], vB[0],vB[1], ne, 2);
-    linePts(vB[0],vB[1], vL[0],vL[1], ne, 2);
-    linePts(vL[0],vL[1], vT[0],vT[1], ne, 2);
-
-    // 2. Main diagonal facets (gem-cut cross)
-    linePts(mLT[0],mLT[1], mRB[0],mRB[1], nf, 1.5);
-    linePts(mTR[0],mTR[1], mBL[0],mBL[1], nf, 1.5);
-
-    // 3. Horizontal cross-cuts (upper and lower zones)
-    linePts(mLT[0],mLT[1], mTR[0],mTR[1], nf, 1.5);
-    linePts(mBL[0],mBL[1], mRB[0],mRB[1], nf, 1.5);
-
-    // 4. Vertical side lines of inner frame
-    linePts(mLT[0],mLT[1], mBL[0],mBL[1], ni, 1.5);
-    linePts(mTR[0],mTR[1], mRB[0],mRB[1], ni, 1.5);
-
-    // 5. Inner rectangle outline (midpoints of diamond edges)
-    linePts(mLT[0],mLT[1], mTR[0],mTR[1], ni, 1);
-    linePts(mTR[0],mTR[1], mRB[0],mRB[1], ni, 1);
-    linePts(mRB[0],mRB[1], mBL[0],mBL[1], ni, 1);
-    linePts(mBL[0],mBL[1], mLT[0],mLT[1], ni, 1);
-
-    // 6. Vertex clusters at 4 diamond tips
-    function cluster(px, py, r, n) {
-      for (var i = 0; i < n; i++) {
-        var ang = Math.random() * Math.PI * 2;
-        pts.push([px + Math.cos(ang)*Math.random()*r, py + Math.sin(ang)*Math.random()*r]);
-      }
-    }
-    var nc = isMobile ? 18 : 36;
-    var cr = isMobile ? 16 : 28;
-    cluster(vT[0], vT[1], cr, nc);
-    cluster(vR[0], vR[1], cr, nc);
-    cluster(vB[0], vB[1], cr, nc);
-    cluster(vL[0], vL[1], cr, nc);
-
-    // 7. Center ring (behind text)
-    var nring = isMobile ? 50 : 90;
-    var rr = Math.min(W, H) * (isMobile ? 0.072 : 0.085);
-    for (var i = 0; i < nring; i++) {
-      var ang = (i / nring) * Math.PI * 2;
-      pts.push([cx + Math.cos(ang)*rr, cy + Math.sin(ang)*rr]);
-    }
-
-    // 8. Mini ornament diamonds at edge midpoints
-    function miniDia(px, py, r, n) {
-      for (var i = 0; i < n; i++) {
-        var ang = (i / n) * Math.PI * 2;
-        var radF = Math.abs(Math.cos(ang * 2)) * 0.5 + 0.5;
-        pts.push([px + Math.cos(ang)*r*radF, py + Math.sin(ang)*r*radF]);
-      }
-    }
-    var nm = isMobile ? 14 : 26;
-    var mr = isMobile ? 12 : 22;
-    miniDia(mTR[0], mTR[1], mr, nm);
-    miniDia(mRB[0], mRB[1], mr, nm);
-    miniDia(mBL[0], mBL[1], mr, nm);
-    miniDia(mLT[0], mLT[1], mr, nm);
-
-    return pts;
-  }
-
-  // ── Instantiate all particles ─────────────────────────────────────────────
-  function buildParticles() {
-    var textPts   = sampleText();
-    var sculptPts = buildSculpture();
-    particles = [];
-
-    for (var i = 0; i < textPts.length; i++) {
-      var col = PAL_TEXT[Math.floor(Math.random() * PAL_TEXT.length)];
-      particles.push({
-        x:  Math.random() * W * 1.8 - W * 0.4,
-        y:  Math.random() * H * 1.8 - H * 0.4,
-        tx: textPts[i][0], ty: textPts[i][1],
-        vx: (Math.random()-0.5)*1.3, vy: (Math.random()-0.5)*1.3,
-        shape: SHAPES_TEXT[Math.floor(Math.random() * SHAPES_TEXT.length)],
-        size:  1.7 + Math.random() * 3.3,
-        rot:   Math.random() * Math.PI * 2,
-        rotS:  (Math.random()-0.5) * 0.026,
-        col:   col,
-        d:     Math.random() * 0.26
-      });
-    }
-
-    for (var i = 0; i < sculptPts.length; i++) {
-      var col = PAL_SCULPT[Math.floor(Math.random() * PAL_SCULPT.length)];
-      particles.push({
-        x:  Math.random() * W * 1.8 - W * 0.4,
-        y:  Math.random() * H * 1.8 - H * 0.4,
-        tx: sculptPts[i][0], ty: sculptPts[i][1],
-        vx: (Math.random()-0.5)*1.1, vy: (Math.random()-0.5)*1.1,
-        shape: SHAPES_SCULPT[Math.floor(Math.random() * SHAPES_SCULPT.length)],
-        size:  2.0 + Math.random() * 3.2,
-        rot:   Math.random() * Math.PI * 2,
-        rotS:  (Math.random()-0.5) * 0.02,
-        col:   col,
-        d:     0.04 + Math.random() * 0.18
-      });
-    }
-  }
-
-  // ── Draw geometric shape ──────────────────────────────────────────────────
-  function geo(shape, x, y, s, rot, r, g, b, a) {
+  // Draw one facet at position (x,y) with rotation rot and alpha
+  function drawFacet(f, x, y, rot, alpha) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot);
-    ctx.globalAlpha = a;
-    ctx.fillStyle   = 'rgb(' + r + ',' + g + ',' + b + ')';
-    ctx.strokeStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-    ctx.lineWidth   = Math.max(0.8, s * 0.38);
-    switch (shape) {
-      case 'tri':
-        ctx.beginPath();
-        ctx.moveTo(0,-s); ctx.lineTo(s*0.866,s*0.5); ctx.lineTo(-s*0.866,s*0.5);
-        ctx.closePath(); ctx.fill(); break;
-      case 'sq':
-        ctx.fillRect(-s*0.56,-s*0.56,s*1.12,s*1.12); break;
-      case 'dia':
-        ctx.beginPath();
-        ctx.moveTo(0,-s*1.1); ctx.lineTo(s*0.65,0); ctx.lineTo(0,s*1.1); ctx.lineTo(-s*0.65,0);
-        ctx.closePath(); ctx.fill(); break;
-      case 'hex':
-        ctx.beginPath();
-        for (var i=0;i<6;i++){var ang=i*Math.PI/3;if(i===0)ctx.moveTo(s*Math.cos(ang),s*Math.sin(ang));else ctx.lineTo(s*Math.cos(ang),s*Math.sin(ang));}
-        ctx.closePath(); ctx.fill(); break;
-      case 'ring':
-        ctx.beginPath(); ctx.arc(0,0,s*0.9,0,Math.PI*2); ctx.stroke(); break;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'rgb(' + f.col[0] + ',' + f.col[1] + ',' + f.col[2] + ')';
+    ctx.beginPath();
+    ctx.moveTo(f.verts[0][0], f.verts[0][1]);
+    ctx.lineTo(f.verts[1][0], f.verts[1][1]);
+    ctx.lineTo(f.verts[2][0], f.verts[2][1]);
+    ctx.closePath();
+    ctx.fill();
+    // Subtle facet edge — only when nearly assembled (keeps look clean)
+    if (alpha > 0.60) {
+      ctx.strokeStyle = 'rgba(210,235,255,' + (alpha * 0.09) + ')';
+      ctx.lineWidth   = 0.4;
+      ctx.stroke();
     }
     ctx.restore();
   }
 
   function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
-  // ── Progress: scroll (desktop) / touch (mobile) ───────────────────────────
+  // ── Progress controls ──────────────────────────────────────────────────────
   splash.addEventListener('wheel', function(e) {
     e.preventDefault();
-    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 520));
+    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 490));
   }, { passive: false });
 
   var ty0 = 0;
-  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
-  splash.addEventListener('touchmove', function(e) {
+  splash.addEventListener('touchstart', function(e){ ty0 = e.touches[0].clientY; }, {passive:true});
+  splash.addEventListener('touchmove', function(e){
     var dy = ty0 - e.touches[0].clientY;
     ty0 = e.touches[0].clientY;
-    targetProg = Math.max(0, Math.min(1, targetProg + dy / 300));
-  }, { passive: true });
+    targetProg = Math.max(0, Math.min(1, targetProg + dy / 290));
+  }, {passive:true});
 
-  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1500); }
+  // Mobile: auto-assemble after 1.2 s
+  if (isMobile) { setTimeout(function(){ targetProg = 1; }, 1200); }
 
-  // ── Explosion on ENTRAR ───────────────────────────────────────────────────
+  // ── Explosion on ENTRAR ────────────────────────────────────────────────────
   window._splashExplode = function() {
     exploding = true;
-    for (var i = 0; i < particles.length; i++) {
+    for (var i = 0; i < facets.length; i++) {
+      var f = facets[i];
+      f.ex = f.tx; f.ey = f.ty;   // explode FROM assembled position
       var ang = Math.random() * Math.PI * 2;
-      var spd = 4 + Math.random() * 12;
-      particles[i].vx = Math.cos(ang) * spd;
-      particles[i].vy = Math.sin(ang) * spd;
+      var spd = 3.5 + Math.random() * 11;
+      f.vx   = Math.cos(ang) * spd;
+      f.vy   = Math.sin(ang) * spd;
+      f.erot = 0;
+      f.rotv = (Math.random() - 0.5) * 0.13;
     }
   };
 
-  // ── Main animation loop ───────────────────────────────────────────────────
+  // ── Main animation loop ────────────────────────────────────────────────────
   function draw() {
     raf = requestAnimationFrame(draw);
-    prog += (targetProg - prog) * 0.06;
+    prog += (targetProg - prog) * 0.058;
     time += 0.016;
+
+    ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, W, H);
 
-    // Crystal glow
-    if (prog > 0.25) {
-      var ga = Math.min(1, (prog-0.25)/0.75) * 0.13;
-      var gr = ctx.createRadialGradient(W*0.5, H*0.38, 0, W*0.5, H*0.5, W*0.6);
-      gr.addColorStop(0,    'rgba(0,180,255,' + ga + ')');
-      gr.addColorStop(0.45, 'rgba(120,0,220,' + (ga*0.55) + ')');
+    // Ambient inner glow — emerges with the diamond
+    if (prog > 0.18) {
+      var ga  = Math.min(1, (prog-0.18)/0.82) * 0.17;
+      var dcx = W * 0.5, dcy = H * 0.44;
+      var gr  = ctx.createRadialGradient(dcx, dcy - H*0.07, 0, dcx, dcy, W*0.40);
+      gr.addColorStop(0,    'rgba(175,220,255,' + ga + ')');
+      gr.addColorStop(0.45, 'rgba(70,130,215,'  + (ga*0.48) + ')');
       gr.addColorStop(1,    'transparent');
       ctx.fillStyle = gr;
       ctx.fillRect(0, 0, W, H);
     }
 
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      var r = p.col[0], g = p.col[1], b = p.col[2];
+    // Slow light-sweep across the assembled diamond (gem shimmer)
+    if (prog > 0.88) {
+      var phase = (time * 0.22) % 3.0;
+      if (phase < 2.2) {
+        var sx = W * (-0.25 + phase * 0.68);
+        var sg = ctx.createLinearGradient(sx - 55, 0, sx + 55, H);
+        sg.addColorStop(0,   'transparent');
+        sg.addColorStop(0.5, 'rgba(220,242,255,0.055)');
+        sg.addColorStop(1,   'transparent');
+        ctx.fillStyle  = sg;
+        ctx.globalAlpha = 1;
+        ctx.fillRect(0, 0, W, H);
+      }
+    }
+
+    // Draw all facets
+    for (var i = 0; i < facets.length; i++) {
+      var f = facets[i];
 
       if (exploding) {
-        p.x += p.vx; p.y += p.vy;
-        p.vx *= 0.972; p.vy *= 0.972;
-        p.rot += p.rotS * 5;
-        var dx = p.x - W*0.5, dy = p.y - H*0.5;
-        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy)/(W*0.88));
-        if (fade > 0) geo(p.shape, p.x, p.y, p.size, p.rot, r, g, b, fade*0.9);
+        // Physics explosion from assembled positions
+        f.ex  += f.vx;  f.ey  += f.vy;
+        f.vx  *= 0.974; f.vy  *= 0.974;
+        f.erot += f.rotv;
+        var dx   = f.ex - W * 0.5, dy = f.ey - H * 0.5;
+        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy) / (Math.max(W,H)*0.82));
+        if (fade > 0.01) drawFacet(f, f.ex, f.ey, f.erot, fade);
         continue;
       }
 
-      var ef = Math.max(0, (prog - p.d) / (1 - p.d + 0.001));
-      var t  = ease(Math.min(1, ef * 1.08));
+      // DIRECT LERP — guarantees x=tx, y=ty, rot=0 when prog=1 (zero gaps)
+      var ef  = Math.max(0, Math.min(1, (prog - f.d) / (1.0 - f.d + 1e-5)));
+      var t   = ease(ef);
+      var x   = f.sx + (f.tx - f.sx) * t;
+      var y   = f.sy + (f.ty - f.sy) * t;
+      var rot = f.srot * (1 - t);
 
-      if (t > 0.006) {
-        p.x += (p.tx - p.x) * t * 0.088;
-        p.y += (p.ty - p.y) * t * 0.088;
-        p.rot += p.rotS * (1 - t * 0.92);
-      } else {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < -40 || p.x > W+40) p.vx *= -1;
-        if (p.y < -40 || p.y > H+40) p.vy *= -1;
-        p.rot += p.rotS;
-      }
-
-      var pulse = (prog > 0.88) ? 1 + Math.sin(time*1.7 + i*0.08)*0.12 : 1;
-      var alpha = 0.15 + t * 0.82;
-      geo(p.shape, p.x, p.y, p.size*pulse, p.rot, r, g, b, alpha);
+      drawFacet(f, x, y, rot, 0.10 + t * 0.88);
     }
 
+    // UI element visibility
     var btn  = document.getElementById('splash-enter');
     var hint = document.getElementById('splash-hint');
+    var txt  = document.getElementById('splash-text');
     if (btn) {
-      var show = prog > 0.72;
-      if (show && btn.style.opacity !== '1')  { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
-      if (!show && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
+      var show = prog > 0.68;
+      if (show  && btn.style.opacity !== '1') { btn.style.opacity='1'; btn.style.pointerEvents='all'; }
+      if (!show && btn.style.opacity !== '0') { btn.style.opacity='0'; btn.style.pointerEvents='none'; }
     }
-    if (hint) hint.style.opacity = prog < 0.38 ? '1' : '0';
+    if (hint) hint.style.opacity = prog < 0.33 ? '1' : '0';
+    if (txt)  txt.style.opacity  = prog > 0.74 ? '1' : '0';
   }
 
-  document.fonts.ready.then(function() { buildParticles(); draw(); });
+  function init() { facets = buildFacets(); draw(); }
+  document.fonts.ready.then(init);
 
   window.addEventListener('resize', function() {
     resize();
     cancelAnimationFrame(raf);
-    document.fonts.ready.then(function() { buildParticles(); draw(); });
+    document.fonts.ready.then(function(){ facets = buildFacets(); draw(); });
   });
 
   window._stopNucleus = function() {
@@ -1399,7 +1319,7 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   };
 })();
 
-// ── Splash enter ──────────────────────────────────────────────────────────
+// ── Splash enter ────────────────────────────────────────────────────────────
 window.enterDashboard = function() {
   var splash = document.getElementById('splash');
   splash.style.pointerEvents = 'none';
@@ -1410,9 +1330,9 @@ window.enterDashboard = function() {
     setTimeout(function() {
       splash.style.display = 'none';
       window._stopNucleus && window._stopNucleus();
-      setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
-      setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
-      setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2500);
+      setTimeout(function(){ if(window._sndEnter) window._sndEnter(); }, 80);
+      setTimeout(function(){ if(typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
+      setTimeout(function(){ if(typeof _startPolling==='function') _startPolling(); }, 2500);
     }, 750);
   }, 350);
 };
