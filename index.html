@@ -2523,6 +2523,11 @@ window.addFilesToTarea = function(id, files) {
     }
   });
 };
+window.viewTareaImage = function(tid, fi) {
+  var t = _tareasCache.find(function(x) { return x.id === tid; });
+  if (!t || !t.archivos || !t.archivos[fi]) return;
+  openLightbox(t.archivos[fi].b64);
+};
 window.deleteTareaFile = function(tid, fi) {
   var t = _tareasCache.find(function(x) { return x.id === tid; });
   if (!t || !t.archivos) return;
@@ -3247,7 +3252,7 @@ function renderTareas() {
             var delBtn = '<button onclick="deleteTareaFile(\'' + t.id + '\',' + fi + ')" title="Borrar archivo" style="background:rgba(255,42,42,0.15);border:1px solid rgba(255,42,42,0.3);border-radius:4px;color:#FF2A6D;cursor:pointer;font-size:0.65rem;padding:2px 5px;flex-shrink:0;">✕</button>';
             if (f.type === 'image') {
               return '<div style="display:inline-flex;align-items:center;gap:3px;">'
-                + '<a href="' + f.b64 + '" target="_blank"><img src="' + f.b64 + '" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);"></a>'
+                + '<img src="' + f.b64 + '" onclick="viewTareaImage(\'' + t.id + '\',' + fi + ')" style="height:48px;border-radius:6px;border:1px solid rgba(168,85,247,0.3);cursor:zoom-in;" title="Ver imagen">'
                 + delBtn + '</div>';
             }
             return '<div style="display:inline-flex;align-items:center;gap:3px;">'
