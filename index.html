@@ -1034,9 +1034,9 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════════
-//  OPENCORE — CONSTELLATION NETWORK PRO v15 (DARK THEME - FINAL FLUIDITY)
-//  Deep indigo background, dense particles on mobile (spacing 5), shattered 
-//  explosion effect, max fluidity 60fps limits.
+//  OPENCORE — CONSTELLATION NETWORK PRO v17 (MAX MOBILE SHARPNESS)
+//  Dark theme. Drastically reduced sprite overlap and thinner connections 
+//  on mobile to ensure text is crystal clear, not foggy or blurry.
 // ═══════════════════════════════════════════════════════════════════════════════
 (function(){
 var canvas = document.getElementById('nucleus-canvas');
@@ -1064,6 +1064,7 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   bloomCanvas.width = Math.floor(W / 3); bloomCanvas.height = Math.floor(H / 3);
   bloomCanvas.style.width = W + 'px'; bloomCanvas.style.height = H + 'px';
+  if (isMob && bloomCanvas) bloomCanvas.style.opacity = '0.08'; // Massive reduction in bloom fog on mobile
   gridW = Math.ceil(W / CELL) + 1;
   gridH = Math.ceil(H / CELL) + 1;
 }
@@ -1093,17 +1094,18 @@ var sprites = {
 };
 
 function buildParticles() {
-  var spacing = isMob ? 5 : 6; // Dense text to fix mobile legibility
+  // Ultra-fine grid for mobile to guarantee letter shape definition
+  var spacing = isMob ? 4 : 6; 
 
   var off = document.createElement('canvas');
   off.width = W; off.height = H;
   var c = off.getContext('2d', {willReadFrequently: true});
   c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
 
-  var fs1 = Math.floor(W * (isMob ? 0.20 : 0.175));
+  var fs1 = Math.floor(W * (isMob ? 0.22 : 0.175)); // Slightly larger font relative to screen on mobile
   c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   var mw1 = c.measureText('OPENCORE').width;
-  var tw1 = W * (isMob ? 0.82 : 0.85);
+  var tw1 = W * (isMob ? 0.88 : 0.85); // Allow more width on mobile
   if (Math.abs(mw1 - tw1) > 8) {
     fs1 = Math.floor(fs1 * tw1 / mw1); c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   }
@@ -1111,11 +1113,11 @@ function buildParticles() {
   var fs2 = Math.floor(fs1 * 0.46);
   c.font = '900 ' + fs2 + 'px "Orbitron", sans-serif';
   var mw2 = c.measureText('SOFTWARE').width;
-  var tw2 = W * (isMob ? 0.62 : 0.63);
+  var tw2 = W * (isMob ? 0.68 : 0.63);
   if (Math.abs(mw2 - tw2) > 8) fs2 = Math.floor(fs2 * tw2 / mw2);
 
   var y1 = H * (isMob ? 0.38 : 0.39);
-  var y2 = H * (isMob ? 0.58 : 0.63);
+  var y2 = H * (isMob ? 0.53 : 0.63); // Move "SOFTWARE" slightly closer to OPENCORE on mobile
 
   c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif'; c.fillText('OPENCORE', W * 0.5, y1);
   c.font = '900 ' + fs2 + 'px "Orbitron", sans-serif'; c.fillText('SOFTWARE', W * 0.5, y2);
@@ -1147,23 +1149,24 @@ function buildParticles() {
 
       arr.push({
         tx: tx, ty: ty, sx: sx, sy: sy, x: sx, y: sy,
-        size: (1.2 + Math.random() * 2.8) * (isMob ? 0.8 : 1.1),
-        brightness: (0.4 + Math.random() * 0.6) * alphaFactor,
+        // On mobile, physically smaller particles to avoid fuzzy overlapping
+        size: (0.8 + Math.random() * 2.0) * (isMob ? 0.45 : 1.1), 
+        brightness: (0.5 + Math.random() * 0.5) * alphaFactor,
         sprite: sprites[sprKey],
         delay: Math.random() * 0.25, phase: Math.random() * Math.PI * 2,
         sparkPh: Math.random() * Math.PI * 10, sparkAmp: Math.random() < 0.12 ? 1 : 0,
-        isNode: Math.random() < 0.20
+        isNode: Math.random() < 0.15
       });
     }
   }
 
   var ambArr = [];
-  var ambCount = isMob ? 40 : 100;
+  var ambCount = isMob ? 30 : 100;
   for (var i = 0; i < ambCount; i++) {
     ambArr.push({
       x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
-      size: 0.5 + Math.random() * 1.5,
+      vx: (Math.random() - 0.5) * 0.20, vy: (Math.random() - 0.5) * 0.20,
+      size: 0.5 + Math.random() * (isMob ? 1.0 : 1.5),
       brightness: 0.04 + Math.random() * 0.12,
       phase: Math.random() * Math.PI * 2,
       sprite: sprites[Math.random() < 0.7 ? 'cyan' : 'blue']
@@ -1191,8 +1194,8 @@ if (isMob) setTimeout(function() { tProg = 1; }, 1200);
 
 window._splashExplode = function() {
   exploding = true;
-  prog = 0;  // Reset animation to 0 so it sweeps from center perfectly
-  tProg = 1; // Proceed to shatter
+  prog = 0;  // Reset animation to 0
+  tProg = 1; // Play shatter
   
   if (bloomCtx) {
     bloomCtx.clearRect(0,0,bloomCanvas.width,bloomCanvas.height);
@@ -1205,7 +1208,7 @@ window._splashExplode = function() {
     var ang = Math.random() * Math.PI * 2;
     var dist = 800 + Math.random() * 1500; 
     p.tx = p.x + Math.cos(ang) * dist; p.ty = p.y + Math.sin(ang) * dist;
-    p.delay = Math.random() * 0.15; 
+    p.delay = Math.random() * 0.18; 
   }
 };
 
@@ -1229,9 +1232,9 @@ function draw() {
 
   var gradX = W*0.5 + Math.sin(time*0.3) * W*0.15;
   var gradY = H*0.5 + Math.cos(time*0.2) * H*0.15;
-  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.7);
-  bgGradient.addColorStop(0, '#020306'); // Barely perceptible organic core glow
-  bgGradient.addColorStop(0.3, '#000000'); // 70% of the screen is pure black 
+  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.9);
+  bgGradient.addColorStop(0, '#040B1A');  
+  bgGradient.addColorStop(0.5, '#01030B'); 
   bgGradient.addColorStop(1, '#000000');   
   ctx.fillStyle = bgGradient;
   ctx.fillRect(0, 0, W, H);
@@ -1259,7 +1262,7 @@ function draw() {
         y += Math.cos(x * 0.004 - time * 0.8) * 60; 
         if(x === -50) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(0, 180, 255, ' + (0.01 + w * 0.008) + ')';
+      ctx.strokeStyle = 'rgba(0, 180, 255, ' + (0.01 + w * 0.005) + ')';
       ctx.lineWidth = 0.6 + w * 0.3; 
       ctx.stroke();
     }
@@ -1295,7 +1298,6 @@ function draw() {
   if (prog > 0.30 && !exploding) {
     buildGrid();
 
-    // Max connections reduced on mobile to ensure 60fps with denser particles
     var maxConn = isMob ? 2 : 4; 
     var maxDistSq = CELL * CELL;
     var pulsePhase = (time * 0.5) % 4.0;
@@ -1361,7 +1363,7 @@ function draw() {
 
     for (var b = 0; b < 4; b++) {
       ctx.strokeStyle = 'rgba(0, 200, 255, ' + buckets[b] + ')'; 
-      ctx.lineWidth = 0.4 + b * 0.3; 
+      ctx.lineWidth = 0.2 + b * 0.25; // Thinner connections on mobile to preserve readability
       ctx.stroke(paths[b]);
     }
   }
@@ -1372,7 +1374,7 @@ function draw() {
     if (a.x < -20) a.x = W + 20; if (a.x > W + 20) a.x = -20;
     if (a.y < -20) a.y = H + 20; if (a.y > H + 20) a.y = -20;
     var pulse = 0.6 + 0.4 * Math.sin(time * 0.5 + a.phase);
-    var drawSz = a.size * pulse * 7;
+    var drawSz = a.size * pulse * 5;
     ctx.globalAlpha = exploding ? Math.max(0, 1 - prog*1.2) : a.brightness * pulse;
     ctx.drawImage(a.sprite, a.x - drawSz/2, a.y - drawSz/2, drawSz, drawSz);
   }
@@ -1390,7 +1392,8 @@ function draw() {
     var alpha = p.brightness * (0.05 + t * 0.95) * (1 + sparkle * 0.8);
     if (exploding) alpha = p.brightness * Math.max(0, 1 - t * 1.5); 
 
-    var spriteDraw = drawSz * 5.5; 
+    // Drastically smaller sprite multipliers on mobile to eliminate cloudiness and restore sharpness
+    var spriteDraw = drawSz * (isMob ? 2.5 : 5.5); 
     ctx.globalAlpha = Math.min(1, Math.max(0, alpha));
     ctx.drawImage(p.sprite, p.x - spriteDraw/2, p.y - spriteDraw/2, spriteDraw, spriteDraw);
   }
