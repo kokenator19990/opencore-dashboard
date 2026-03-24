@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OpenCore Software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cyan:   #00E5FF;
+  --purple: #B200FF;
+  --yellow: #E5FF00;
+  --bg:     #03030a;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Canvas ── */
+#canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* ── Ambient orbs ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0;
+  animation: orbFloat 9s ease-in-out infinite, orbFadeIn 2s ease forwards;
+  z-index: 1;
+  pointer-events: none;
+}
+.orb-1 {
+  width: clamp(300px, 55vw, 700px);
+  height: clamp(300px, 55vw, 700px);
+  background: var(--cyan);
+  top: -25%; left: -12%;
+  animation-delay: 0s, 0.4s;
+  opacity: 0;
+}
+.orb-2 {
+  width: clamp(250px, 45vw, 600px);
+  height: clamp(250px, 45vw, 600px);
+  background: var(--purple);
+  bottom: -20%; right: -10%;
+  animation-delay: -3.5s, 0.6s;
+  opacity: 0;
+}
+.orb-3 {
+  width: clamp(120px, 20vw, 280px);
+  height: clamp(120px, 20vw, 280px);
+  background: var(--yellow);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -5.5s, 0.9s;
+  opacity: 0;
+}
+
+@keyframes orbFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 0.12; }
+}
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(28px,-28px) scale(1.06); }
+  66%     { transform: translate(-18px,18px) scale(0.94); }
+}
+
+/* ── Perspective grid ── */
+.grid-stage {
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 100%; height: 220px;
+  z-index: 2;
+  pointer-events: none;
+  perspective: 500px;
+  overflow: hidden;
+}
+.grid-plane {
+  width: 100%; height: 100%;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.07) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: rotateX(65deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%);
+  animation: gridPulse 4s ease-in-out infinite;
+}
+@keyframes gridPulse {
+  0%,100% { opacity: 0.8; }
+  50%     { opacity: 1.0; }
+}
+
+/* ── Scanlines ── */
+.scanlines {
+  position: fixed; inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 4px
+  );
+}
+
+/* ── Top bar ── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  z-index: 20;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards 0.2s;
+}
+.topbar-logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+}
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(0,229,255,0.5);
+  text-transform: uppercase;
+}
+.status-dot {
+  width: 5px; height: 5px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--cyan);
+  animation: dotBlink 2s ease-in-out infinite;
+}
+@keyframes dotBlink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.3; }
+}
+
+/* ── Main container ── */
+.container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+/* ── Hex icon ── */
+.brand-icon {
+  width: clamp(48px, 8vw, 72px);
+  height: clamp(48px, 8vw, 72px);
+  margin-bottom: clamp(24px, 4vh, 40px);
+  opacity: 0;
+  animation: fadeInDown 0.9s cubic-bezier(0.16,1,0.3,1) forwards 0.4s;
+  filter: drop-shadow(0 0 14px rgba(0,229,255,0.5));
+}
+.brand-icon svg { width: 100%; height: 100%; }
+
+/* ── Title ── */
+.title-wrap {
+  position: relative;
+  margin-bottom: clamp(8px, 1.5vh, 14px);
+  opacity: 0;
+  animation: fadeInUp 1s cubic-bezier(0.16,1,0.3,1) forwards 0.65s;
+}
+
+.title {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(48px, 13vw, 148px);
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-transform: uppercase;
+  position: relative;
+  line-height: 1;
+  animation: glowPulse 3s ease-in-out infinite 2s;
+}
+
+/* glitch pseudo-layers */
+.title::before,
+.title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: inherit;
+  letter-spacing: inherit;
+}
+.title::before {
+  color: var(--cyan);
+  animation: glitchA 6s infinite 2s;
+  clip-path: inset(0 0 100% 0);
+}
+.title::after {
+  color: var(--purple);
+  animation: glitchB 6s infinite 2s;
+  clip-path: inset(100% 0 0 0);
+}
+
+@keyframes glitchA {
+  0%,85%,100% { clip-path:inset(0 0 100% 0); transform:translate(0); opacity:0; }
+  87%  { clip-path:inset(10% 0 65% 0); transform:translate(-4px,1px); opacity:0.85; }
+  89%  { clip-path:inset(55% 0 8%  0); transform:translate(4px,-2px); opacity:0.85; }
+  91%  { clip-path:inset(30% 0 42% 0); transform:translate(-2px,2px); opacity:0.85; }
+  93%  { clip-path:inset(0 0 100% 0); transform:translate(0); opacity:0; }
+}
+@keyframes glitchB {
+  0%,85%,100% { clip-path:inset(100% 0 0 0); transform:translate(0); opacity:0; }
+  87%  { clip-path:inset(65% 0 10% 0); transform:translate(4px,-1px);  opacity:0.75; }
+  89%  { clip-path:inset(15% 0 60% 0); transform:translate(-3px,2px);  opacity:0.75; }
+  91%  { clip-path:inset(75% 0 5%  0); transform:translate(2px,0);     opacity:0.75; }
+  93%  { clip-path:inset(100% 0 0 0); transform:translate(0); opacity:0; }
+}
+
+@keyframes glowPulse {
+  0%,100% { text-shadow: 0 0 24px rgba(0,229,255,0.35), 0 0 70px rgba(0,229,255,0.12); }
+  50%     { text-shadow: 0 0 38px rgba(0,229,255,0.55), 0 0 100px rgba(0,229,255,0.22), 0 0 160px rgba(0,229,255,0.08); }
+}
+
+/* ── SOFTWARE label ── */
+.subtitle {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: clamp(11px, 2.2vw, 20px);
+  letter-spacing: clamp(0.4em, 1.2vw, 0.7em);
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: clamp(14px, 2.5vh, 24px);
+  opacity: 0;
+  animation: fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) forwards 0.9s;
+  text-shadow: 0 0 12px rgba(0,229,255,0.4);
+}
+
+/* ── Tagline typewriter ── */
+.tagline {
+  font-size: clamp(12px, 1.8vw, 15px);
+  color: rgba(255,255,255,0.38);
+  letter-spacing: 0.18em;
+  font-weight: 400;
+  margin-bottom: clamp(40px, 6vh, 68px);
+  min-height: 22px;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards 1.3s;
+}
+.tagline .cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: var(--cyan);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: cursorBlink 0.7s step-end infinite;
+}
+@keyframes cursorBlink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}
+
+/* ── Progress ── */
+.progress-wrap {
+  width: min(380px, 78vw);
+  margin-bottom: clamp(28px, 4vh, 44px);
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards 1.7s;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.22);
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.progress-track {
+  height: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: visible;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  border-radius: 2px;
+  transition: width 0.08s linear;
+  box-shadow: 0 0 10px rgba(0,229,255,0.7), 0 0 24px rgba(0,229,255,0.3);
+  position: relative;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -1px; top: -3px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px var(--cyan), 0 0 16px var(--cyan);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.progress-fill.active::after { opacity: 1; }
+
+/* ── Enter button ── */
+.enter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(13px,2vh,18px) clamp(32px,5vw,56px);
+  border: 1px solid rgba(0,229,255,0.4);
+  background: transparent;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(11px,1.4vw,13px);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.enter-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(178,0,255,0.08));
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.enter-btn:hover::before { opacity: 1; }
+.enter-btn:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 28px rgba(0,229,255,0.18), inset 0 0 20px rgba(0,229,255,0.05);
+  transform: translateY(-3px);
+}
+.enter-btn:active { transform: translateY(-1px); }
+.btn-arrow {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.enter-btn:hover .btn-arrow { transform: translateX(5px); }
+
+/* ── Version ── */
+.version-tag {
+  position: fixed;
+  bottom: 18px; right: 22px;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.15);
+  z-index: 20;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 1s ease forwards 2.5s;
+}
+
+/* ── Exit overlay ── */
+#exitOverlay {
+  position: fixed; inset: 0;
+  background: #000;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.65s cubic-bezier(0.4,0,1,1);
+}
+
+/* ── Utility animations ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(22px); }
+  to   { opacity:1; transform:translateY(0);    }
+}
+@keyframes fadeInDown {
+  from { opacity:0; transform:translateY(-22px); }
+  to   { opacity:1; transform:translateY(0);     }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .orb-1 { filter: blur(70px); }
+  .orb-2 { filter: blur(70px); }
+  .grid-stage { height: 160px; }
+  .topbar { padding: 16px 18px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div class="scanlines"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Grid perspectiva -->
+<div class="grid-stage">
+  <div class="grid-plane"></div>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span class="topbar-logo">OC · Sistema</span>
+  <span class="topbar-status">
+    <span class="status-dot"></span>
+    Online
+  </span>
+</div>
+
+<!-- Version -->
+<div class="version-tag">v2.0 · 2026</div>
+
+<!-- Exit overlay -->
+<div id="exitOverlay"></div>
+
+<!-- ═══ CONTENIDO PRINCIPAL ═══ -->
+<div class="container">
+
+  <!-- Ícono hexagonal -->
+  <div class="brand-icon">
+    <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="36,4 68,20 68,52 36,68 4,52 4,20"
+               stroke="#00E5FF" stroke-width="1.2" fill="none" opacity="0.55"/>
+      <polygon points="36,13 59,25 59,47 36,59 13,47 13,25"
+               stroke="#00E5FF" stroke-width="0.8" fill="none" opacity="0.28"/>
+      <polygon points="36,22 50,30 50,42 36,50 22,42 22,30"
+               stroke="#00E5FF" stroke-width="0.6" fill="rgba(0,229,255,0.04)" opacity="0.45"/>
+      <circle cx="36" cy="36" r="7" fill="#00E5FF" opacity="0.95"/>
+      <circle cx="36" cy="36" r="3.5" fill="#03030a"/>
+      <circle cx="36" cy="36" r="1.2" fill="#00E5FF"/>
+    </svg>
+  </div>
+
+  <!-- Título con glitch -->
+  <div class="title-wrap">
+    <h1 class="title" data-text="OPENCORE">OPENCORE</h1>
+  </div>
+
+  <!-- Software -->
+  <p class="subtitle">Software</p>
+
+  <!-- Tagline typewriter -->
+  <p class="tagline" id="tagline"></p>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-meta">
+      <span id="progressLabel">Iniciando sistema</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <button class="enter-btn" id="enterBtn" onclick="handleEnter()">
+    Acceder al Dashboard
+    <svg class="btn-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="#00E5FF" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+</div>
+
+<script>
+// ══════════════════════════════════
+//  CANVAS — Particle Network
+// ══════════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+let W, H, particles = [];
+const mouse = { x: -9999, y: -9999 };
+
+const isMobile     = window.innerWidth < 768;
+const PARTICLE_N   = isMobile ? 55 : 95;
+const CONNECT_DIST = isMobile ? 110 : 150;
+const COLORS       = ['#00E5FF','#00E5FF','#B200FF','#ffffff'];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); spawnParticles(); });
+
+window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('touchmove', e => {
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+}, { passive: true });
+window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+
+class Particle {
+  constructor() { this.init(); }
+  init() {
+    this.x  = Math.random() * W;
+    this.y  = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.r  = Math.random() * 1.6 + 0.4;
+    this.a  = Math.random() * 0.55 + 0.18;
+    this.c  = COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+  update() {
+    const dx = this.x - mouse.x;
+    const dy = this.y - mouse.y;
+    const d  = Math.sqrt(dx*dx + dy*dy);
+    if (d < 90) {
+      const f = (90 - d) / 90 * 0.9;
+      this.vx += (dx / d) * f;
+      this.vy += (dy / d) * f;
+    }
+    this.vx *= 0.978;
+    this.vy *= 0.978;
+    this.x  += this.vx;
+    this.y  += this.vy;
+    if (this.x < 0) this.x = W;
+    if (this.x > W) this.x = 0;
+    if (this.y < 0) this.y = H;
+    if (this.y > H) this.y = 0;
+  }
+  draw() {
+    ctx.globalAlpha = this.a;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.c;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function spawnParticles() {
+  particles = Array.from({ length: PARTICLE_N }, () => new Particle());
+}
+spawnParticles();
+
+function drawLines() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if (d < CONNECT_DIST) {
+        const a = (1 - d / CONNECT_DIST) * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0,229,255,${a})`;
+        ctx.lineWidth   = 0.6;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  drawLines();
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ══════════════════════════════════
+//  TYPEWRITER
+// ══════════════════════════════════
+const tagEl = document.getElementById('tagline');
+const text  = 'Inteligencia comercial con IA · Chile';
+let   ti    = 0;
+
+setTimeout(() => {
+  const iv = setInterval(() => {
+    if (ti < text.length) {
+      ti++;
+      tagEl.innerHTML = text.slice(0, ti) + '<span class="cursor"></span>';
+    } else {
+      clearInterval(iv);
+      setTimeout(() => { tagEl.innerHTML = text; }, 800);
+    }
+  }, 42);
+}, 1500);
+
+// ══════════════════════════════════
+//  PROGRESS BAR
+// ══════════════════════════════════
+let pct = 0;
+const fillEl  = document.getElementById('progressFill');
+const pctEl   = document.getElementById('progressPct');
+const labelEl = document.getElementById('progressLabel');
+const btn     = document.getElementById('enterBtn');
+
+const labels = [
+  [0,  'Iniciando sistema'],
+  [30, 'Cargando módulos'],
+  [60, 'Sincronizando datos'],
+  [85, 'Preparando dashboard'],
+  [98, 'Listo'],
+];
+
+setTimeout(() => {
+  fillEl.classList.add('active');
+  const iv = setInterval(() => {
+    const inc = pct < 75 ? 1.4 : pct < 92 ? 0.5 : 0.15;
+    pct = Math.min(100, pct + inc);
+    fillEl.style.width = pct + '%';
+    pctEl.textContent  = Math.floor(pct) + '%';
+
+    const lbl = labels.filter(l => pct >= l[0]).pop();
+    if (lbl) labelEl.textContent = lbl[1];
+
+    if (pct >= 100) {
+      clearInterval(iv);
+      fillEl.classList.remove('active');
+      setTimeout(showBtn, 320);
+    }
+  }, 28);
+}, 1800);
+
+function showBtn() {
+  btn.style.transition = 'opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1), border-color 0.3s, box-shadow 0.3s';
+  btn.style.opacity    = '1';
+  btn.style.transform  = 'translateY(0)';
+}
+
+// ══════════════════════════════════
+//  ENTER → DASHBOARD
+// ══════════════════════════════════
+function handleEnter() {
+  const overlay = document.getElementById('exitOverlay');
+  overlay.style.pointerEvents = 'all';
+  overlay.style.opacity = '1';
+  setTimeout(() => { window.location.href = 'index.html'; }, 680);
+}
+</script>
+</body>
+</html>
