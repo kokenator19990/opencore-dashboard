@@ -1018,31 +1018,33 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </script>
 
 <!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
-<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#020810;overflow:hidden;touch-action:none;">
+<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#010610;overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
-
-  <!-- Bottom UI — no text overlay, letters ARE the crystal fragments -->
   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
-    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:3.5px;color:rgba(160,210,255,0.35);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
-    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#a8d8f8;background:transparent;border:1px solid rgba(140,200,255,0.32);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(100,180,255,0.06)';this.style.borderColor='rgba(140,200,255,0.75)';this.style.boxShadow='0 0 28px rgba(100,180,255,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(140,200,255,0.32)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
-    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.09);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
+    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.57rem;font-weight:600;letter-spacing:3.5px;color:rgba(155,205,255,0.34);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#a8d8f8;background:transparent;border:1px solid rgba(140,200,255,0.30);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(100,180,255,0.06)';this.style.borderColor='rgba(140,200,255,0.78)';this.style.boxShadow='0 0 28px rgba(100,180,255,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(140,200,255,0.30)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
+    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.08);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
   </div>
 </div>
 
-<style>
-@keyframes splashFadeOut { to { opacity:0; visibility:hidden; } }
-</style>
+<style>@keyframes splashFadeOut{to{opacity:0;visibility:hidden;}}</style>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════
-//  OPENCORE — 3D DIAMOND LETTER SCULPTURE
+//  OPENCORE — DIAMOND CRYSTAL TYPOGRAPHY
 //
-//  Triangular diamond-crystal facets assemble into bold 3D lettering.
-//  Each facet is a fragment of a diamond gem. Interior facets are bright
-//  (top face / light source). Edge facets are deep blue (side faces in
-//  shadow). Together they create sculpted 3D crystal typography.
+//  Triangular facets with realistic gem-quality shading assemble into
+//  3D lettering. Each fragment is a diamond shard.
 //
-//  No text overlay. The fragments ARE the letters.
+//  Lighting model:
+//    · 20% pure-white specular  (brilliant reflections)
+//    · 5%  rainbow fire         (chromatic dispersion)
+//    · 75% depth-graded crystal (top face bright, side face dark navy)
+//    · SDF bevel: smooth 3D extrusion via 8-ray distance field
+//    · Scintillation: 15% of interior facets pulse toward white
+//
+//  Renderer: manual-rotation fast path, pre-computed assembled vertices,
+//  zero ctx.save/restore overhead. t=1 snap → guaranteed zero-gap fit.
 // ═══════════════════════════════════════════════════════════════════════
 (function() {
   var canvas = document.getElementById('nucleus-canvas');
@@ -1056,82 +1058,109 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth;
-    H = window.innerHeight;
+    W = window.innerWidth; H = window.innerHeight;
     isMobile = W < 768;
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resize();
 
-  // Deterministic per-facet hash (stable, no frame flicker)
+  // Stable per-facet hash — no frame-to-frame flicker
   function frand(x, y) {
     var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
     return n - Math.floor(n);
   }
 
-  // Diamond crystal color
-  // depth 0 = letter edge (side face, darker), 1 = interior (top face, bright)
+  // ── Diamond gem color ──────────────────────────────────────────────────────
+  // depth 0 = letter edge (side face, shadow), 1 = interior (top face, light)
   function facetColor(wx, wy, depth) {
-    // Directional light from upper-right corner
-    var nx   = (wx - W * 0.5) / (W * 0.5);
-    var ny   = (wy - H * 0.5) / (H * 0.5);
-    var base = 0.36 + (-nx * 0.13 + (-ny) * 0.28) + depth * 0.44;
-    base    += (frand(wx * 0.91, wy * 1.13) - 0.5) * 0.36;
-    var lum  = Math.max(0.04, Math.min(1.0, base));
+    // 20% pure-white specular — the "brilliance" of a real diamond
+    if (frand(wx * 1.31, wy * 0.87) < 0.20) return [255, 255, 255];
 
-    // ~7% chance of specular highlight (pure white flash)
-    if (frand(wx * 1.31, wy * 0.87) < 0.07) lum = 0.88 + frand(wy, wx) * 0.12;
+    // 5% fire — chromatic dispersion (only on surfaces with some depth)
+    if (frand(wx * 2.07, wy * 1.83) < 0.05 && depth > 0.20) {
+      var fires = [
+        [255, 78, 78],  [255, 162, 48],  [252, 230, 55],
+        [55, 215, 130], [52, 185, 255],  [158, 52, 255]
+      ];
+      var fc  = fires[Math.floor(frand(wx * 3.1, wy * 2.7) * 6)];
+      var fi  = 0.60 + frand(wx * 0.5, wy * 0.5) * 0.40;
+      return [Math.round(fc[0]*fi), Math.round(fc[1]*fi), Math.round(fc[2]*fi)];
+    }
+
+    // Standard diamond crystal — blue/white spectrum modulated by depth + light
+    var nx  = (wx - W * 0.5) / (W * 0.5);
+    var ny  = (wy - H * 0.5) / (H * 0.5);
+    // Primary light source: upper-right
+    var lit = 0.26 + (-nx * 0.14 + (-ny) * 0.28) + depth * 0.54;
+    // Per-facet random variation (different crystal planes catch light differently)
+    lit    += (frand(wx * 0.91, wy * 1.13) - 0.5) * 0.38;
+    var lum = Math.max(0.03, Math.min(0.96, lit));
 
     var r, g, b;
-    if (lum > 0.82) {
-      // Specular: near-white with cool blue tint
-      r = Math.round(222 + lum * 33); g = Math.round(238 + lum * 17); b = 255;
+    if (lum > 0.75) {
+      // Near-specular: white-blue
+      r = Math.round(188 + lum * 67); g = Math.round(215 + lum * 40); b = 255;
     } else if (lum > 0.50) {
-      // Midtone: pale ice-blue
-      r = Math.round(108 + lum * 122); g = Math.round(150 + lum * 92);  b = Math.round(198 + lum * 54);
+      // Mid-bright: ice-blue
+      r = Math.round(80  + lum * 150); g = Math.round(120 + lum * 118); b = Math.round(178 + lum * 74);
+    } else if (lum > 0.22) {
+      // Mid-dark: royal blue
+      r = Math.round(14  + lum * 122); g = Math.round(36  + lum * 158); b = Math.round(102 + lum * 142);
     } else {
-      // Shadow: deep ocean blue
-      r = Math.round(8   + lum * 130); g = Math.round(28  + lum * 165); b = Math.round(88  + lum * 140);
+      // Shadow: deep navy — creates strong 3D contrast
+      r = Math.round(2   + lum * 68);  g = Math.round(4   + lum * 82);  b = Math.round(32  + lum * 118);
     }
-    return [Math.min(255, r), Math.min(255, g), Math.min(255, b)];
+    return [Math.min(255,r), Math.min(255,g), Math.min(255,b)];
   }
 
-  // Build facets: rectangular cell grid clipped to rendered text
-  function buildFacets() {
-    var s = isMobile ? 5 : 8; // cell size in px
+  // ── SDF-like bevel depth ──────────────────────────────────────────────────
+  // Cast 8 rays; depth = nearest edge distance / normalization
+  // depth 0 = at letter boundary, 1 = deep interior
+  var SDF_DIRS = [
+    [1,0],[0.707,0.707],[0,1],[-0.707,0.707],
+    [-1,0],[-0.707,-0.707],[0,-1],[0.707,-0.707]
+  ];
+  function sdfDepth(cx, cy, s, data) {
+    var maxR = s * 6.5, norm = s * 4.8, step = s * 0.75, minD = maxR;
+    for (var ai = 0; ai < 8; ai++) {
+      var ax = SDF_DIRS[ai][0], ay = SDF_DIRS[ai][1];
+      for (var r = step; r <= maxR; r += step) {
+        var px = (cx + ax * r) | 0, py = (cy + ay * r) | 0;
+        if (px < 0) px = 0; else if (px >= W) px = W - 1;
+        if (py < 0) py = 0; else if (py >= H) py = H - 1;
+        if (data[(py * W + px) * 4 + 3] < 60) { if (r < minD) minD = r; break; }
+      }
+    }
+    return minD >= norm ? 1.0 : minD / norm;
+  }
 
-    // Render text to offscreen canvas, auto-scale to fill screen nicely
+  // ── Build facets ──────────────────────────────────────────────────────────
+  function buildFacets() {
+    var s = isMobile ? 4 : 6;
+
     var off = document.createElement('canvas');
     off.width = W; off.height = H;
     var c = off.getContext('2d');
-    c.fillStyle = '#fff';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
 
-    // Auto-size OPENCORE to fill ~83% of screen width
-    var fs1 = isMobile ? Math.floor(W * 0.21) : Math.floor(W * 0.19);
+    // Auto-size OPENCORE to fill 83% of screen width (via measureText)
+    var fs1 = Math.floor(W * (isMobile ? 0.21 : 0.195));
     c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
-    var mw1 = c.measureText('OPENCORE').width;
-    var target1 = W * (isMobile ? 0.78 : 0.83);
-    if (Math.abs(mw1 - target1) > 10) {
-      fs1 = Math.floor(fs1 * target1 / mw1);
+    var mw1 = c.measureText('OPENCORE').width, tw1 = W * (isMobile ? 0.78 : 0.83);
+    if (Math.abs(mw1 - tw1) > 8) {
+      fs1 = Math.floor(fs1 * tw1 / mw1);
       c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
     }
 
-    // SOFTWARE: proportionally smaller, fills ~60% of screen width
+    // SOFTWARE: proportionally smaller, fills ~62% of screen width
     var fs2 = Math.floor(fs1 * 0.435);
     c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
-    var mw2 = c.measureText('SOFTWARE').width;
-    var target2 = W * (isMobile ? 0.60 : 0.62);
-    if (Math.abs(mw2 - target2) > 10) {
-      fs2 = Math.floor(fs2 * target2 / mw2);
-    }
+    var mw2 = c.measureText('SOFTWARE').width, tw2 = W * (isMobile ? 0.60 : 0.62);
+    if (Math.abs(mw2 - tw2) > 8) fs2 = Math.floor(fs2 * tw2 / mw2);
 
-    // Draw both words — vertical split: OPENCORE upper, SOFTWARE lower
+    // Render both words
     c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
     c.fillText('OPENCORE', W * 0.5, H * 0.33);
     c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
@@ -1139,40 +1168,31 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 
     var data = c.getImageData(0, 0, W, H).data;
     var arr  = [];
+    var exp  = 0.62; // vertex expansion in px (closes sub-pixel antialiasing gaps)
 
     function alpha(x, y) {
-      var px = Math.max(0, Math.min(W - 1, Math.floor(x)));
-      var py = Math.max(0, Math.min(H - 1, Math.floor(y)));
+      var px = x | 0, py = y | 0;
+      if (px < 0) px=0; else if (px>=W) px=W-1;
+      if (py < 0) py=0; else if (py>=H) py=H-1;
       return data[(py * W + px) * 4 + 3];
     }
 
-    // Depth: fraction of 8 neighbors also in text (0=isolated/edge, 1=fully interior)
-    // Creates 3D bevel: interior = bright top face, edges = dark side faces
-    function depth8(gx, gy) {
-      var cx = gx + s * 0.5, cy = gy + s * 0.5, hit = 0;
-      for (var dy = -s; dy <= s; dy += s) {
-        for (var dx = -s; dx <= s; dx += s) {
-          if (dx === 0 && dy === 0) continue;
-          if (alpha(cx + dx, cy + dy) > 60) hit++;
-        }
-      }
-      return hit / 8;
-    }
-
-    var exp = 0.65; // vertex expansion in px → closes sub-pixel antialiasing gaps
-
     for (var gy = 0; gy < H; gy += s) {
       for (var gx = 0; gx < W; gx += s) {
-        if (alpha(gx + s * 0.5, gy + s * 0.5) < 70) continue;
+        var ccx = gx + s * 0.5, ccy = gy + s * 0.5;
+        if (alpha(ccx, ccy) < 70) continue;
 
-        var dep = depth8(gx, gy);
-        var row = Math.round(gy / s), col = Math.round(gx / s);
-        var alt = (row + col) & 1; // checkerboard diagonal direction
+        // SDF depth: smooth 3D bevel gradient
+        var dep = sdfDepth(ccx, ccy, s, data);
+
+        // Checkerboard diagonal direction for visual variety
+        var row = (gy / s) | 0, col = (gx / s) | 0;
+        var alt = (row + col) & 1;
 
         var v00=[gx,gy], v10=[gx+s,gy], v11=[gx+s,gy+s], v01=[gx,gy+s];
         var pairs = alt === 0
-          ? [[v00, v10, v01], [v10, v11, v01]]   // upper-left + lower-right
-          : [[v00, v10, v11], [v00, v11, v01]];  // upper-right + lower-left
+          ? [[v00, v10, v01], [v10, v11, v01]]
+          : [[v00, v10, v11], [v00, v11, v01]];
 
         for (var pi = 0; pi < 2; pi++) {
           var verts = pairs[pi];
@@ -1180,25 +1200,33 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
           var tcy = (verts[0][1] + verts[1][1] + verts[2][1]) / 3;
           var col2 = facetColor(tcx, tcy, dep);
 
-          // Expand each vertex 0.65px outward from centroid → no sub-pixel gaps at assembly
+          // Expand vertices outward from centroid → perfect zero-gap seal at assembly
           var ev = [0, 1, 2].map(function(i) {
             var dx = verts[i][0] - tcx, dy = verts[i][1] - tcy;
-            var len = Math.sqrt(dx * dx + dy * dy) || 1;
-            return [tcx + dx * (1 + exp / len), tcy + dy * (1 + exp / len)];
+            var len = Math.sqrt(dx*dx + dy*dy) || 1;
+            return [tcx + dx * (1 + exp/len), tcy + dy * (1 + exp/len)];
           });
 
-          // Scatter start: random direction + distance from assembled position
+          // Scintillation: 15% of interior facets sparkle toward white when assembled
+          var sp   = dep > 0.28 && frand(tcx * 1.44, tcy * 0.82) < 0.15;
+          var spPh = sp ? frand(tcx * 0.5, tcy * 1.2) * Math.PI * 8 : 0;
+
+          // Random scatter start position (distance = 0.5x–1.6x viewport diagonal)
           var ang  = Math.random() * Math.PI * 2;
-          var dist = (0.5 + Math.random() * 1.1) * Math.max(W, H) * 0.76;
+          var dist = (0.5 + Math.random() * 1.1) * Math.max(W, H) * 0.80;
 
           arr.push({
             tx: tcx, ty: tcy,
             sx: tcx + Math.cos(ang) * dist,
             sy: tcy + Math.sin(ang) * dist,
-            srot: (Math.random() - 0.5) * Math.PI * 3.8,
-            verts: ev.map(function(v) { return [v[0] - tcx, v[1] - tcy]; }),
+            srot: (Math.random() - 0.5) * Math.PI * 4.2,
+            // Vertices relative to centroid (used during animation)
+            verts: ev.map(function(v) { return [v[0]-tcx, v[1]-tcy]; }),
+            // Absolute assembled vertices (fast path — no trig at t=1)
+            av: [[ev[0][0],ev[0][1]], [ev[1][0],ev[1][1]], [ev[2][0],ev[2][1]]],
             col: col2,
-            d: Math.random() * 0.26 // stagger delay (0..0.26)
+            d:   Math.random() * 0.26,  // per-fragment stagger delay
+            sp:  sp, spPh: spPh
           });
         }
       }
@@ -1206,18 +1234,35 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     return arr;
   }
 
-  // Draw one facet without ctx.save/restore (fast path)
-  // Manual rotation: avoids ctx matrix push/pop overhead
-  function drawFacet(f, x, y, rot, al) {
-    if (x < -80 || x > W + 80 || y < -80 || y > H + 80) return; // cull off-screen
-    var cos = Math.cos(rot), sin = Math.sin(rot);
-    var v = f.verts;
+  // ── Renderers ─────────────────────────────────────────────────────────────
+
+  // Fast animation-phase renderer — manual rotation avoids ctx.save/restore
+  function drawFacet(f, x, y, rot, al, cr, cg, cb) {
+    if (x < -90 || x > W+90 || y < -90 || y > H+90) return;
+    var cos, sin;
+    // Skip trig for near-zero rotation (optimization for final assembly frames)
+    if (rot > -0.0012 && rot < 0.0012) { cos = 1; sin = 0; }
+    else { cos = Math.cos(rot); sin = Math.sin(rot); }
     ctx.globalAlpha = al;
-    ctx.fillStyle   = 'rgb(' + f.col[0] + ',' + f.col[1] + ',' + f.col[2] + ')';
+    ctx.fillStyle   = 'rgb(' + (cr|0) + ',' + (cg|0) + ',' + (cb|0) + ')';
+    var v = f.verts;
     ctx.beginPath();
     ctx.moveTo(v[0][0]*cos - v[0][1]*sin + x,  v[0][0]*sin + v[0][1]*cos + y);
     ctx.lineTo(v[1][0]*cos - v[1][1]*sin + x,  v[1][0]*sin + v[1][1]*cos + y);
     ctx.lineTo(v[2][0]*cos - v[2][1]*sin + x,  v[2][0]*sin + v[2][1]*cos + y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Ultra-fast assembled renderer — pre-computed absolute coords, zero trig
+  function drawAssembled(f, al, cr, cg, cb) {
+    var av = f.av;
+    ctx.globalAlpha = al;
+    ctx.fillStyle   = 'rgb(' + (cr|0) + ',' + (cg|0) + ',' + (cb|0) + ')';
+    ctx.beginPath();
+    ctx.moveTo(av[0][0], av[0][1]);
+    ctx.lineTo(av[1][0], av[1][1]);
+    ctx.lineTo(av[2][0], av[2][1]);
     ctx.closePath();
     ctx.fill();
   }
@@ -1233,27 +1278,26 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   var ty0 = 0;
   splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
   splash.addEventListener('touchmove', function(e) {
-    var dy = ty0 - e.touches[0].clientY;
-    ty0 = e.touches[0].clientY;
+    var dy = ty0 - e.touches[0].clientY; ty0 = e.touches[0].clientY;
     targetProg = Math.max(0, Math.min(1, targetProg + dy / 290));
   }, { passive: true });
 
   if (isMobile) { setTimeout(function() { targetProg = 1; }, 1100); }
 
-  // ── Explosion on ENTRAR ────────────────────────────────────────────────────
+  // ── Explosion ──────────────────────────────────────────────────────────────
   window._splashExplode = function() {
     exploding = true;
     for (var i = 0; i < facets.length; i++) {
       var f = facets[i];
-      f.ex = f.tx; f.ey = f.ty; // explode FROM assembled position
+      f.ex = f.tx; f.ey = f.ty;   // fly FROM assembled position
       var ang = Math.random() * Math.PI * 2;
-      var spd = 3.5 + Math.random() * 13;
+      var spd = 4 + Math.random() * 14;
       f.vx = Math.cos(ang) * spd; f.vy = Math.sin(ang) * spd;
-      f.erot = 0; f.rotv = (Math.random() - 0.5) * 0.15;
+      f.erot = 0; f.rotv = (Math.random() - 0.5) * 0.17;
     }
   };
 
-  // ── Main animation loop ────────────────────────────────────────────────────
+  // ── Main loop ──────────────────────────────────────────────────────────────
   function draw() {
     raf = requestAnimationFrame(draw);
     prog += (targetProg - prog) * 0.058;
@@ -1261,64 +1305,82 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, W, H);
 
-    // Subtle ambient glow emerges with the letters
-    if (prog > 0.18) {
-      var ga = Math.min(1, (prog - 0.18) / 0.82) * 0.13;
-      var gr = ctx.createRadialGradient(W*0.5, H*0.47, 0, W*0.5, H*0.47, W*0.52);
-      gr.addColorStop(0,    'rgba(155, 210, 255, ' + ga + ')');
-      gr.addColorStop(0.45, 'rgba(55, 115, 210, '  + (ga * 0.42) + ')');
+    // Deep crystal atmospheric glow (grows with assembly)
+    if (prog > 0.14) {
+      var ga = Math.min(1, (prog-0.14)/0.86) * 0.15;
+      var gr = ctx.createRadialGradient(W*0.5, H*0.47, 0, W*0.5, H*0.47, W*0.53);
+      gr.addColorStop(0,    'rgba(140, 205, 255, ' + ga + ')');
+      gr.addColorStop(0.40, 'rgba(45, 100, 205, '  + (ga*0.38) + ')');
       gr.addColorStop(1,    'transparent');
-      ctx.fillStyle = gr;
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
     }
 
-    // Slow light-sweep shimmer across assembled letters (gem light play)
-    if (prog > 0.87) {
-      var phase = (time * 0.20) % 3.2;
-      if (phase < 2.4) {
-        var sx = W * (-0.3 + phase * 0.66);
-        var sg = ctx.createLinearGradient(sx - 50, 0, sx + 50, H);
+    // Slow gem-light sweep across assembled letters
+    if (prog > 0.86) {
+      var phase = (time * 0.17) % 3.8;
+      if (phase < 2.8) {
+        var sx = W * (-0.3 + phase * 0.61);
+        var sg = ctx.createLinearGradient(sx - 42, 0, sx + 42, H);
         sg.addColorStop(0,   'transparent');
-        sg.addColorStop(0.5, 'rgba(220, 242, 255, 0.05)');
+        sg.addColorStop(0.5, 'rgba(228, 246, 255, 0.045)');
         sg.addColorStop(1,   'transparent');
-        ctx.fillStyle   = sg;
-        ctx.globalAlpha = 1;
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = sg; ctx.globalAlpha = 1; ctx.fillRect(0, 0, W, H);
       }
     }
 
-    // Draw facets
+    // Draw all facets
     for (var i = 0; i < facets.length; i++) {
       var f = facets[i];
 
+      // ── Explosion physics ──
       if (exploding) {
         f.ex += f.vx; f.ey += f.vy;
-        f.vx *= 0.974; f.vy *= 0.974;
-        f.erot += f.rotv;
-        var dx = f.ex - W * 0.5, dy = f.ey - H * 0.5;
-        var fade = Math.max(0, 1 - Math.sqrt(dx*dx + dy*dy) / (Math.max(W,H) * 0.82));
-        if (fade > 0.01) drawFacet(f, f.ex, f.ey, f.erot, fade);
+        f.vx *= 0.974; f.vy *= 0.974; f.erot += f.rotv;
+        var dx = f.ex - W*0.5, dy = f.ey - H*0.5;
+        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy) / (Math.max(W,H)*0.82));
+        if (fade > 0.01) drawFacet(f, f.ex, f.ey, f.erot, fade, f.col[0], f.col[1], f.col[2]);
         continue;
       }
 
-      // Direct lerp — x=tx, y=ty, rot=0 at prog=1 → perfect zero-gap assembly
-      var ef  = Math.max(0, Math.min(1, (prog - f.d) / (1.0 - f.d + 1e-5)));
-      var t   = ease(ef);
-      drawFacet(f,
-        f.sx + (f.tx - f.sx) * t,
-        f.sy + (f.ty - f.sy) * t,
-        f.srot * (1 - t),
-        0.10 + t * 0.88
-      );
+      // ── Assembly lerp ──
+      // Direct lerp: x=tx,y=ty,rot=0 exactly at ef=1 → guaranteed zero-gap fit
+      var ef = Math.max(0, Math.min(1, (prog - f.d) / (1.0 - f.d + 1e-5)));
+      var t  = ease(ef);
+      if (t > 0.994) t = 1.0; // snap — activates assembled fast path
+
+      // Compute draw color (sparkle modulates toward white when assembled)
+      var cr = f.col[0], cg = f.col[1], cb = f.col[2];
+      if (f.sp && t > 0.84) {
+        // Sharp scintillation peaks: sin^3 creates brief bright flashes
+        var sv = Math.pow(Math.max(0, Math.sin(time * 3.6 + f.spPh)), 3);
+        sv *= Math.min(1, (t - 0.84) / 0.12); // fade-in envelope
+        cr += (255 - cr) * sv * 0.88;
+        cg += (255 - cg) * sv * 0.88;
+        cb += (255 - cb) * sv * 0.88;
+      }
+
+      var al = 0.08 + t * 0.90;
+
+      if (t === 1.0) {
+        // Ultra-fast path: absolute pre-computed vertices, zero trig
+        drawAssembled(f, al, cr, cg, cb);
+      } else {
+        drawFacet(f,
+          f.sx + (f.tx - f.sx) * t,
+          f.sy + (f.ty - f.sy) * t,
+          f.srot * (1 - t),
+          al, cr, cg, cb
+        );
+      }
     }
 
-    // UI visibility
+    // UI
     var btn  = document.getElementById('splash-enter');
     var hint = document.getElementById('splash-hint');
     if (btn) {
       var show = prog > 0.68;
-      if (show  && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
-      if (!show && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
+      if (show  && btn.style.opacity !== '1') { btn.style.opacity='1'; btn.style.pointerEvents='all'; }
+      if (!show && btn.style.opacity !== '0') { btn.style.opacity='0'; btn.style.pointerEvents='none'; }
     }
     if (hint) hint.style.opacity = prog < 0.32 ? '1' : '0';
   }
@@ -1327,18 +1389,14 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   document.fonts.ready.then(init);
 
   window.addEventListener('resize', function() {
-    resize();
-    cancelAnimationFrame(raf);
+    resize(); cancelAnimationFrame(raf);
     document.fonts.ready.then(function() { facets = buildFacets(); draw(); });
   });
 
-  window._stopNucleus = function() {
-    cancelAnimationFrame(raf);
-    ctx.clearRect(0, 0, W, H);
-  };
+  window._stopNucleus = function() { cancelAnimationFrame(raf); ctx.clearRect(0,0,W,H); };
 })();
 
-// ── Enter dashboard ────────────────────────────────────────────────────────
+// ── Splash enter ────────────────────────────────────────────────────────────
 window.enterDashboard = function() {
   var splash = document.getElementById('splash');
   splash.style.pointerEvents = 'none';
