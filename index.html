@@ -55,8 +55,13 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   max-width: 100vw;
+  overscroll-behavior: none;
 }
-html { overflow-x: hidden; max-width: 100vw; }
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  overscroll-behavior: none;
+}
 
 /* Prevenir zoom automático de iOS en inputs (trigger: font-size < 16px) */
 input, textarea, select {
@@ -331,7 +336,8 @@ input, textarea, select {
     display: none; position: fixed; inset: 0; z-index: 8000;
     background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
     justify-content: center; align-items: flex-start;
-    padding: 20px 16px 40px; overflow-y: auto;
+    padding: 20px 16px 40px; overflow-y: auto; overflow-x: hidden;
+    touch-action: none;
   }
   #sections-overlay.open { display: flex; }
   .ovl-panel {
@@ -339,6 +345,7 @@ input, textarea, select {
     border-radius: 14px; width: 100%; max-width: 860px; margin: auto;
     box-shadow: 0 24px 80px rgba(0,0,0,0.9);
     animation: ovlIn 0.22s cubic-bezier(0.16,1,0.3,1);
+    overflow-x: hidden;
   }
   @keyframes ovlIn {
     from { opacity:0; transform:scale(0.97) translateY(10px); }
@@ -361,7 +368,7 @@ input, textarea, select {
     display: flex; align-items: center; justify-content: center; transition: all 0.2s;
   }
   .ovl-x:hover { background: rgba(255,42,42,0.22); border-color: #FF2A6D; color: #FF2A6D; }
-  .ovl-body { padding: 1.5rem; }
+  .ovl-body { padding: 1.5rem; overflow-x: hidden; max-width: 100%; }
   /* -- CONTACTOS PERSONALES -- */
   .contacto-card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; transition: border-color .2s; }
   .contacto-card:hover { border-color: #05D9E8; }
@@ -898,8 +905,8 @@ input, textarea, select {
   input, textarea, select { font-size: 16px !important; }
 
   /* Overlay — bottom sheet en mobile */
-  #sections-overlay { align-items: flex-end; padding: 0; }
-  .ovl-panel { border-radius: 16px 16px 0 0; max-height: 88vh; overflow-y: auto; width: 100%; margin: 0; }
+  #sections-overlay { align-items: flex-end; padding: 0; overflow: hidden; touch-action: none; overscroll-behavior: none; }
+  .ovl-panel { border-radius: 16px 16px 0 0; max-height: 88vh; overflow-y: auto; overflow-x: hidden; width: 100%; margin: 0; touch-action: pan-y; overscroll-behavior: contain; }
 }
 
 /* ── PHONE (≤ 480px) ─────────────────────────────────────────────────── */
@@ -3108,6 +3115,7 @@ window.goToContactos = function() {
 };
 
 // -- OVERLAY ENGINE --
+var _bodyScrollY = 0;
 window.openOverlay = function(panelId, title) {
   ['ovl-tareas','ovl-contactos','ovl-reuniones'].forEach(function(id){
     var el = document.getElementById(id);
@@ -3119,12 +3127,22 @@ window.openOverlay = function(panelId, title) {
   if (titleEl) titleEl.textContent = title || '';
   var ovl = document.getElementById('sections-overlay');
   if (ovl) { ovl.classList.add('open'); ovl.scrollTop = 0; }
+  // iOS scroll lock: prevent body from panning when overlay is open
+  _bodyScrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + _bodyScrollY + 'px';
+  document.body.style.width = '100%';
 };
 window.closeOverlay = function() {
   var ovl = document.getElementById('sections-overlay');
   if (ovl) ovl.classList.remove('open');
+  // Restore body scroll position
+  document.body.style.position = '';
   document.body.style.overflow = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, _bodyScrollY);
   document.querySelectorAll('.analytics-btn').forEach(function(b){ b.classList.remove('active'); });
 };
 document.addEventListener('keydown', function(e){
