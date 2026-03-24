@@ -394,6 +394,8 @@ input, textarea, select {
 .tci-text { flex: 1; }
 .tarea-comment-date { font-size: 0.76rem; color: #bbb; margin-left: 0.5rem; }
 .tarea-comment-input-row { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.tarea-edit-row { display: flex; gap: 0.5rem; align-items: center; }
+.tarea-edit-btns { display: flex; gap: 0.4rem; flex-shrink: 0; }
 .tarea-comment-input {
   flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
   color: var(--text-main); padding: 10px 14px; font-size: 1.06rem;
@@ -795,9 +797,14 @@ input, textarea, select {
   .tarea-submit-btn { font-size: 0.93rem; padding: 12px 16px; min-height: 48px; }
   #tarea-prio-btn { font-size: 0.78rem; padding: 0 12px; min-height: 44px; }
   .tarea-btn { font-size: 0.95rem; padding: 10px 18px; min-height: 46px; }
-  .tarea-comment-send { font-size: 0.95rem; padding: 10px 16px; min-height: 46px; }
-  .tarea-comment-input { font-size: 1.06rem; padding: 12px 14px; }
+  .tarea-comment-send { font-size: 0.95rem; padding: 10px 16px; min-height: 46px; width: 100%; justify-content: center; }
+  .tarea-comment-input { font-size: 1.06rem; padding: 14px 16px; min-height: 54px; width: 100%; }
   .tarea-desc-input { font-size: 1.06rem; }
+  /* Inputs de editar tarea y comentario: apilados verticalmente en mobile */
+  .tarea-edit-row { display: flex; flex-direction: column; gap: 0.6rem; }
+  .tarea-edit-btns { display: flex; gap: 0.5rem; }
+  .tarea-edit-btns button { flex: 1; min-height: 48px; justify-content: center; }
+  .tarea-comment-input-row { flex-direction: column; gap: 0.5rem; }
   /* Tareas: nueva línea completa bajo los botones */
   #tareas-header-btn {
     order: 10; width: 100%; text-align: center; margin-top: 2px;
@@ -3289,12 +3296,13 @@ function _renderTareaCard(t) {
     // Expanded body (only when open)
     const isEditing = _editingTareaId === t.id;
     const editForm = isEditing
-      ? '<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
-        + '<input class="tarea-comment-input" id="tinp-' + t.id + '" style="flex:1;" maxlength="200" value="' + t.titulo.replace(/"/g,'&quot;').replace(/</g,'&lt;') + '"'
+      ? '<div class="tarea-edit-row" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
+        + '<input class="tarea-comment-input" id="tinp-' + t.id + '" maxlength="200" value="' + t.titulo.replace(/"/g,'&quot;').replace(/</g,'&lt;') + '"'
         + ' onkeydown="if(event.key===\'Enter\'){saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
+        + '<div class="tarea-edit-btns">'
         + '<button class="reply-btn-send" onclick="saveEditTarea(\'' + t.id + '\')">→ Guardar</button>'
         + '<button class="btn-cancel-edit" onclick="cancelEditTarea(\'' + t.id + '\')">✕</button>'
-        + '</div>'
+        + '</div></div>'
       : '';
     const filesHtml = (function() {
       var files = t.archivos || [];
