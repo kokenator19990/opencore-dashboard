@@ -2957,6 +2957,9 @@ window._removeTareaFile = function(i) {
 
 window.goToTareas = function() {
   if (window._sndNav) window._sndNav();
+  _expandedTareaId = null;
+  _editingTareaId  = null;
+  renderTareas();
   document.getElementById('btn-tareas').classList.add('active');
   openOverlay('ovl-tareas', 'TAREAS');
   const pending = _tareasCache.filter(t => t.estado === 'pendiente').length;
