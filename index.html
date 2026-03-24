@@ -1021,15 +1021,9 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 <div id="splash" style="position:fixed;inset:0;z-index:9000;background:#020810;overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
 
-  <!-- Brand text — fades in when diamond is assembled -->
-  <div id="splash-text" style="position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity 1s ease;z-index:3;white-space:nowrap;">
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(18px,3.4vw,54px);font-weight:900;letter-spacing:0.07em;color:rgba(238,248,255,0.96);text-shadow:0 0 50px rgba(120,200,255,0.40),0 2px 18px rgba(0,0,0,0.65);">OPENCORE</div>
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:clamp(7px,1.4vw,20px);font-weight:600;letter-spacing:0.48em;color:rgba(185,222,255,0.88);margin-top:0.35em;text-shadow:0 0 22px rgba(100,175,255,0.32);">SOFTWARE</div>
-  </div>
-
-  <!-- Bottom UI -->
+  <!-- Bottom UI — no text overlay, letters ARE the crystal fragments -->
   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
-    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:3.5px;color:rgba(160,210,255,0.36);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
+    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.58rem;font-weight:600;letter-spacing:3.5px;color:rgba(160,210,255,0.35);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
     <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#a8d8f8;background:transparent;border:1px solid rgba(140,200,255,0.32);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(100,180,255,0.06)';this.style.borderColor='rgba(140,200,255,0.75)';this.style.boxShadow='0 0 28px rgba(100,180,255,0.18)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(140,200,255,0.32)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
     <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.09);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
   </div>
@@ -1041,12 +1035,14 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════
-//  OPENCORE — DIAMOND CRYSTAL FRAGMENT SYSTEM
+//  OPENCORE — 3D DIAMOND LETTER SCULPTURE
 //
-//  A gem-cut diamond shatters into triangular facets and reassembles
-//  on scroll. Rectangular cell grid clipped to diamond silhouette.
-//  Direct lerp ensures zero-gap perfect assembly at prog = 1.
-//  Facet colors simulate real diamond light refraction.
+//  Triangular diamond-crystal facets assemble into bold 3D lettering.
+//  Each facet is a fragment of a diamond gem. Interior facets are bright
+//  (top face / light source). Edge facets are deep blue (side faces in
+//  shadow). Together they create sculpted 3D crystal typography.
+//
+//  No text overlay. The fragments ARE the letters.
 // ═══════════════════════════════════════════════════════════════════════
 (function() {
   var canvas = document.getElementById('nucleus-canvas');
@@ -1071,102 +1067,138 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   }
   resize();
 
-  // Deterministic per-facet random (stable across frames, no flicker)
+  // Deterministic per-facet hash (stable, no frame flicker)
   function frand(x, y) {
     var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
     return n - Math.floor(n);
   }
 
-  // Diamond gem color: blue-white spectrum with specular highlights
-  // nx, ny: normalized position in diamond (-1..1), cx/cy: world centroid
-  function facetColor(nx, ny, cx, cy) {
-    // Light source from upper-right corner
-    var base = 0.42 + (-nx * 0.20 + (-ny) * 0.40);
-    // Per-facet random variation (facets catch light independently)
-    var rand = frand(cx * 0.93, cy * 1.17) - 0.5;
-    var lum  = Math.max(0.04, Math.min(1.0, base + rand * 0.58));
+  // Diamond crystal color
+  // depth 0 = letter edge (side face, darker), 1 = interior (top face, bright)
+  function facetColor(wx, wy, depth) {
+    // Directional light from upper-right corner
+    var nx   = (wx - W * 0.5) / (W * 0.5);
+    var ny   = (wy - H * 0.5) / (H * 0.5);
+    var base = 0.36 + (-nx * 0.13 + (-ny) * 0.28) + depth * 0.44;
+    base    += (frand(wx * 0.91, wy * 1.13) - 0.5) * 0.36;
+    var lum  = Math.max(0.04, Math.min(1.0, base));
 
-    // 6% chance: pure specular highlight (near-white flash)
-    if (frand(cx * 1.31, cy * 0.87) < 0.06) {
-      lum = 0.88 + frand(cy, cx) * 0.12;
-    }
+    // ~7% chance of specular highlight (pure white flash)
+    if (frand(wx * 1.31, wy * 0.87) < 0.07) lum = 0.88 + frand(wy, wx) * 0.12;
 
     var r, g, b;
     if (lum > 0.82) {
-      // Specular: almost white with blue tint
-      r = Math.round(228 + lum * 27); g = Math.round(240 + lum * 15); b = 255;
+      // Specular: near-white with cool blue tint
+      r = Math.round(222 + lum * 33); g = Math.round(238 + lum * 17); b = 255;
     } else if (lum > 0.50) {
       // Midtone: pale ice-blue
-      r = Math.round(130 + lum * 105); g = Math.round(168 + lum * 78); b = Math.round(210 + lum * 42);
+      r = Math.round(108 + lum * 122); g = Math.round(150 + lum * 92);  b = Math.round(198 + lum * 54);
     } else {
       // Shadow: deep ocean blue
-      r = Math.round(18  + lum * 118); g = Math.round(45  + lum * 148); b = Math.round(105 + lum * 125);
+      r = Math.round(8   + lum * 130); g = Math.round(28  + lum * 165); b = Math.round(88  + lum * 140);
     }
-    return [Math.min(255,r), Math.min(255,g), Math.min(255,b)];
+    return [Math.min(255, r), Math.min(255, g), Math.min(255, b)];
   }
 
-  // Build triangular facet grid clipped to diamond silhouette
+  // Build facets: rectangular cell grid clipped to rendered text
   function buildFacets() {
-    var s   = isMobile ? 13 : 15;   // cell edge (px) — smaller = more facets
-    var hw  = isMobile ? Math.min(W*0.42, 155) : Math.min(W*0.285, 410);
-    var hh  = isMobile ? Math.min(H*0.38, 290) : Math.min(H*0.445, 490);
-    var dcx = W * 0.5;
-    var dcy = H * 0.44;
-    var exp = 0.72; // px to expand each vertex outward (closes sub-pixel gaps)
+    var s = isMobile ? 5 : 8; // cell size in px
 
-    var arr = [];
-    var x0  = dcx - hw - s * 2;
-    var y0  = dcy - hh - s * 2;
-    var x1  = dcx + hw + s * 2;
-    var y1  = dcy + hh + s * 2;
+    // Render text to offscreen canvas, auto-scale to fill screen nicely
+    var off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    var c = off.getContext('2d');
+    c.fillStyle = '#fff';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
 
-    for (var gy = y0; gy < y1; gy += s) {
-      for (var gx = x0; gx < x1; gx += s) {
-        var v00 = [gx,   gy  ];
-        var v10 = [gx+s, gy  ];
-        var v11 = [gx+s, gy+s];
-        var v01 = [gx,   gy+s];
+    // Auto-size OPENCORE to fill ~83% of screen width
+    var fs1 = isMobile ? Math.floor(W * 0.21) : Math.floor(W * 0.19);
+    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+    var mw1 = c.measureText('OPENCORE').width;
+    var target1 = W * (isMobile ? 0.78 : 0.83);
+    if (Math.abs(mw1 - target1) > 10) {
+      fs1 = Math.floor(fs1 * target1 / mw1);
+      c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+    }
 
-        // Alternate diagonal direction in checkerboard pattern
-        var col = Math.round((gx - x0) / s);
-        var row = Math.round((gy - y0) / s);
-        var alt = (col + row) & 1;
+    // SOFTWARE: proportionally smaller, fills ~60% of screen width
+    var fs2 = Math.floor(fs1 * 0.435);
+    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
+    var mw2 = c.measureText('SOFTWARE').width;
+    var target2 = W * (isMobile ? 0.60 : 0.62);
+    if (Math.abs(mw2 - target2) > 10) {
+      fs2 = Math.floor(fs2 * target2 / mw2);
+    }
 
+    // Draw both words — vertical split: OPENCORE upper, SOFTWARE lower
+    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+    c.fillText('OPENCORE', W * 0.5, H * 0.33);
+    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
+    c.fillText('SOFTWARE', W * 0.5, H * 0.64);
+
+    var data = c.getImageData(0, 0, W, H).data;
+    var arr  = [];
+
+    function alpha(x, y) {
+      var px = Math.max(0, Math.min(W - 1, Math.floor(x)));
+      var py = Math.max(0, Math.min(H - 1, Math.floor(y)));
+      return data[(py * W + px) * 4 + 3];
+    }
+
+    // Depth: fraction of 8 neighbors also in text (0=isolated/edge, 1=fully interior)
+    // Creates 3D bevel: interior = bright top face, edges = dark side faces
+    function depth8(gx, gy) {
+      var cx = gx + s * 0.5, cy = gy + s * 0.5, hit = 0;
+      for (var dy = -s; dy <= s; dy += s) {
+        for (var dx = -s; dx <= s; dx += s) {
+          if (dx === 0 && dy === 0) continue;
+          if (alpha(cx + dx, cy + dy) > 60) hit++;
+        }
+      }
+      return hit / 8;
+    }
+
+    var exp = 0.65; // vertex expansion in px → closes sub-pixel antialiasing gaps
+
+    for (var gy = 0; gy < H; gy += s) {
+      for (var gx = 0; gx < W; gx += s) {
+        if (alpha(gx + s * 0.5, gy + s * 0.5) < 70) continue;
+
+        var dep = depth8(gx, gy);
+        var row = Math.round(gy / s), col = Math.round(gx / s);
+        var alt = (row + col) & 1; // checkerboard diagonal direction
+
+        var v00=[gx,gy], v10=[gx+s,gy], v11=[gx+s,gy+s], v01=[gx,gy+s];
         var pairs = alt === 0
-          ? [[v00,v10,v01],[v10,v11,v01]]   // upper-left + lower-right
-          : [[v00,v10,v11],[v00,v11,v01]];  // upper-right + lower-left
+          ? [[v00, v10, v01], [v10, v11, v01]]   // upper-left + lower-right
+          : [[v00, v10, v11], [v00, v11, v01]];  // upper-right + lower-left
 
         for (var pi = 0; pi < 2; pi++) {
           var verts = pairs[pi];
           var tcx = (verts[0][0] + verts[1][0] + verts[2][0]) / 3;
           var tcy = (verts[0][1] + verts[1][1] + verts[2][1]) / 3;
-          var nx  = (tcx - dcx) / hw;
-          var ny  = (tcy - dcy) / hh;
+          var col2 = facetColor(tcx, tcy, dep);
 
-          // Diamond silhouette filter (rhombus: |nx|+|ny| <= 1)
-          if (Math.abs(nx) + Math.abs(ny) > 0.990) continue;
-
-          // Expand vertices slightly outward from centroid to close sub-pixel gaps
-          var ev = [0,1,2].map(function(i) {
+          // Expand each vertex 0.65px outward from centroid → no sub-pixel gaps at assembly
+          var ev = [0, 1, 2].map(function(i) {
             var dx = verts[i][0] - tcx, dy = verts[i][1] - tcy;
-            var len = Math.sqrt(dx*dx+dy*dy) || 1;
-            return [tcx + dx*(1+exp/len), tcy + dy*(1+exp/len)];
+            var len = Math.sqrt(dx * dx + dy * dy) || 1;
+            return [tcx + dx * (1 + exp / len), tcy + dy * (1 + exp / len)];
           });
 
-          var col2 = facetColor(nx, ny, tcx, tcy);
-          // Scatter: start at random distance/angle from assembled position
+          // Scatter start: random direction + distance from assembled position
           var ang  = Math.random() * Math.PI * 2;
-          var dist = (0.55 + Math.random() * 0.9) * Math.max(W, H) * 0.72;
+          var dist = (0.5 + Math.random() * 1.1) * Math.max(W, H) * 0.76;
 
           arr.push({
             tx: tcx, ty: tcy,
             sx: tcx + Math.cos(ang) * dist,
             sy: tcy + Math.sin(ang) * dist,
-            srot: (Math.random() - 0.5) * Math.PI * 3.2,
-            // vertices relative to centroid (constant, used for drawing)
-            verts: ev.map(function(v){ return [v[0]-tcx, v[1]-tcy]; }),
+            srot: (Math.random() - 0.5) * Math.PI * 3.8,
+            verts: ev.map(function(v) { return [v[0] - tcx, v[1] - tcy]; }),
             col: col2,
-            d:   Math.random() * 0.26   // stagger delay per fragment
+            d: Math.random() * 0.26 // stagger delay (0..0.26)
           });
         }
       }
@@ -1174,26 +1206,20 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     return arr;
   }
 
-  // Draw one facet at position (x,y) with rotation rot and alpha
-  function drawFacet(f, x, y, rot, alpha) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'rgb(' + f.col[0] + ',' + f.col[1] + ',' + f.col[2] + ')';
+  // Draw one facet without ctx.save/restore (fast path)
+  // Manual rotation: avoids ctx matrix push/pop overhead
+  function drawFacet(f, x, y, rot, al) {
+    if (x < -80 || x > W + 80 || y < -80 || y > H + 80) return; // cull off-screen
+    var cos = Math.cos(rot), sin = Math.sin(rot);
+    var v = f.verts;
+    ctx.globalAlpha = al;
+    ctx.fillStyle   = 'rgb(' + f.col[0] + ',' + f.col[1] + ',' + f.col[2] + ')';
     ctx.beginPath();
-    ctx.moveTo(f.verts[0][0], f.verts[0][1]);
-    ctx.lineTo(f.verts[1][0], f.verts[1][1]);
-    ctx.lineTo(f.verts[2][0], f.verts[2][1]);
+    ctx.moveTo(v[0][0]*cos - v[0][1]*sin + x,  v[0][0]*sin + v[0][1]*cos + y);
+    ctx.lineTo(v[1][0]*cos - v[1][1]*sin + x,  v[1][0]*sin + v[1][1]*cos + y);
+    ctx.lineTo(v[2][0]*cos - v[2][1]*sin + x,  v[2][0]*sin + v[2][1]*cos + y);
     ctx.closePath();
     ctx.fill();
-    // Subtle facet edge — only when nearly assembled (keeps look clean)
-    if (alpha > 0.60) {
-      ctx.strokeStyle = 'rgba(210,235,255,' + (alpha * 0.09) + ')';
-      ctx.lineWidth   = 0.4;
-      ctx.stroke();
-    }
-    ctx.restore();
   }
 
   function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
@@ -1205,28 +1231,25 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   }, { passive: false });
 
   var ty0 = 0;
-  splash.addEventListener('touchstart', function(e){ ty0 = e.touches[0].clientY; }, {passive:true});
-  splash.addEventListener('touchmove', function(e){
+  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
+  splash.addEventListener('touchmove', function(e) {
     var dy = ty0 - e.touches[0].clientY;
     ty0 = e.touches[0].clientY;
     targetProg = Math.max(0, Math.min(1, targetProg + dy / 290));
-  }, {passive:true});
+  }, { passive: true });
 
-  // Mobile: auto-assemble after 1.2 s
-  if (isMobile) { setTimeout(function(){ targetProg = 1; }, 1200); }
+  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1100); }
 
   // ── Explosion on ENTRAR ────────────────────────────────────────────────────
   window._splashExplode = function() {
     exploding = true;
     for (var i = 0; i < facets.length; i++) {
       var f = facets[i];
-      f.ex = f.tx; f.ey = f.ty;   // explode FROM assembled position
+      f.ex = f.tx; f.ey = f.ty; // explode FROM assembled position
       var ang = Math.random() * Math.PI * 2;
-      var spd = 3.5 + Math.random() * 11;
-      f.vx   = Math.cos(ang) * spd;
-      f.vy   = Math.sin(ang) * spd;
-      f.erot = 0;
-      f.rotv = (Math.random() - 0.5) * 0.13;
+      var spd = 3.5 + Math.random() * 13;
+      f.vx = Math.cos(ang) * spd; f.vy = Math.sin(ang) * spd;
+      f.erot = 0; f.rotv = (Math.random() - 0.5) * 0.15;
     }
   };
 
@@ -1235,73 +1258,69 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     raf = requestAnimationFrame(draw);
     prog += (targetProg - prog) * 0.058;
     time += 0.016;
-
     ctx.globalAlpha = 1;
     ctx.clearRect(0, 0, W, H);
 
-    // Ambient inner glow — emerges with the diamond
+    // Subtle ambient glow emerges with the letters
     if (prog > 0.18) {
-      var ga  = Math.min(1, (prog-0.18)/0.82) * 0.17;
-      var dcx = W * 0.5, dcy = H * 0.44;
-      var gr  = ctx.createRadialGradient(dcx, dcy - H*0.07, 0, dcx, dcy, W*0.40);
-      gr.addColorStop(0,    'rgba(175,220,255,' + ga + ')');
-      gr.addColorStop(0.45, 'rgba(70,130,215,'  + (ga*0.48) + ')');
+      var ga = Math.min(1, (prog - 0.18) / 0.82) * 0.13;
+      var gr = ctx.createRadialGradient(W*0.5, H*0.47, 0, W*0.5, H*0.47, W*0.52);
+      gr.addColorStop(0,    'rgba(155, 210, 255, ' + ga + ')');
+      gr.addColorStop(0.45, 'rgba(55, 115, 210, '  + (ga * 0.42) + ')');
       gr.addColorStop(1,    'transparent');
       ctx.fillStyle = gr;
       ctx.fillRect(0, 0, W, H);
     }
 
-    // Slow light-sweep across the assembled diamond (gem shimmer)
-    if (prog > 0.88) {
-      var phase = (time * 0.22) % 3.0;
-      if (phase < 2.2) {
-        var sx = W * (-0.25 + phase * 0.68);
-        var sg = ctx.createLinearGradient(sx - 55, 0, sx + 55, H);
+    // Slow light-sweep shimmer across assembled letters (gem light play)
+    if (prog > 0.87) {
+      var phase = (time * 0.20) % 3.2;
+      if (phase < 2.4) {
+        var sx = W * (-0.3 + phase * 0.66);
+        var sg = ctx.createLinearGradient(sx - 50, 0, sx + 50, H);
         sg.addColorStop(0,   'transparent');
-        sg.addColorStop(0.5, 'rgba(220,242,255,0.055)');
+        sg.addColorStop(0.5, 'rgba(220, 242, 255, 0.05)');
         sg.addColorStop(1,   'transparent');
-        ctx.fillStyle  = sg;
+        ctx.fillStyle   = sg;
         ctx.globalAlpha = 1;
         ctx.fillRect(0, 0, W, H);
       }
     }
 
-    // Draw all facets
+    // Draw facets
     for (var i = 0; i < facets.length; i++) {
       var f = facets[i];
 
       if (exploding) {
-        // Physics explosion from assembled positions
-        f.ex  += f.vx;  f.ey  += f.vy;
-        f.vx  *= 0.974; f.vy  *= 0.974;
+        f.ex += f.vx; f.ey += f.vy;
+        f.vx *= 0.974; f.vy *= 0.974;
         f.erot += f.rotv;
-        var dx   = f.ex - W * 0.5, dy = f.ey - H * 0.5;
-        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy) / (Math.max(W,H)*0.82));
+        var dx = f.ex - W * 0.5, dy = f.ey - H * 0.5;
+        var fade = Math.max(0, 1 - Math.sqrt(dx*dx + dy*dy) / (Math.max(W,H) * 0.82));
         if (fade > 0.01) drawFacet(f, f.ex, f.ey, f.erot, fade);
         continue;
       }
 
-      // DIRECT LERP — guarantees x=tx, y=ty, rot=0 when prog=1 (zero gaps)
+      // Direct lerp — x=tx, y=ty, rot=0 at prog=1 → perfect zero-gap assembly
       var ef  = Math.max(0, Math.min(1, (prog - f.d) / (1.0 - f.d + 1e-5)));
       var t   = ease(ef);
-      var x   = f.sx + (f.tx - f.sx) * t;
-      var y   = f.sy + (f.ty - f.sy) * t;
-      var rot = f.srot * (1 - t);
-
-      drawFacet(f, x, y, rot, 0.10 + t * 0.88);
+      drawFacet(f,
+        f.sx + (f.tx - f.sx) * t,
+        f.sy + (f.ty - f.sy) * t,
+        f.srot * (1 - t),
+        0.10 + t * 0.88
+      );
     }
 
-    // UI element visibility
+    // UI visibility
     var btn  = document.getElementById('splash-enter');
     var hint = document.getElementById('splash-hint');
-    var txt  = document.getElementById('splash-text');
     if (btn) {
       var show = prog > 0.68;
-      if (show  && btn.style.opacity !== '1') { btn.style.opacity='1'; btn.style.pointerEvents='all'; }
-      if (!show && btn.style.opacity !== '0') { btn.style.opacity='0'; btn.style.pointerEvents='none'; }
+      if (show  && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
+      if (!show && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
     }
-    if (hint) hint.style.opacity = prog < 0.33 ? '1' : '0';
-    if (txt)  txt.style.opacity  = prog > 0.74 ? '1' : '0';
+    if (hint) hint.style.opacity = prog < 0.32 ? '1' : '0';
   }
 
   function init() { facets = buildFacets(); draw(); }
@@ -1310,7 +1329,7 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   window.addEventListener('resize', function() {
     resize();
     cancelAnimationFrame(raf);
-    document.fonts.ready.then(function(){ facets = buildFacets(); draw(); });
+    document.fonts.ready.then(function() { facets = buildFacets(); draw(); });
   });
 
   window._stopNucleus = function() {
@@ -1319,7 +1338,7 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   };
 })();
 
-// ── Splash enter ────────────────────────────────────────────────────────────
+// ── Enter dashboard ────────────────────────────────────────────────────────
 window.enterDashboard = function() {
   var splash = document.getElementById('splash');
   splash.style.pointerEvents = 'none';
@@ -1330,9 +1349,9 @@ window.enterDashboard = function() {
     setTimeout(function() {
       splash.style.display = 'none';
       window._stopNucleus && window._stopNucleus();
-      setTimeout(function(){ if(window._sndEnter) window._sndEnter(); }, 80);
-      setTimeout(function(){ if(typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
-      setTimeout(function(){ if(typeof _startPolling==='function') _startPolling(); }, 2500);
+      setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
+      setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
+      setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2500);
     }, 750);
   }, 350);
 };
