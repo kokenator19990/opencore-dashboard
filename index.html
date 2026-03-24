@@ -2190,25 +2190,24 @@ let _commentCache = []; // cache local del servidor
 
 function saveComment(text, files) {
   files = files || [];
-  withName(async function(name) {
+  withName(function(name) {
     const today = new Date().toLocaleDateString('es-CL');
-    _commentCache.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), author: name, text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today });
+    const entry = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), author: name, text: text, files: files, date: new Date().toLocaleString('es-CL'), day: today };
+    _commentCache.push(entry);
     if (_commentCache.length > 50) _commentCache.splice(0, _commentCache.length - 50);
-    try {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(_commentCache)
-      });
-      localStorage.setItem('oc_last_comment_day', today);
-      if (text) pushNotify('OpenCORE — Nuevo comentario de ' + name, text.slice(0, 80), 'speech_balloon');
-    } catch(e) {
-      _commentCache.pop();
-      alert('Error al guardar. Verifica tu conexión a internet.');
-      return;
-    }
+    // Render instantly (optimistic)
     renderComments();
     checkCommentDot();
+    // Save in background
+    fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(_commentCache) })
+      .then(function() {
+        localStorage.setItem('oc_last_comment_day', today);
+        if (text) pushNotify('OpenCORE — Nuevo comentario de ' + name, text.slice(0, 80), 'speech_balloon');
+      })
+      .catch(function() {
+        _commentCache.splice(_commentCache.indexOf(entry), 1);
+        renderComments();
+      });
   });
 }
 
@@ -2514,7 +2513,7 @@ window.cancelEditTarea = function(id) {
   _editingTareaId = null;
   renderTareas();
 };
-window.saveEditTarea = async function(id) {
+window.saveEditTarea = function(id) {
   var inp = document.getElementById('tinp-' + id);
   var t   = _tareasCache.find(function(x) { return x.id === id; });
   if (!inp || !t) return;
@@ -2522,9 +2521,11 @@ window.saveEditTarea = async function(id) {
   if (!newTitle) return;
   t.titulo = newTitle;
   _editingTareaId = null;
-  await _saveTareas();
   if (window._sndSuccess) window._sndSuccess();
+  // Render instantly
   renderTareas();
+  // Save in background
+  _saveTareas();
 };
 
 // ── Adjuntar / borrar archivos en tarea existente ─────────────────────────
@@ -3394,22 +3395,22 @@ window._setTareasTab = function(tab) {
   renderTareas();
 };
 
-window.eliminarDeHistorial = async function(tipo, id) {
+window.eliminarDeHistorial = function(tipo, id) {
   if (tipo === 'comp') {
-    // Es una completada en _tareasCache → eliminar definitivamente
     const t = _tareasCache.find(x => x.id === id);
     if (!t) return;
     _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
     _saveHistorial();
     _tareasCache = _tareasCache.filter(x => x.id !== id);
-    await _saveTareas();
+    renderTareas();
+    checkTareasDot();
+    _saveTareas();
   } else {
-    // Está en _historialCache → solo borrar del historial
     _historialCache = _historialCache.filter(x => x.id !== id);
     _saveHistorial();
+    renderTareas();
+    checkTareasDot();
   }
-  renderTareas();
-  checkTareasDot();
 };
 
 window.limpiarHistorialEliminadas = function() {
@@ -3458,7 +3459,7 @@ window.addTarea = function(e) {
   const titulo = document.getElementById('tarea-titulo').value.trim();
   if (!titulo) return;
   const prioBtn = document.getElementById('tarea-prio-btn');
-  withName(async function(name) {
+  withName(function(name) {
     const descEl = document.getElementById('tarea-desc');
     _tareasCache.push({
       id: Date.now().toString(),
@@ -3473,8 +3474,7 @@ window.addTarea = function(e) {
       comentarios: []
     });
     _tareaFiles = [];
-    await _saveTareas();
-    pushNotify('OpenCORE — Nueva tarea asignada', name + ': ' + titulo, 'clipboard');
+    // Clear form + render instantly
     document.getElementById('tarea-titulo').value = '';
     if (descEl) descEl.value = '';
     const prevEl = document.getElementById('tarea-attach-preview');
@@ -3484,10 +3484,13 @@ window.addTarea = function(e) {
     prioBtn.style.borderColor = 'rgba(255,255,255,0.1)';
     renderTareas();
     checkTareasDot();
+    // Save in background
+    _saveTareas();
+    pushNotify('OpenCORE — Nueva tarea asignada', name + ': ' + titulo, 'clipboard');
   });
 };
 
-window.toggleTarea = async function(id) {
+window.toggleTarea = function(id) {
   const t = _tareasCache.find(t => t.id === id);
   if (!t) return;
   const wasCompleted = t.estado === 'completada';
@@ -3495,14 +3498,16 @@ window.toggleTarea = async function(id) {
   t.fecha_completada = t.estado === 'completada' ? new Date().toLocaleDateString('es-CL') : null;
   if (t.estado === 'completada') { if (window._sndToggleOn) window._sndToggleOn(); }
   else { if (window._sndToggleOff) window._sndToggleOff(); }
-  await _saveTareas();
-  if (t.estado === 'completada') pushNotify('OpenCORE — Tarea completada ✓', t.titulo, 'white_check_mark');
+  // Render instantly
   renderTareas();
   checkTareasDot();
   if (typeof renderTareasInline === 'function') renderTareasInline();
+  // Save in background
+  _saveTareas();
+  if (t.estado === 'completada') pushNotify('OpenCORE — Tarea completada ✓', t.titulo, 'white_check_mark');
 };
 
-window.addTareaComment = async function(id) {
+window.addTareaComment = function(id) {
   const input = document.getElementById('tc-' + id);
   const texto = input ? input.value.trim() : '';
   if (!texto) return;
@@ -3511,8 +3516,10 @@ window.addTareaComment = async function(id) {
   if (!t.comentarios) t.comentarios = [];
   t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
   _expandedTareaId = null;
-  await _saveTareas();
+  // Render instantly
   renderTareas();
+  // Save in background
+  _saveTareas();
 };
 
 // Enter key on tarea comment inputs
@@ -3524,16 +3531,18 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-window._deleteTareaConfirmed = async function(id) {
+window._deleteTareaConfirmed = function(id) {
   const t = _tareasCache.find(x => x.id === id);
   if (t) {
     _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada || null, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
     _saveHistorial();
   }
   _tareasCache = _tareasCache.filter(t => t.id !== id);
-  await _saveTareas();
+  // Render instantly
   renderTareas();
   checkTareasDot();
+  // Save in background
+  _saveTareas();
 };
 
 // ── Notificaciones del sistema ────────────────────────────────────────────
