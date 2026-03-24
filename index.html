@@ -1027,7 +1027,7 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
 
   <!-- Corner accents -->
-  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.22;" xmlns="http://www.w3.org/2000/svg">
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.25;" xmlns="http://www.w3.org/2000/svg">
     <line x1="0" y1="0" x2="80" y2="0" stroke="#00E5FF" stroke-width="0.8"/>
     <line x1="0" y1="0" x2="0" y2="50" stroke="#00E5FF" stroke-width="0.8"/>
     <line x1="100%" y1="100%" x2="calc(100% - 80px)" y2="100%" stroke="#00E5FF" stroke-width="0.8"/>
@@ -1047,15 +1047,19 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </style>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
-//  GEOMETRIC PARTICLE TEXT — OPENCORE SOFTWARE
-//  Hundreds of neon geometric shapes that form the text on scroll
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+//  OPENCORE — DIAMOND CRYSTAL PARTICLE SCULPTURE
+//  Thousands of geometric shapes form bold text + gem-cut diamond frame
+// ═══════════════════════════════════════════════════════════════════════════
 (function() {
   var canvas = document.getElementById('nucleus-canvas');
   var ctx    = canvas.getContext('2d');
   var splash = document.getElementById('splash');
   var W, H, dpr, isMobile;
+  var particles = [];
+  var prog = 0, targetProg = 0;
+  var exploding = false;
+  var time = 0, raf;
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1070,7 +1074,24 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   }
   resize();
 
-  // ── Sample text pixels ────────────────────────────────────────────────
+  // ── Color palettes ────────────────────────────────────────────────────────
+  var PAL_TEXT = [
+    [0,229,255],[0,229,255],[0,229,255],[0,229,255],[0,229,255],
+    [10,210,248],[20,200,240],
+    [160,20,255],[190,40,255],
+    [255,38,110],[255,65,130],
+    [57,255,20],[229,255,0]
+  ];
+  var PAL_SCULPT = [
+    [255,184,0],[255,168,0],[255,152,0],[255,140,0],
+    [255,255,255],[230,245,255],
+    [0,229,255],
+    [0,255,140],[20,255,120]
+  ];
+  var SHAPES_TEXT   = ['tri','sq','dia','hex','ring','sq','tri','dia','sq','tri'];
+  var SHAPES_SCULPT = ['dia','ring','dia','tri','ring','dia'];
+
+  // ── Dense text pixel sampling (step 2 = very thick filled letters) ────────
   function sampleText() {
     var off = document.createElement('canvas');
     off.width = W; off.height = H;
@@ -1079,83 +1100,172 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     c.textAlign = 'center';
     c.textBaseline = 'middle';
 
-    var fs1 = isMobile ? Math.floor(W * 0.19) : Math.min(Math.floor(W * 0.145), 210);
-    var fs2 = isMobile ? Math.floor(W * 0.082) : Math.min(Math.floor(W * 0.063), 94);
-    var step = isMobile ? 5 : 4;
+    var fs1  = isMobile ? Math.floor(W * 0.175) : Math.min(Math.floor(W * 0.152), 225);
+    var fs2  = isMobile ? Math.floor(W * 0.078) : Math.min(Math.floor(W * 0.065), 100);
+    var step = isMobile ? 3 : 2;
 
-    c.font = '900 ' + fs1 + 'px \"Space Grotesk\", sans-serif';
-    c.fillText('OPENCORE', W * 0.5, H * 0.40);
-    c.font = '600 ' + fs2 + 'px \"Space Grotesk\", sans-serif';
-    c.fillText('SOFTWARE', W * 0.5, H * 0.625);
+    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
+    c.fillText('OPENCORE', W * 0.5, H * 0.385);
+    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
+    c.fillText('SOFTWARE', W * 0.5, H * 0.618);
 
     var data = c.getImageData(0, 0, W, H).data;
     var pts  = [];
     for (var y = 0; y < H; y += step) {
       for (var x = 0; x < W; x += step) {
-        if (data[(y * W + x) * 4 + 3] > 115) {
-          pts.push([x + (Math.random()-0.5)*step*0.6, y + (Math.random()-0.5)*step*0.6]);
+        if (data[(y * W + x) * 4 + 3] > 85) {
+          pts.push([
+            x + (Math.random()-0.5)*step*0.45,
+            y + (Math.random()-0.5)*step*0.45
+          ]);
         }
       }
     }
-    // Fisher-Yates shuffle
     for (var i = pts.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
     }
-    return pts.slice(0, isMobile ? 750 : 1500);
+    return pts.slice(0, isMobile ? 1800 : 3800);
   }
 
-  // ── Neon palette (weighted toward cyan) ───────────────────────────────────────────
-  var PAL = [
-    [0,229,255],[0,229,255],[0,229,255],[20,210,245],
-    [178,0,255],[255,42,109],[57,255,20],[229,255,0],[0,180,255]
-  ];
-  var SHAPES = ['tri','sq','dia','hex','ring','sq','tri','dia'];
+  // ── Gem-cut diamond sculpture ─────────────────────────────────────────────
+  function buildSculpture() {
+    var cx = W * 0.5;
+    var cy = H * 0.5;
+    var hw = W * 0.46;
+    var hh = H * 0.455;
 
-  var particles = [];
+    var vT = [cx,      cy - hh];
+    var vR = [cx + hw, cy     ];
+    var vB = [cx,      cy + hh];
+    var vL = [cx - hw, cy     ];
 
+    var mTR = [(vT[0]+vR[0])/2, (vT[1]+vR[1])/2];
+    var mRB = [(vR[0]+vB[0])/2, (vR[1]+vB[1])/2];
+    var mBL = [(vB[0]+vL[0])/2, (vB[1]+vL[1])/2];
+    var mLT = [(vL[0]+vT[0])/2, (vL[1]+vT[1])/2];
+
+    var pts = [];
+
+    function linePts(x1, y1, x2, y2, n, jit) {
+      jit = jit || 0;
+      for (var i = 0; i <= n; i++) {
+        var t = i / n;
+        pts.push([
+          x1 + (x2-x1)*t + (Math.random()-0.5)*jit,
+          y1 + (y2-y1)*t + (Math.random()-0.5)*jit
+        ]);
+      }
+    }
+
+    var ne = isMobile ? 52 : 90;
+    var nf = isMobile ? 30 : 55;
+    var ni = isMobile ? 22 : 42;
+
+    // 1. Outer diamond outline (4 edges)
+    linePts(vT[0],vT[1], vR[0],vR[1], ne, 2);
+    linePts(vR[0],vR[1], vB[0],vB[1], ne, 2);
+    linePts(vB[0],vB[1], vL[0],vL[1], ne, 2);
+    linePts(vL[0],vL[1], vT[0],vT[1], ne, 2);
+
+    // 2. Main diagonal facets (gem-cut cross)
+    linePts(mLT[0],mLT[1], mRB[0],mRB[1], nf, 1.5);
+    linePts(mTR[0],mTR[1], mBL[0],mBL[1], nf, 1.5);
+
+    // 3. Horizontal cross-cuts (upper and lower zones)
+    linePts(mLT[0],mLT[1], mTR[0],mTR[1], nf, 1.5);
+    linePts(mBL[0],mBL[1], mRB[0],mRB[1], nf, 1.5);
+
+    // 4. Vertical side lines of inner frame
+    linePts(mLT[0],mLT[1], mBL[0],mBL[1], ni, 1.5);
+    linePts(mTR[0],mTR[1], mRB[0],mRB[1], ni, 1.5);
+
+    // 5. Inner rectangle outline (midpoints of diamond edges)
+    linePts(mLT[0],mLT[1], mTR[0],mTR[1], ni, 1);
+    linePts(mTR[0],mTR[1], mRB[0],mRB[1], ni, 1);
+    linePts(mRB[0],mRB[1], mBL[0],mBL[1], ni, 1);
+    linePts(mBL[0],mBL[1], mLT[0],mLT[1], ni, 1);
+
+    // 6. Vertex clusters at 4 diamond tips
+    function cluster(px, py, r, n) {
+      for (var i = 0; i < n; i++) {
+        var ang = Math.random() * Math.PI * 2;
+        pts.push([px + Math.cos(ang)*Math.random()*r, py + Math.sin(ang)*Math.random()*r]);
+      }
+    }
+    var nc = isMobile ? 18 : 36;
+    var cr = isMobile ? 16 : 28;
+    cluster(vT[0], vT[1], cr, nc);
+    cluster(vR[0], vR[1], cr, nc);
+    cluster(vB[0], vB[1], cr, nc);
+    cluster(vL[0], vL[1], cr, nc);
+
+    // 7. Center ring (behind text)
+    var nring = isMobile ? 50 : 90;
+    var rr = Math.min(W, H) * (isMobile ? 0.072 : 0.085);
+    for (var i = 0; i < nring; i++) {
+      var ang = (i / nring) * Math.PI * 2;
+      pts.push([cx + Math.cos(ang)*rr, cy + Math.sin(ang)*rr]);
+    }
+
+    // 8. Mini ornament diamonds at edge midpoints
+    function miniDia(px, py, r, n) {
+      for (var i = 0; i < n; i++) {
+        var ang = (i / n) * Math.PI * 2;
+        var radF = Math.abs(Math.cos(ang * 2)) * 0.5 + 0.5;
+        pts.push([px + Math.cos(ang)*r*radF, py + Math.sin(ang)*r*radF]);
+      }
+    }
+    var nm = isMobile ? 14 : 26;
+    var mr = isMobile ? 12 : 22;
+    miniDia(mTR[0], mTR[1], mr, nm);
+    miniDia(mRB[0], mRB[1], mr, nm);
+    miniDia(mBL[0], mBL[1], mr, nm);
+    miniDia(mLT[0], mLT[1], mr, nm);
+
+    return pts;
+  }
+
+  // ── Instantiate all particles ─────────────────────────────────────────────
   function buildParticles() {
-    var pts = sampleText();
+    var textPts   = sampleText();
+    var sculptPts = buildSculpture();
     particles = [];
-    for (var i = 0; i < pts.length; i++) {
-      var col = PAL[Math.floor(Math.random() * PAL.length)];
+
+    for (var i = 0; i < textPts.length; i++) {
+      var col = PAL_TEXT[Math.floor(Math.random() * PAL_TEXT.length)];
       particles.push({
-        x:  Math.random() * W,
-        y:  Math.random() * H,
-        tx: pts[i][0],
-        ty: pts[i][1],
-        vx: (Math.random()-0.5) * 1.3,
-        vy: (Math.random()-0.5) * 1.3,
-        shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
-        size:  1.6 + Math.random() * 3.2,
+        x:  Math.random() * W * 1.8 - W * 0.4,
+        y:  Math.random() * H * 1.8 - H * 0.4,
+        tx: textPts[i][0], ty: textPts[i][1],
+        vx: (Math.random()-0.5)*1.3, vy: (Math.random()-0.5)*1.3,
+        shape: SHAPES_TEXT[Math.floor(Math.random() * SHAPES_TEXT.length)],
+        size:  1.7 + Math.random() * 3.3,
         rot:   Math.random() * Math.PI * 2,
-        rotS:  (Math.random()-0.5) * 0.028,
+        rotS:  (Math.random()-0.5) * 0.026,
         col:   col,
-        d:     Math.random() * 0.28
+        d:     Math.random() * 0.26
+      });
+    }
+
+    for (var i = 0; i < sculptPts.length; i++) {
+      var col = PAL_SCULPT[Math.floor(Math.random() * PAL_SCULPT.length)];
+      particles.push({
+        x:  Math.random() * W * 1.8 - W * 0.4,
+        y:  Math.random() * H * 1.8 - H * 0.4,
+        tx: sculptPts[i][0], ty: sculptPts[i][1],
+        vx: (Math.random()-0.5)*1.1, vy: (Math.random()-0.5)*1.1,
+        shape: SHAPES_SCULPT[Math.floor(Math.random() * SHAPES_SCULPT.length)],
+        size:  2.0 + Math.random() * 3.2,
+        rot:   Math.random() * Math.PI * 2,
+        rotS:  (Math.random()-0.5) * 0.02,
+        col:   col,
+        d:     0.04 + Math.random() * 0.18
       });
     }
   }
 
-  // ── Scroll / touch progress ─────────────────────────────────────────────────
-  var prog = 0, targetProg = 0;
-
-  splash.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 550));
-  }, { passive: false });
-
-  var ty0 = 0;
-  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
-  splash.addEventListener('touchmove', function(e) {
-    var dy = ty0 - e.touches[0].clientY;
-    ty0 = e.touches[0].clientY;
-    targetProg = Math.max(0, Math.min(1, targetProg + dy / 320));
-  }, { passive: true });
-
-  // Mobile: auto-assemble after 1.6s
-  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1600); }
-
-  // ── Draw a single geometric shape ────────────────────────────────────────────────
+  // ── Draw geometric shape ──────────────────────────────────────────────────
   function geo(shape, x, y, s, rot, r, g, b, a) {
     ctx.save();
     ctx.translate(x, y);
@@ -1163,116 +1273,119 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
     ctx.globalAlpha = a;
     ctx.fillStyle   = 'rgb(' + r + ',' + g + ',' + b + ')';
     ctx.strokeStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
-    ctx.lineWidth   = Math.max(0.7, s * 0.32);
+    ctx.lineWidth   = Math.max(0.8, s * 0.38);
     switch (shape) {
       case 'tri':
         ctx.beginPath();
         ctx.moveTo(0,-s); ctx.lineTo(s*0.866,s*0.5); ctx.lineTo(-s*0.866,s*0.5);
         ctx.closePath(); ctx.fill(); break;
       case 'sq':
-        ctx.fillRect(-s*0.54,-s*0.54,s*1.08,s*1.08); break;
+        ctx.fillRect(-s*0.56,-s*0.56,s*1.12,s*1.12); break;
       case 'dia':
         ctx.beginPath();
-        ctx.moveTo(0,-s); ctx.lineTo(s*0.6,0); ctx.lineTo(0,s); ctx.lineTo(-s*0.6,0);
+        ctx.moveTo(0,-s*1.1); ctx.lineTo(s*0.65,0); ctx.lineTo(0,s*1.1); ctx.lineTo(-s*0.65,0);
         ctx.closePath(); ctx.fill(); break;
       case 'hex':
         ctx.beginPath();
-        for (var i=0;i<6;i++){var ang=i*Math.PI/3; if(i===0)ctx.moveTo(s*Math.cos(ang),s*Math.sin(ang)); else ctx.lineTo(s*Math.cos(ang),s*Math.sin(ang));}
+        for (var i=0;i<6;i++){var ang=i*Math.PI/3;if(i===0)ctx.moveTo(s*Math.cos(ang),s*Math.sin(ang));else ctx.lineTo(s*Math.cos(ang),s*Math.sin(ang));}
         ctx.closePath(); ctx.fill(); break;
       case 'ring':
-        ctx.beginPath(); ctx.arc(0,0,s*0.88,0,Math.PI*2); ctx.stroke(); break;
+        ctx.beginPath(); ctx.arc(0,0,s*0.9,0,Math.PI*2); ctx.stroke(); break;
     }
     ctx.restore();
   }
 
   function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
-  // ── Explosion state ───────────────────────────────────────────────────────────────────
-  var exploding = false;
+  // ── Progress: scroll (desktop) / touch (mobile) ───────────────────────────
+  splash.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 520));
+  }, { passive: false });
+
+  var ty0 = 0;
+  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
+  splash.addEventListener('touchmove', function(e) {
+    var dy = ty0 - e.touches[0].clientY;
+    ty0 = e.touches[0].clientY;
+    targetProg = Math.max(0, Math.min(1, targetProg + dy / 300));
+  }, { passive: true });
+
+  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1500); }
+
+  // ── Explosion on ENTRAR ───────────────────────────────────────────────────
   window._splashExplode = function() {
     exploding = true;
-    for (var i=0;i<particles.length;i++){
-      var ang = Math.random()*Math.PI*2;
-      var spd = 3 + Math.random()*10;
-      particles[i].vx = Math.cos(ang)*spd;
-      particles[i].vy = Math.sin(ang)*spd;
+    for (var i = 0; i < particles.length; i++) {
+      var ang = Math.random() * Math.PI * 2;
+      var spd = 4 + Math.random() * 12;
+      particles[i].vx = Math.cos(ang) * spd;
+      particles[i].vy = Math.sin(ang) * spd;
     }
   };
 
-  // ── Main animation loop ───────────────────────────────────────────────────────────────────
-  var raf, time = 0;
-
+  // ── Main animation loop ───────────────────────────────────────────────────
   function draw() {
     raf = requestAnimationFrame(draw);
-    prog += (targetProg - prog) * 0.058;
+    prog += (targetProg - prog) * 0.06;
     time += 0.016;
-
     ctx.clearRect(0, 0, W, H);
 
-    // Ambient glow behind formed text
-    if (prog > 0.3) {
-      var ga = Math.min(1, (prog-0.3)/0.7) * 0.11;
-      var gr = ctx.createRadialGradient(W*0.5,H*0.38,0, W*0.5,H*0.5, W*0.58);
-      gr.addColorStop(0,   'rgba(0,180,255,'+(ga)+')');
-      gr.addColorStop(0.5, 'rgba(110,0,200,'+(ga*0.5)+')');
-      gr.addColorStop(1,   'transparent');
+    // Crystal glow
+    if (prog > 0.25) {
+      var ga = Math.min(1, (prog-0.25)/0.75) * 0.13;
+      var gr = ctx.createRadialGradient(W*0.5, H*0.38, 0, W*0.5, H*0.5, W*0.6);
+      gr.addColorStop(0,    'rgba(0,180,255,' + ga + ')');
+      gr.addColorStop(0.45, 'rgba(120,0,220,' + (ga*0.55) + ')');
+      gr.addColorStop(1,    'transparent');
       ctx.fillStyle = gr;
-      ctx.fillRect(0,0,W,H);
+      ctx.fillRect(0, 0, W, H);
     }
 
-    for (var i=0;i<particles.length;i++) {
+    for (var i = 0; i < particles.length; i++) {
       var p = particles[i];
       var r = p.col[0], g = p.col[1], b = p.col[2];
 
       if (exploding) {
         p.x += p.vx; p.y += p.vy;
-        p.vx *= 0.974; p.vy *= 0.974;
+        p.vx *= 0.972; p.vy *= 0.972;
         p.rot += p.rotS * 5;
         var dx = p.x - W*0.5, dy = p.y - H*0.5;
-        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy)/(W*0.85));
-        if (fade > 0) geo(p.shape,p.x,p.y,p.size,p.rot,r,g,b,fade*0.88);
+        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy)/(W*0.88));
+        if (fade > 0) geo(p.shape, p.x, p.y, p.size, p.rot, r, g, b, fade*0.9);
         continue;
       }
 
-      // Effective progress with per-particle delay
       var ef = Math.max(0, (prog - p.d) / (1 - p.d + 0.001));
-      var t  = ease(Math.min(1, ef * 1.1));
+      var t  = ease(Math.min(1, ef * 1.08));
 
       if (t > 0.006) {
-        // Converge toward text target
-        p.x += (p.tx - p.x) * t * 0.092;
-        p.y += (p.ty - p.y) * t * 0.092;
-        p.rot += p.rotS * (1 - t * 0.94);
+        p.x += (p.tx - p.x) * t * 0.088;
+        p.y += (p.ty - p.y) * t * 0.088;
+        p.rot += p.rotS * (1 - t * 0.92);
       } else {
-        // Drift when scattered
         p.x += p.vx; p.y += p.vy;
-        if (p.x < -20 || p.x > W+20) p.vx *= -1;
-        if (p.y < -20 || p.y > H+20) p.vy *= -1;
+        if (p.x < -40 || p.x > W+40) p.vx *= -1;
+        if (p.y < -40 || p.y > H+40) p.vy *= -1;
         p.rot += p.rotS;
       }
 
-      // Pulse glow when fully assembled
-      var pulse = (prog > 0.88) ? 1 + Math.sin(time*1.8 + i*0.09)*0.14 : 1;
-      var alpha = 0.18 + t * 0.78;
+      var pulse = (prog > 0.88) ? 1 + Math.sin(time*1.7 + i*0.08)*0.12 : 1;
+      var alpha = 0.15 + t * 0.82;
       geo(p.shape, p.x, p.y, p.size*pulse, p.rot, r, g, b, alpha);
     }
 
-    // ENTRAR button visibility
     var btn  = document.getElementById('splash-enter');
     var hint = document.getElementById('splash-hint');
     if (btn) {
       var show = prog > 0.72;
-      if (show && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
+      if (show && btn.style.opacity !== '1')  { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
       if (!show && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
     }
     if (hint) hint.style.opacity = prog < 0.38 ? '1' : '0';
   }
 
-  // Start after fonts load
-  document.fonts.ready.then(function() {
-    buildParticles();
-    draw();
-  });
+  document.fonts.ready.then(function() { buildParticles(); draw(); });
 
   window.addEventListener('resize', function() {
     resize();
@@ -1286,13 +1399,11 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
   };
 })();
 
-// ── Splash enter ────────────────────────────────────────────────────────────────────────────────
+// ── Splash enter ──────────────────────────────────────────────────────────
 window.enterDashboard = function() {
   var splash = document.getElementById('splash');
   splash.style.pointerEvents = 'none';
-  // Trigger particle explosion
   if (window._splashExplode) window._splashExplode();
-  // Flash
   setTimeout(function() {
     splash.style.transition = 'opacity 0.75s cubic-bezier(0.4,0,1,1)';
     splash.style.opacity = '0';
@@ -1306,7 +1417,6 @@ window.enterDashboard = function() {
   }, 350);
 };
 </script>
-
 <div class="particles-bg"></div>
 
 <!-- HEADER -->
