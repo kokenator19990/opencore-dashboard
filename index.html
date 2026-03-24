@@ -399,9 +399,11 @@ input, textarea, select {
 .tarea-comment-input {
   flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
   color: var(--text-main); padding: 10px 14px; font-size: 1.06rem;
-  border-radius: 4px; font-family: var(--font-sans);
+  border-radius: 4px; font-family: var(--font-sans); width: 100%;
 }
 .tarea-comment-input:focus { outline: none; border-color: rgba(168,85,247,0.4); }
+/* Auto-resize: textarea que crece con el contenido */
+textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: border-box; min-height: 44px; display: block; }
 .tarea-comment-send {
   font-family: var(--font-heading); font-size: 0.93rem; letter-spacing: 1px;
   padding: 10px 16px; border: 1px solid rgba(168,85,247,0.4); color: #A855F7;
@@ -704,7 +706,7 @@ input, textarea, select {
 .btn-edit-inline:hover { color: #00E5FF; border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.08); }
 .btn-edit-del { color: rgba(255,100,100,0.7); border-color: rgba(255,80,80,0.2); background: rgba(255,80,80,0.05); }
 .btn-edit-del:hover { color: #FF2A6D; border-color: rgba(255,42,109,0.5); background: rgba(255,42,109,0.1); }
-.comment-edit-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.25); color: #eee; font-family: var(--font-sans); font-size: 0.92rem; padding: 8px 10px; border-radius: 8px; resize: vertical; min-height: 58px; margin: 6px 0; box-sizing: border-box; }
+.comment-edit-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.25); color: #eee; font-family: var(--font-sans); font-size: 0.92rem; padding: 8px 10px; border-radius: 8px; resize: none; overflow: hidden; min-height: 58px; margin: 6px 0; box-sizing: border-box; line-height: 1.5; }
 .comment-edit-area:focus { outline: none; border-color: rgba(0,229,255,0.5); }
 .edit-action-row { display: flex; gap: 0.5rem; margin-top: 4px; }
 .btn-save-edit { padding: 5px 14px; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.35); color: #00E5FF; border-radius: 6px; font-size: 0.7rem; letter-spacing: 1px; cursor: pointer; font-family: var(--font-heading); }
@@ -715,8 +717,9 @@ input, textarea, select {
 .comment-reply-meta { font-size: 0.67rem; color: #999; margin-top: 0.25rem; letter-spacing: 0.8px; }
 .comment-reply-btn { background: none; border: none; color: var(--text-dim); font-size: 0.67rem; font-family: var(--font-heading); letter-spacing: 1px; cursor: pointer; text-transform: uppercase; margin-top: 0.5rem; padding: 0; display: inline-block; }
 .comment-reply-btn:hover { color: var(--accent-cyan); }
-.reply-input-row { display: none; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
-.reply-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.2); color: var(--text-main); padding: 8px 12px; font-size: 0.95rem; border-radius: 10px; font-family: var(--font-sans); }
+.reply-input-row { display: none; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem; }
+.reply-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(0,229,255,0.2); color: var(--text-main); padding: 8px 12px; font-size: 0.95rem; border-radius: 10px; font-family: var(--font-sans); }
+.reply-input-row .reply-btn-send { align-self: flex-end; }
 .reply-input:focus { outline: none; border-color: rgba(0,229,255,0.5); }
 .reply-btn-send { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.3); color: var(--accent-cyan); padding: 8px 14px; font-size: 0.76rem; font-family: var(--font-heading); letter-spacing: 1px; cursor: pointer; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
 .empty-state {
@@ -2357,7 +2360,7 @@ function renderComments() {
       + repliesHtml
       + '<button class="comment-reply-btn" data-cid="' + cid + '" onclick="showReplyInput(this.dataset.cid)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
       + '<div class="reply-input-row" id="' + replyRowId + '">'
-      + '<input class="reply-input" data-cid="' + cid + '" id="' + replyInputId + '" type="text" maxlength="400" placeholder="Escribe tu respuesta...">'
+      + '<textarea class="reply-input ar" data-cid="' + cid + '" id="' + replyInputId + '" maxlength="400" placeholder="Escribe tu respuesta..." rows="1" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addReply(this.dataset.cid);}"></textarea>'
       + '<button class="reply-btn-send" data-cid="' + cid + '" onclick="addReply(this.dataset.cid)">ENVIAR →</button>'
       + '</div>'
       + '</div>'
@@ -2386,6 +2389,7 @@ function renderComments() {
     return;
   }
   el.innerHTML = allItems.join('');
+  setTimeout(_initAr, 10);
 }
 
 window.dismissExcelNote = function(idx) {
@@ -2413,11 +2417,11 @@ window.deleteComment = function(cid) {
 window.showReplyInput = function(cid) {
   const row = document.getElementById('reply-row-' + cid);
   if (!row) return;
-  const visible = row.style.display === 'flex';
+  const visible = row.style.display !== 'none' && row.style.display !== '';
   row.style.display = visible ? 'none' : 'flex';
   if (!visible) {
     const inp = document.getElementById('reply-input-' + cid);
-    if (inp) inp.focus();
+    if (inp) { _initAr(); inp.focus(); }
   }
 };
 
@@ -2500,11 +2504,11 @@ window.editReply = function(cid, ri) {
   const c   = _commentCache.find(function(x) { return x.id === cid; });
   if (!row || !c || !c.replies || !c.replies[ri]) return;
   const existing = (c.replies[ri].text || '').replace(/"/g,'&quot;');
-  row.innerHTML = '<input class="reply-input" id="riedit-' + cid + '-' + ri + '" value="' + existing + '" style="flex:1;">'
+  row.innerHTML = '<textarea class="reply-input ar" id="riedit-' + cid + '-' + ri + '" rows="1">' + (c.replies[ri].text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
     + '<button class="reply-btn-send" data-cid="' + cid + '" data-ri="' + ri + '" onclick="saveEditReply(this.dataset.cid,+this.dataset.ri)">→</button>'
     + '<button class="btn-cancel-edit" onclick="renderComments()" style="margin-left:4px;">✕</button>';
   const inp = document.getElementById('riedit-' + cid + '-' + ri);
-  if (inp) inp.focus();
+  if (inp) { _initAr(); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 };
 window.saveEditReply = function(cid, ri) {
   const inp = document.getElementById('riedit-' + cid + '-' + ri);
@@ -2603,11 +2607,12 @@ window.editTareaComment = function(tid, ci) {
   const t   = _tareasCache.find(function(x) { return x.id === tid; });
   if (!row || !t || !t.comentarios || !t.comentarios[ci]) return;
   const existing = (t.comentarios[ci].texto || '').replace(/"/g,'&quot;');
-  row.innerHTML = '<input class="tarea-comment-input" id="tcinp-' + tid + '-' + ci + '" value="' + existing + '" style="flex:1;min-width:0;">'
+  row.innerHTML = '<textarea class="tarea-comment-input ar" id="tcinp-' + tid + '-' + ci + '" rows="1">'
+    + (t.comentarios[ci].texto||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
     + '<button class="tarea-comment-send" data-tid="' + tid + '" data-ci="' + ci + '" onclick="saveEditTareaComment(this.dataset.tid,+this.dataset.ci)">→</button>'
     + '<button class="btn-cancel-edit" onclick="renderTareas()" style="margin-left:2px;">✕</button>';
   const inp = document.getElementById('tcinp-' + tid + '-' + ci);
-  if (inp) inp.focus();
+  if (inp) { _initAr(); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 };
 window.saveEditTareaComment = function(tid, ci) {
   const inp = document.getElementById('tcinp-' + tid + '-' + ci);
@@ -3213,6 +3218,20 @@ function _showTareasWarn(msg) {
 let _expandedTareaId = null;
 let _editingTareaId  = null;
 
+// Auto-resize: cualquier textarea.ar crece al escribir
+document.addEventListener('input', function(e) {
+  if (e.target.classList && e.target.classList.contains('ar')) {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 320) + 'px';
+  }
+});
+function _initAr() {
+  document.querySelectorAll('textarea.ar').forEach(function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 320) + 'px';
+  });
+}
+
 // After any save action → collapse all + scroll to top of list
 function _backToTaskList() {
   _expandedTareaId = null;
@@ -3297,8 +3316,9 @@ function _renderTareaCard(t) {
     const isEditing = _editingTareaId === t.id;
     const editForm = isEditing
       ? '<div class="tarea-edit-row" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
-        + '<input class="tarea-comment-input" id="tinp-' + t.id + '" maxlength="200" value="' + t.titulo.replace(/"/g,'&quot;').replace(/</g,'&lt;') + '"'
-        + ' onkeydown="if(event.key===\'Enter\'){saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
+        + '<textarea class="tarea-comment-input ar" id="tinp-' + t.id + '" maxlength="200" rows="1"'
+        + ' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
+        + t.titulo.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
         + '<div class="tarea-edit-btns">'
         + '<button class="reply-btn-send" onclick="saveEditTarea(\'' + t.id + '\')">→ Guardar</button>'
         + '<button class="btn-cancel-edit" onclick="cancelEditTarea(\'' + t.id + '\')">✕</button>'
@@ -3339,7 +3359,7 @@ function _renderTareaCard(t) {
       + '<div class="tarea-comments" style="margin-top:1rem;">'
       + (commentsHtml || '<div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem;">Sin comentarios aún.</div>')
       + '<div class="tarea-comment-input-row" style="margin-top:0.8rem;">'
-      + '<input class="tarea-comment-input" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Agregar comentario o actualización..." maxlength="300" onclick="event.stopPropagation()">'
+      + '<textarea class="tarea-comment-input ar" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Agregar comentario o actualización..." maxlength="300" rows="1" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addTareaComment(this.dataset.id);}"></textarea>'
       + '<button class="tarea-comment-send" data-id="' + t.id + '" onclick="event.stopPropagation();addTareaComment(this.dataset.id)">→ Guardar</button>'
       + '</div></div>'
       + '</div>';
@@ -3428,6 +3448,7 @@ function renderTareas() {
   }
 
   el.innerHTML = html;
+  setTimeout(_initAr, 10);
 }
 
 window._setTareasTab = function(tab) {
