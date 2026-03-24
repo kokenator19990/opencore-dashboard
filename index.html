@@ -3385,6 +3385,7 @@ window.addTareaComment = async function(id) {
   if (!t) return;
   if (!t.comentarios) t.comentarios = [];
   t.comentarios.push({texto: texto, fecha: new Date().toLocaleString('es-CL')});
+  _expandedTareaId = null;
   await _saveTareas();
   renderTareas();
 };
