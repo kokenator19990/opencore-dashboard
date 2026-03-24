@@ -2378,19 +2378,17 @@ window.dismissExcelNote = function(idx) {
   renderComments();
 };
 
-window.deleteComment = async function(cid) {
+function _bgSaveComments() {
+  fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }).catch(function(){});
+}
+
+window.deleteComment = function(cid) {
   const i = _commentCache.findIndex(function(c) { return c.id === cid; });
   if (i === -1) return;
   _commentCache.splice(i, 1);
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(_commentCache)
-    });
-  } catch(e) { }
   renderComments();
   checkCommentDot();
+  _bgSaveComments();
 };
 
 window.showReplyInput = function(cid) {
@@ -2404,7 +2402,7 @@ window.showReplyInput = function(cid) {
   }
 };
 
-window.addReply = async function(cid) {
+window.addReply = function(cid) {
   const inp = document.getElementById('reply-input-' + cid);
   if (!inp) return;
   const text = inp.value.trim();
@@ -2414,15 +2412,9 @@ window.addReply = async function(cid) {
   if (!c.replies) c.replies = [];
   c.replies.push({ text: text, date: new Date().toLocaleString('es-CL') });
   inp.value = '';
-  try {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(_commentCache)
-    });
-    pushNotify('OpenCORE — Nueva respuesta', text.slice(0, 100), 'speech_balloon');
-  } catch(e) { }
   renderComments();
+  _bgSaveComments();
+  pushNotify('OpenCORE — Nueva respuesta', text.slice(0, 100), 'speech_balloon');
 };
 
 // Enter key en reply inputs
@@ -2452,28 +2444,26 @@ window.cancelEditComment = function(cid) {
   if (editEl) editEl.style.display = 'none';
   if (txtEl)  txtEl.style.display  = '';
 };
-window.saveEditComment = async function(cid) {
+window.saveEditComment = function(cid) {
   const ta = document.getElementById('cmta-' + cid);
   const c  = _commentCache.find(function(x) { return x.id === cid; });
   if (!ta || !c) return;
   const newText = ta.value.trim();
   if (!newText) return;
   c.text = newText;
-  try {
-    await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) });
-  } catch(e) {}
   if (window._sndSuccess) window._sndSuccess();
   renderComments();
+  _bgSaveComments();
 };
 
 // ── Editar / borrar respuestas ────────────────────────────────────────────
-window.deleteReply = async function(cid, ri) {
+window.deleteReply = function(cid, ri) {
   const c = _commentCache.find(function(x) { return x.id === cid; });
   if (!c || !c.replies) return;
-  window.confirmDialog('¿Borrar esta respuesta?', 'Borrar', async function() {
+  window.confirmDialog('¿Borrar esta respuesta?', 'Borrar', function() {
     c.replies.splice(ri, 1);
-    try { await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }); } catch(e) {}
     renderComments();
+    _bgSaveComments();
   });
 };
 window.editReply = function(cid, ri) {
@@ -2487,16 +2477,16 @@ window.editReply = function(cid, ri) {
   const inp = document.getElementById('riedit-' + cid + '-' + ri);
   if (inp) inp.focus();
 };
-window.saveEditReply = async function(cid, ri) {
+window.saveEditReply = function(cid, ri) {
   const inp = document.getElementById('riedit-' + cid + '-' + ri);
   if (!inp) return;
   const text = inp.value.trim();
   const c = _commentCache.find(function(x) { return x.id === cid; });
   if (!c || !c.replies || !c.replies[ri] || !text) return;
   c.replies[ri].text = text;
-  try { await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_commentCache) }); } catch(e) {}
   if (window._sndSuccess) window._sndSuccess();
   renderComments();
+  _bgSaveComments();
 };
 
 // ── Editar tarea (título) ─────────────────────────────────────────────────
@@ -2558,21 +2548,21 @@ window.viewTareaImage = function(tid, fi) {
 window.deleteTareaFile = function(tid, fi) {
   var t = _tareasCache.find(function(x) { return x.id === tid; });
   if (!t || !t.archivos) return;
-  window.confirmDialog('¿Borrar este archivo?', 'Borrar', async function() {
+  window.confirmDialog('¿Borrar este archivo?', 'Borrar', function() {
     t.archivos.splice(fi, 1);
-    await _saveTareas();
     renderTareas();
+    _saveTareas();
   });
 };
 
 // ── Editar / borrar comentarios de tarea ──────────────────────────────────
-window.deleteTareaComment = async function(tid, ci) {
+window.deleteTareaComment = function(tid, ci) {
   const t = _tareasCache.find(function(x) { return x.id === tid; });
   if (!t || !t.comentarios) return;
-  window.confirmDialog('¿Borrar este comentario?', 'Borrar', async function() {
+  window.confirmDialog('¿Borrar este comentario?', 'Borrar', function() {
     t.comentarios.splice(ci, 1);
-    await _saveTareas();
     renderTareas();
+    _saveTareas();
   });
 };
 window.editTareaComment = function(tid, ci) {
@@ -2586,16 +2576,16 @@ window.editTareaComment = function(tid, ci) {
   const inp = document.getElementById('tcinp-' + tid + '-' + ci);
   if (inp) inp.focus();
 };
-window.saveEditTareaComment = async function(tid, ci) {
+window.saveEditTareaComment = function(tid, ci) {
   const inp = document.getElementById('tcinp-' + tid + '-' + ci);
   if (!inp) return;
   const text = inp.value.trim();
   const t = _tareasCache.find(function(x) { return x.id === tid; });
   if (!t || !t.comentarios || !t.comentarios[ci] || !text) return;
   t.comentarios[ci].texto = text;
-  await _saveTareas();
   if (window._sndSuccess) window._sndSuccess();
   renderTareas();
+  _saveTareas();
 };
 
 let _localFiles = [];
