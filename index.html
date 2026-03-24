@@ -403,7 +403,7 @@ input, textarea, select {
 }
 .tarea-comment-input:focus { outline: none; border-color: rgba(168,85,247,0.4); }
 /* Auto-resize: textarea que crece con el contenido */
-textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: border-box; min-height: 44px; display: block; }
+textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: border-box; min-height: 80px; display: block; }
 .tarea-comment-send {
   font-family: var(--font-heading); font-size: 0.93rem; letter-spacing: 1px;
   padding: 10px 16px; border: 1px solid rgba(168,85,247,0.4); color: #A855F7;
@@ -2360,7 +2360,7 @@ function renderComments() {
       + repliesHtml
       + '<button class="comment-reply-btn" data-cid="' + cid + '" onclick="showReplyInput(this.dataset.cid)">↩ Responder' + (replies.length ? ' (' + replies.length + ')' : '') + '</button>'
       + '<div class="reply-input-row" id="' + replyRowId + '">'
-      + '<textarea class="reply-input ar" data-cid="' + cid + '" id="' + replyInputId + '" maxlength="400" placeholder="Escribe tu respuesta..." rows="1" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addReply(this.dataset.cid);}"></textarea>'
+      + '<textarea class="reply-input ar" data-cid="' + cid + '" id="' + replyInputId + '" maxlength="400" placeholder="Escribe tu respuesta..." rows="3" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addReply(this.dataset.cid);}"></textarea>'
       + '<button class="reply-btn-send" data-cid="' + cid + '" onclick="addReply(this.dataset.cid)">ENVIAR →</button>'
       + '</div>'
       + '</div>'
@@ -2504,7 +2504,7 @@ window.editReply = function(cid, ri) {
   const c   = _commentCache.find(function(x) { return x.id === cid; });
   if (!row || !c || !c.replies || !c.replies[ri]) return;
   const existing = (c.replies[ri].text || '').replace(/"/g,'&quot;');
-  row.innerHTML = '<textarea class="reply-input ar" id="riedit-' + cid + '-' + ri + '" rows="1">' + (c.replies[ri].text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
+  row.innerHTML = '<textarea class="reply-input ar" id="riedit-' + cid + '-' + ri + '" rows="3">' + (c.replies[ri].text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
     + '<button class="reply-btn-send" data-cid="' + cid + '" data-ri="' + ri + '" onclick="saveEditReply(this.dataset.cid,+this.dataset.ri)">→</button>'
     + '<button class="btn-cancel-edit" onclick="renderComments()" style="margin-left:4px;">✕</button>';
   const inp = document.getElementById('riedit-' + cid + '-' + ri);
@@ -2607,7 +2607,7 @@ window.editTareaComment = function(tid, ci) {
   const t   = _tareasCache.find(function(x) { return x.id === tid; });
   if (!row || !t || !t.comentarios || !t.comentarios[ci]) return;
   const existing = (t.comentarios[ci].texto || '').replace(/"/g,'&quot;');
-  row.innerHTML = '<textarea class="tarea-comment-input ar" id="tcinp-' + tid + '-' + ci + '" rows="1">'
+  row.innerHTML = '<textarea class="tarea-comment-input ar" id="tcinp-' + tid + '-' + ci + '" rows="3">'
     + (t.comentarios[ci].texto||'').replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
     + '<button class="tarea-comment-send" data-tid="' + tid + '" data-ci="' + ci + '" onclick="saveEditTareaComment(this.dataset.tid,+this.dataset.ci)">→</button>'
     + '<button class="btn-cancel-edit" onclick="renderTareas()" style="margin-left:2px;">✕</button>';
@@ -3316,7 +3316,7 @@ function _renderTareaCard(t) {
     const isEditing = _editingTareaId === t.id;
     const editForm = isEditing
       ? '<div class="tarea-edit-row" style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">'
-        + '<textarea class="tarea-comment-input ar" id="tinp-' + t.id + '" maxlength="200" rows="1"'
+        + '<textarea class="tarea-comment-input ar" id="tinp-' + t.id + '" maxlength="200" rows="3"'
         + ' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();saveEditTarea(\'' + t.id + '\');}if(event.key===\'Escape\'){cancelEditTarea(\'' + t.id + '\');}">'
         + t.titulo.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</textarea>'
         + '<div class="tarea-edit-btns">'
@@ -3359,7 +3359,7 @@ function _renderTareaCard(t) {
       + '<div class="tarea-comments" style="margin-top:1rem;">'
       + (commentsHtml || '<div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.5rem;">Sin comentarios aún.</div>')
       + '<div class="tarea-comment-input-row" style="margin-top:0.8rem;">'
-      + '<textarea class="tarea-comment-input ar" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Agregar comentario o actualización..." maxlength="300" rows="1" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addTareaComment(this.dataset.id);}"></textarea>'
+      + '<textarea class="tarea-comment-input ar" data-id="' + t.id + '" id="tc-' + t.id + '" placeholder="Agregar comentario o actualización..." maxlength="300" rows="3" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();addTareaComment(this.dataset.id);}"></textarea>'
       + '<button class="tarea-comment-send" data-id="' + t.id + '" onclick="event.stopPropagation();addTareaComment(this.dataset.id)">→ Guardar</button>'
       + '</div></div>'
       + '</div>';
