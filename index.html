@@ -274,13 +274,28 @@ html { overflow-x: hidden; max-width: 100vw; }
   margin-bottom: 0.75rem; transition: border-color 0.3s;
   border-radius: 12px;
 }
-.tarea-card.completada { border-left-color: #4ADE80; opacity: 0.65; }
+.tarea-card.completada { border-left-color: #4ADE80; opacity: 0.85; }
 .tarea-titulo {
   font-family: var(--font-heading); font-size: 1.15rem;
   font-weight: 700; letter-spacing: 1px; color: var(--text-main);
   margin-bottom: 0.3rem; cursor: pointer; line-height: 1.4;
 }
-.tarea-card.completada .tarea-titulo { text-decoration: line-through; color: var(--text-dim); }
+.tarea-card.completada .tarea-titulo { color: #4ADE80; }
+/* Tabs de tareas */
+.tareas-tabs { display:flex; gap:0; margin-bottom:1.2rem; border-bottom:1px solid var(--border); }
+.tareas-tab { font-family:var(--font-heading); font-size:0.78rem; letter-spacing:2px; padding:6px 14px 8px; cursor:pointer; border:none; background:transparent; color:var(--text-dim); border-bottom:2px solid transparent; transition:all 0.2s; }
+.tareas-tab:hover { color:var(--text-main); }
+.tareas-tab.active-pendientes { color:#FF2A6D; border-bottom-color:#FF2A6D; }
+.tareas-tab.active-completadas { color:#4ADE80; border-bottom-color:#4ADE80; }
+.tareas-tab.active-historial   { color:#A855F7; border-bottom-color:#A855F7; }
+/* Historial lista compacta */
+.hist-item { display:flex; align-items:center; gap:0.6rem; padding:6px 10px; border-radius:8px; font-size:0.85rem; color:var(--text-dim); margin-bottom:4px; background:rgba(255,255,255,0.02); }
+.hist-item:hover { background:rgba(255,255,255,0.04); }
+.hist-badge { font-size:0.65rem; font-family:var(--font-heading); letter-spacing:1px; padding:2px 6px; border-radius:4px; flex-shrink:0; }
+.hist-badge.done  { background:rgba(74,222,128,0.12); color:#4ADE80; border:1px solid rgba(74,222,128,0.25); }
+.hist-badge.del   { background:rgba(255,42,109,0.10); color:#FF2A6D; border:1px solid rgba(255,42,109,0.2); }
+.hist-del-btn { margin-left:auto; background:rgba(255,42,109,0.1); border:1px solid rgba(255,42,109,0.2); border-radius:5px; color:rgba(255,42,109,0.5); cursor:pointer; font-size:0.7rem; padding:2px 7px; flex-shrink:0; transition:all 0.2s; }
+.hist-del-btn:hover { background:rgba(255,42,109,0.25); color:#FF2A6D; }
 .tarea-meta { font-size: 0.97rem; color: var(--text-dim); margin-bottom: 0.6rem; }
 .tarea-pill {
   display: inline-block; font-size: 0.7rem; letter-spacing: 1.5px;
@@ -2746,6 +2761,19 @@ document.getElementById('comment-modal-overlay').addEventListener('click', funct
 const TAREAS_URL = 'https://opencore.cl/dashboard/tareas.php';
 let _tareasCache = [];
 let _tareasLoaded = false;
+let _tareasTab = 'pendientes'; // 'pendientes' | 'completadas' | 'historial'
+
+// ── HISTORIAL (localStorage) ──────────────────────────────────────────────
+const HISTORIAL_KEY = 'oc_historial_v1';
+let _historialCache = [];
+function _loadHistorial() {
+  try { _historialCache = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]'); }
+  catch(e) { _historialCache = []; }
+}
+function _saveHistorial() {
+  localStorage.setItem(HISTORIAL_KEY, JSON.stringify(_historialCache));
+}
+_loadHistorial();
 
 // ── SISTEMA DE REUNIONES (localStorage) ─────────────────────────────────
 const REUNIONES_KEY = 'oc_reuniones_v2';
@@ -2969,6 +2997,7 @@ window.goToTareas = function() {
   if (window._sndNav) window._sndNav();
   _expandedTareaId = null;
   _editingTareaId  = null;
+  _tareasTab = 'pendientes';
   renderTareas();
   document.getElementById('btn-tareas').classList.add('active');
   openOverlay('ovl-tareas', 'TAREAS');
@@ -3170,33 +3199,7 @@ window.expandTarea = function(id) {
   }
 };
 
-function renderTareas() {
-  const el = document.getElementById('tareas-list');
-  const byNewest  = (a, b) => Number(b.id) - Number(a.id);
-  const pending   = _tareasCache.filter(t => t.estado !== 'completada').sort(byNewest);
-  const completed = _tareasCache.filter(t => t.estado === 'completada').sort(byNewest);
-
-  if (!_tareasCache.length) {
-    el.innerHTML = '<div class="empty-state" style="margin-top:1rem;">Sin tareas asignadas. Crea la primera arriba.</div>';
-    el.classList.remove('has-expanded');
-    return;
-  }
-  // Sync has-expanded class after re-render
-  setTimeout(function() {
-    if (el) el.classList.toggle('has-expanded', !!_expandedTareaId);
-  }, 0);
-
-  // Counter header
-  let html = '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;padding-bottom:0.8rem;border-bottom:1px solid var(--border);">'
-    + '<span style="font-family:var(--font-heading);font-size:0.85rem;letter-spacing:2px;color:#A855F7;">'
-    + pending.length + ' PENDIENTE' + (pending.length !== 1 ? 'S' : '') + '</span>'
-    + '<span style="color:var(--border);">|</span>'
-    + '<span style="font-family:var(--font-heading);font-size:0.85rem;letter-spacing:2px;color:#4ADE80;">'
-    + completed.length + ' COMPLETADA' + (completed.length !== 1 ? 'S' : '') + '</span>'
-    + '</div>';
-
-  const all = [...pending, ...completed];
-  html += all.map(function(t) {
+function _renderTareaCard(t) {
     const isCompleted = t.estado === 'completada';
     const alta = t.prioridad === 'alta';
     const isExpanded = _expandedTareaId === t.id;
@@ -3301,10 +3304,118 @@ function renderTareas() {
     return '<div class="tarea-card' + (isCompleted ? ' completada' : '') + (isExpanded ? ' tc-expanded' : '') + '" id="tcard-' + t.id + '" style="' + borderStyle + '">'
       + header + body
       + '</div>';
-  }).join('');
+}
+
+function renderTareas() {
+  const el = document.getElementById('tareas-list');
+  const byNewest  = (a, b) => Number(b.id) - Number(a.id);
+  const pending   = _tareasCache.filter(t => t.estado !== 'completada').sort(byNewest);
+  const completed = _tareasCache.filter(t => t.estado === 'completada').sort(byNewest);
+
+  // Sync has-expanded class after re-render
+  setTimeout(function() {
+    if (el) el.classList.toggle('has-expanded', !!_expandedTareaId);
+  }, 0);
+
+  // ── Tabs header ────────────────────────────────────────────────────────
+  const totalHist = completed.length + _historialCache.length;
+  let html = '<div class="tareas-tabs">'
+    + '<button class="tareas-tab' + (_tareasTab === 'pendientes'  ? ' active-pendientes'  : '') + '" onclick="_setTareasTab(\'pendientes\')">'
+    +   pending.length + ' PENDIENTE' + (pending.length !== 1 ? 'S' : '')
+    + '</button>'
+    + '<button class="tareas-tab' + (_tareasTab === 'completadas' ? ' active-completadas' : '') + '" onclick="_setTareasTab(\'completadas\')">'
+    +   completed.length + ' COMPLETADA' + (completed.length !== 1 ? 'S' : '')
+    + '</button>'
+    + '<button class="tareas-tab' + (_tareasTab === 'historial'   ? ' active-historial'   : '') + '" onclick="_setTareasTab(\'historial\')">'
+    +   'HISTORIAL' + (totalHist ? ' (' + totalHist + ')' : '')
+    + '</button>'
+    + '</div>';
+
+  // ── PENDIENTES tab ─────────────────────────────────────────────────────
+  if (_tareasTab === 'pendientes') {
+    if (!pending.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">No hay tareas pendientes. Todo al día.</div>';
+    } else {
+      html += pending.map(_renderTareaCard).join('');
+    }
+
+  // ── COMPLETADAS tab ────────────────────────────────────────────────────
+  } else if (_tareasTab === 'completadas') {
+    if (!completed.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">Sin tareas completadas aún.</div>';
+    } else {
+      html += completed.map(_renderTareaCard).join('');
+    }
+
+  // ── HISTORIAL tab ──────────────────────────────────────────────────────
+  } else {
+    _loadHistorial();
+    if (!completed.length && !_historialCache.length) {
+      html += '<div class="empty-state" style="margin-top:1rem;">El historial está vacío.</div>';
+    } else {
+      // Completadas (en historial de forma compacta)
+      if (completed.length) {
+        html += '<div style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#4ADE80;margin-bottom:8px;opacity:0.8;">COMPLETADAS</div>';
+        html += completed.map(function(t) {
+          return '<div class="hist-item">'
+            + '<span class="hist-badge done">LISTA</span>'
+            + '<span style="flex:1;color:var(--text-main);font-size:0.88rem;">' + t.titulo.replace(/</g,'&lt;') + '</span>'
+            + (t.fecha_completada ? '<span style="font-size:0.72rem;color:var(--text-dim);flex-shrink:0;">' + t.fecha_completada + '</span>' : '')
+            + '<button class="hist-del-btn" onclick="eliminarDeHistorial(\'comp\',\'' + t.id + '\')">✕</button>'
+            + '</div>';
+        }).join('');
+      }
+      // Eliminadas
+      if (_historialCache.length) {
+        html += '<div style="font-family:var(--font-heading);font-size:0.7rem;letter-spacing:2px;color:#FF2A6D;margin:14px 0 8px;opacity:0.8;">ELIMINADAS</div>';
+        html += _historialCache.slice().reverse().map(function(h) {
+          return '<div class="hist-item">'
+            + '<span class="hist-badge del">ELIM.</span>'
+            + '<span style="flex:1;color:var(--text-dim);font-size:0.88rem;">' + (h.titulo||'').replace(/</g,'&lt;') + '</span>'
+            + (h.fecha_eliminada ? '<span style="font-size:0.72rem;color:var(--text-dim);flex-shrink:0;">' + h.fecha_eliminada + '</span>' : '')
+            + '<button class="hist-del-btn" onclick="eliminarDeHistorial(\'del\',\'' + h.id + '\')">✕</button>'
+            + '</div>';
+        }).join('');
+        html += '<div style="margin-top:10px;text-align:right;">'
+          + '<button onclick="limpiarHistorialEliminadas()" style="background:transparent;border:1px solid rgba(255,42,109,0.2);border-radius:6px;color:rgba(255,42,109,0.4);font-size:0.72rem;padding:4px 10px;cursor:pointer;">Limpiar eliminadas</button>'
+          + '</div>';
+      }
+    }
+  }
 
   el.innerHTML = html;
 }
+
+window._setTareasTab = function(tab) {
+  _tareasTab = tab;
+  _expandedTareaId = null;
+  _editingTareaId = null;
+  renderTareas();
+};
+
+window.eliminarDeHistorial = async function(tipo, id) {
+  if (tipo === 'comp') {
+    // Es una completada en _tareasCache → eliminar definitivamente
+    const t = _tareasCache.find(x => x.id === id);
+    if (!t) return;
+    _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
+    _saveHistorial();
+    _tareasCache = _tareasCache.filter(x => x.id !== id);
+    await _saveTareas();
+  } else {
+    // Está en _historialCache → solo borrar del historial
+    _historialCache = _historialCache.filter(x => x.id !== id);
+    _saveHistorial();
+  }
+  renderTareas();
+  checkTareasDot();
+};
+
+window.limpiarHistorialEliminadas = function() {
+  _historialCache = [];
+  _saveHistorial();
+  renderTareas();
+};
 
 function checkTareasDot() {
   const total    = _tareasCache.length;
@@ -3413,6 +3524,11 @@ document.addEventListener('keydown', function(e) {
 });
 
 window._deleteTareaConfirmed = async function(id) {
+  const t = _tareasCache.find(x => x.id === id);
+  if (t) {
+    _historialCache.push({ id: t.id, titulo: t.titulo, autor: t.autor || '', fecha_creacion: t.fecha_creacion, fecha_completada: t.fecha_completada || null, fecha_eliminada: new Date().toLocaleDateString('es-CL') });
+    _saveHistorial();
+  }
   _tareasCache = _tareasCache.filter(t => t.id !== id);
   await _saveTareas();
   renderTareas();
