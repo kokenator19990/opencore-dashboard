@@ -1017,415 +1017,293 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 })();
 </script>
 
-<!-- ═══════════════════════════════════ SPLASH SCREEN ══════════════════════════════════ -->
+<!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
 <div id="splash" style="
   position:fixed;inset:0;z-index:9000;
   background:#000;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  transition:opacity 0.9s ease, visibility 0.9s ease;
+  overflow:hidden;
+  touch-action:none;
 ">
-  <canvas id="nucleus-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
 
-  <!-- Decorative corner lines -->
-  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;" xmlns="http://www.w3.org/2000/svg">
-    <line x1="0" y1="0" x2="120" y2="0" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <line x1="0" y1="0" x2="0" y2="80" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <line x1="100%" y1="100%" x2="calc(100% - 120px)" y2="100%" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <line x1="100%" y1="100%" x2="100%" y2="calc(100% - 80px)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+  <!-- Corner accents -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.22;" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="#00E5FF" stroke-width="0.8"/>
+    <line x1="0" y1="0" x2="0" y2="50" stroke="#00E5FF" stroke-width="0.8"/>
+    <line x1="100%" y1="100%" x2="calc(100% - 80px)" y2="100%" stroke="#00E5FF" stroke-width="0.8"/>
+    <line x1="100%" y1="100%" x2="100%" y2="calc(100% - 50px)" stroke="#00E5FF" stroke-width="0.8"/>
   </svg>
 
-  <div style="position:relative;z-index:2;text-align:center;user-select:none;padding:2rem;max-width:900px;width:100%;">
-
-    <!-- ── LOGO OPENCORE — glow unificado blanco/cian ── -->
-    <div style="margin-bottom:2.8rem;">
-      <svg viewBox="0 0 660 100" xmlns="http://www.w3.org/2000/svg"
-        style="width:min(600px,88vw);height:auto;display:block;margin:0 auto;overflow:visible;max-width:calc(100vw - 3rem);">
-        <defs>
-          <!-- Halo cian: blur amplio → aura de neón -->
-          <filter id="oc-halo-s" x="-70%" y="-70%" width="240%" height="240%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="11"/>
-          </filter>
-          <!-- Bloom blanco: blur estrecho fusionado con fuente -->
-          <filter id="oc-glow-s" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-
-        <g transform="translate(65,0)">
-          <!-- L1: halo cian pulsante -->
-          <g class="oc-halo" filter="url(#oc-halo-s)" opacity="0.72">
-            <circle cx="48" cy="50" r="32" fill="none" stroke="#00E5FF" stroke-width="10"/>
-            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square"
-              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square"
-              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-            <path fill="none" stroke="#00E5FF" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
-              d="M218 82L218 18L258 82L258 18"/>
-            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
-              font-size="90" fill="#00E5FF" letter-spacing="3">CORE</text>
-          </g>
-
-          <!-- L2: bloom blanco suave -->
-          <g filter="url(#oc-glow-s)" opacity="0.80">
-            <circle cx="48" cy="50" r="32" fill="none" stroke="#fff" stroke-width="10"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
-              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
-              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
-              d="M218 82L218 18L258 82L258 18"/>
-            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
-              font-size="90" fill="#fff" letter-spacing="3">CORE</text>
-          </g>
-
-          <!-- L3: blanco nítido (capa superior) -->
-          <g>
-            <circle cx="48" cy="50" r="32" fill="none" stroke="#fff" stroke-width="10"/>
-            <circle cx="48" cy="50" r="11" fill="#00E5FF"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
-              d="M104 18L104 82 M104 18L142 18A18 18 0 0 1 160 36A18 18 0 0 1 142 54L104 54"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square"
-              d="M196 18L172 18 M172 18L172 82L196 82 M172 50L193 50"/>
-            <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"
-              d="M218 82L218 18L258 82L258 18"/>
-            <text x="278" y="82" font-family="'Space Grotesk',sans-serif" font-weight="800"
-              font-size="90" fill="#fff" letter-spacing="3">CORE</text>
-          </g>
-        </g>
-      </svg>
-    </div>
-
-    <!-- Thin separator line -->
-    <div style="width:min(400px,70vw);height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.5),transparent);margin:0 auto 2.8rem;"></div>
-
-    <!-- Botón principal -->
-    <button id="splash-btn" onclick="enterDashboard()" style="
-      font-family:'Space Grotesk',sans-serif;
-      font-size:0.92rem;font-weight:700;
-      letter-spacing:4px;text-transform:uppercase;
-      color:#00E5FF;
-      background:transparent;
-      border:1px solid rgba(0,229,255,0.45);
-      padding:18px 40px;
-      width:min(420px,88vw);
-      cursor:pointer;
-      transition:all 0.3s ease;
-      position:relative;overflow:hidden;
-      border-radius:10px;
-      display:block;margin:0 auto;
-    "
-    onmouseover="this.style.background='rgba(0,229,255,0.08)';this.style.borderColor='#00E5FF';this.style.boxShadow='0 0 40px rgba(0,229,255,0.25),inset 0 0 20px rgba(0,229,255,0.04)'"
-    onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.45)';this.style.boxShadow='none'"
-    >
-      VER INDICADORES OPENCORE
-    </button>
-
-    <div style="margin-top:1.2rem;font-family:'Inter',sans-serif;font-size:0.67rem;letter-spacing:3px;color:rgba(0,229,255,0.3);">DASHBOARD EJECUTIVO</div>
-
-    <!-- Stats preview chips — desktop only -->
-    <div class="splash-stats" style="display:flex;gap:2rem;justify-content:center;margin-top:3rem;flex-wrap:wrap;">
-      <div style="text-align:center;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#fff;line-height:1;">2830</div>
-        <div style="font-size:0.59rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">PROSPECTOS</div>
-      </div>
-      <div style="width:1px;background:rgba(0,229,255,0.12);align-self:stretch;"></div>
-      <div style="text-align:center;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#00E5FF;line-height:1;">281</div>
-        <div style="font-size:0.59rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">CONTACTADAS</div>
-      </div>
-      <div style="width:1px;background:rgba(0,229,255,0.12);align-self:stretch;"></div>
-      <div style="text-align:center;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:#fff;line-height:1;">90.5%</div>
-        <div style="font-size:0.59rem;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-top:4px;">COBERTURA</div>
-      </div>
-    </div>
-
+  <!-- UI -->
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(7vh,44px);pointer-events:none;user-select:none;z-index:2;">
+    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:3.5px;color:rgba(0,229,255,0.38);text-transform:uppercase;margin-bottom:1.6rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#00E5FF;background:transparent;border:1px solid rgba(0,229,255,0.4);padding:16px 60px;cursor:pointer;border-radius:8px;opacity:0;transition:opacity 0.5s ease,box-shadow 0.3s,background 0.3s,border-color 0.3s;" onmouseover="this.style.background='rgba(0,229,255,0.07)';this.style.borderColor='rgba(0,229,255,0.85)';this.style.boxShadow='0 0 32px rgba(0,229,255,0.22)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.4)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
+    <div style="margin-top:1.4rem;font-family:'Inter',sans-serif;font-size:0.52rem;letter-spacing:2.5px;color:rgba(255,255,255,0.13);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
   </div>
-
-  <!-- Copyright -->
-  <div style="position:absolute;bottom:1.8rem;left:0;right:0;text-align:center;z-index:2;pointer-events:none;">
-    <div style="font-family:'Inter',sans-serif;font-size:0.56rem;letter-spacing:2.5px;color:rgba(255,255,255,0.18);text-transform:uppercase;">
-      © 2026 OpenCORE &nbsp;·&nbsp; All Rights Reserved &nbsp;·&nbsp; Plataforma Ejecutiva Privada
-    </div>
-  </div>
-
 </div>
 
 <style>
-@keyframes splashFadeOut {
-  to { opacity:0; visibility:hidden; }
-}
+@keyframes splashFadeOut { to { opacity:0; visibility:hidden; } }
 </style>
 
 <script>
-// ══════════════════════════════════════════════════════
-//   NUCLEUS CANVAS — 3D particle core, mouse-reactive
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  GEOMETRIC PARTICLE TEXT — OPENCORE SOFTWARE
+//  Hundreds of neon geometric shapes that form the text on scroll
+// ═══════════════════════════════════════════════════════════════════
 (function() {
-  const canvas = document.getElementById('nucleus-canvas');
-  const ctx    = canvas.getContext('2d');
+  var canvas = document.getElementById('nucleus-canvas');
+  var ctx    = canvas.getContext('2d');
+  var splash = document.getElementById('splash');
+  var W, H, dpr, isMobile;
 
-  let W, H, cx, cy, dpr;
-  let mouseX = 0, mouseY = 0;
-  let tiltX = 0, tiltY = 0;
-  let raf;
-
-  // ── Resize ────────────────────────────────────────
   function resize() {
-    dpr = window.devicePixelRatio || 1;
-    W   = window.innerWidth;
-    H   = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    isMobile = W < 768;
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cx = W / 2; cy = H / 2;
   }
-  window.addEventListener('resize', resize);
   resize();
 
-  // ── Mouse tracking ────────────────────────────────
-  window.addEventListener('mousemove', function(e) {
-    mouseX = (e.clientX - cx) / cx;
-    mouseY = (e.clientY - cy) / cy;
-  });
+  // ── Sample text pixels ────────────────────────────────────────────────
+  function sampleText() {
+    var off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    var c = off.getContext('2d');
+    c.fillStyle = '#fff';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
 
-  // ── Particle system ───────────────────────────────
-  const SHELLS = [
-    { r:80,  n:8,  speed:0.004, size:2.5, opacity:0.95 },
-    { r:140, n:14, speed:0.0025,size:2.0, opacity:0.75 },
-    { r:200, n:20, speed:0.0015,size:1.5, opacity:0.55 },
-    { r:260, n:26, speed:0.001, size:1.1, opacity:0.35 },
-    { r:320, n:18, speed:0.0007,size:0.8, opacity:0.2  },
-  ];
+    var fs1 = isMobile ? Math.floor(W * 0.19) : Math.min(Math.floor(W * 0.145), 210);
+    var fs2 = isMobile ? Math.floor(W * 0.082) : Math.min(Math.floor(W * 0.063), 94);
+    var step = isMobile ? 5 : 4;
 
-  // Build particles
-  const particles = [];
-  SHELLS.forEach(function(shell) {
-    for (let i = 0; i < shell.n; i++) {
-      // Spherical coordinates distributed evenly
-      const phi   = Math.acos(-1 + (2 * i) / shell.n);
-      const theta = Math.sqrt(shell.n * Math.PI) * phi;
-      particles.push({
-        r:      shell.r,
-        phi0:   phi,
-        theta0: theta,
-        speed:  shell.speed * (0.8 + Math.random() * 0.4),
-        size:   shell.size,
-        opacity:shell.opacity,
-        offset: Math.random() * Math.PI * 2,
-        // axis tilt for this particle's orbit
-        ax: Math.random() * 2 - 1,
-        ay: Math.random() * 2 - 1,
-        az: Math.random() * 2 - 1,
-      });
-    }
-  });
+    c.font = '900 ' + fs1 + 'px \"Space Grotesk\", sans-serif';
+    c.fillText('OPENCORE', W * 0.5, H * 0.40);
+    c.font = '600 ' + fs2 + 'px \"Space Grotesk\", sans-serif';
+    c.fillText('SOFTWARE', W * 0.5, H * 0.625);
 
-  // ── 3D project ────────────────────────────────────
-  function project(x3, y3, z3) {
-    // Apply mouse tilt
-    const tx = tiltX * 0.4;
-    const ty = tiltY * 0.4;
-    // Rotate around Y axis (mouseX)
-    const cosY = Math.cos(tx), sinY = Math.sin(tx);
-    let nx = x3 * cosY + z3 * sinY;
-    let nz = -x3 * sinY + z3 * cosY;
-    // Rotate around X axis (mouseY)
-    const cosX = Math.cos(ty), sinX = Math.sin(ty);
-    let ny = y3 * cosX - nz * sinX;
-    nz     = y3 * sinX + nz * cosX;
-    // Simple perspective
-    const fov = 600;
-    const scale = fov / (fov + nz);
-    return { x: cx + nx * scale, y: cy + ny * scale, z: nz, scale: scale };
-  }
-
-  // ── Comets ────────────────────────────────────────
-  const COMET_COLORS = ['0,229,255','178,0,255','229,255,0','255,42,109','0,255,170','255,140,0'];
-  const comets = [];
-  let cometTimer = 0;
-  const COMET_INTERVAL = (window.innerWidth < 768) ? 80 : 38; // menos cometas en mobile
-
-  function spawnComet() {
-    const edge = Math.floor(Math.random() * 2); // 0=top, 1=left
-    const speed = 6 + Math.random() * 8;
-    const angle = edge === 0
-      ? (Math.PI * 0.3) + Math.random() * (Math.PI * 0.4)   // top → downward diagonal
-      : (-Math.PI * 0.2) + Math.random() * (Math.PI * 0.4); // left → rightward diagonal
-    const x = edge === 0 ? Math.random() * W : -20;
-    const y = edge === 0 ? -20 : Math.random() * H * 0.6;
-    comets.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      len: 80 + Math.random() * 120,
-      color: COMET_COLORS[Math.floor(Math.random() * COMET_COLORS.length)],
-      alpha: 0.55 + Math.random() * 0.3,
-      life: 0,
-      maxLife: 120 + Math.random() * 80
-    });
-  }
-
-  function drawComets() {
-    cometTimer++;
-    if (cometTimer >= COMET_INTERVAL) { cometTimer = 0; spawnComet(); }
-
-    for (let i = comets.length - 1; i >= 0; i--) {
-      const c = comets[i];
-      c.x += c.vx; c.y += c.vy; c.life++;
-      const fade = c.life < 15 ? c.life / 15 : c.life > c.maxLife * 0.7 ? 1 - (c.life - c.maxLife * 0.7) / (c.maxLife * 0.3) : 1;
-      const alpha = c.alpha * fade;
-      if (alpha < 0.01 || c.life > c.maxLife) { comets.splice(i, 1); continue; }
-
-      const tailX = c.x - Math.cos(Math.atan2(c.vy, c.vx)) * c.len;
-      const tailY = c.y - Math.sin(Math.atan2(c.vy, c.vx)) * c.len;
-      const grad = ctx.createLinearGradient(c.x, c.y, tailX, tailY);
-      grad.addColorStop(0, 'rgba(' + c.color + ',' + alpha + ')');
-      grad.addColorStop(0.3, 'rgba(' + c.color + ',' + (alpha * 0.4) + ')');
-      grad.addColorStop(1, 'rgba(' + c.color + ',0)');
-      ctx.beginPath();
-      ctx.moveTo(c.x, c.y);
-      ctx.lineTo(tailX, tailY);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-
-      // Head glow
-      const grd = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 4);
-      grd.addColorStop(0, 'rgba(' + c.color + ',' + alpha + ')');
-      grd.addColorStop(1, 'rgba(' + c.color + ',0)');
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = grd;
-      ctx.fill();
-    }
-  }
-
-  // ── Animate ───────────────────────────────────────
-  let t = 0;
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    drawComets();
-
-    // Smooth tilt towards mouse
-    tiltX += (mouseX - tiltX) * 0.04;
-    tiltY += (mouseY - tiltY) * 0.04;
-
-    t += 0.008;
-
-    // ── Background radial glow ────────────────────
-    const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(W,H)*0.55);
-    bg.addColorStop(0,   'rgba(0,60,80,0.25)');
-    bg.addColorStop(0.5, 'rgba(0,20,30,0.1)');
-    bg.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    // ── Compute 3D positions ──────────────────────
-    const pts = particles.map(function(p, i) {
-      // Rotation around a tilted axis
-      const angle = t * p.speed * 500 + p.offset;
-      // Orbit in a plane
-      const px = p.r * Math.sin(p.phi0) * Math.cos(angle);
-      const py = p.r * Math.cos(p.phi0);
-      const pz = p.r * Math.sin(p.phi0) * Math.sin(angle);
-      const proj = project(px, py, pz);
-      return { ...proj, opacity: p.opacity, size: p.size * proj.scale, orig: p };
-    });
-
-    // ── Draw connecting lines between close particles ──
-    ctx.save();
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const dx = pts[i].x - pts[j].x;
-        const dy = pts[i].y - pts[j].y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 90) {
-          const alpha = (1 - dist / 90) * 0.18 * Math.min(pts[i].opacity, pts[j].opacity);
-          ctx.strokeStyle = 'rgba(0,229,255,' + alpha + ')';
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(pts[i].x, pts[i].y);
-          ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.stroke();
+    var data = c.getImageData(0, 0, W, H).data;
+    var pts  = [];
+    for (var y = 0; y < H; y += step) {
+      for (var x = 0; x < W; x += step) {
+        if (data[(y * W + x) * 4 + 3] > 115) {
+          pts.push([x + (Math.random()-0.5)*step*0.6, y + (Math.random()-0.5)*step*0.6]);
         }
       }
     }
-    ctx.restore();
-
-    // ── Draw particles ────────────────────────────
-    pts.forEach(function(p) {
-      const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-      glow.addColorStop(0,   'rgba(0,229,255,' + (p.opacity * 0.9) + ')');
-      glow.addColorStop(0.4, 'rgba(0,200,240,' + (p.opacity * 0.4) + ')');
-      glow.addColorStop(1,   'rgba(0,100,150,0)');
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 0.7, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(200,240,255,' + (p.opacity * 0.95) + ')';
-      ctx.fill();
-    });
-
-    // ── Core nucleus glow ─────────────────────────
-    const r0 = 30 + Math.sin(t * 2) * 4;
-    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, r0 * 4);
-    core.addColorStop(0,    'rgba(180,240,255,0.95)');
-    core.addColorStop(0.15, 'rgba(0,229,255,0.7)');
-    core.addColorStop(0.4,  'rgba(0,150,200,0.2)');
-    core.addColorStop(1,    'rgba(0,50,80,0)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, r0 * 4, 0, Math.PI * 2);
-    ctx.fillStyle = core;
-    ctx.fill();
-    // Hard center
-    ctx.beginPath();
-    ctx.arc(cx, cy, r0 * 0.35, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(220,245,255,0.98)';
-    ctx.fill();
-
-    // ── Geometric rings ───────────────────────────
-    [80, 140, 200, 260].forEach(function(rr, i) {
-      const alpha = 0.07 - i * 0.015;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, rr, rr * 0.35, t * 0.2 + i * 0.5, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba(0,229,255,' + alpha + ')';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-    });
-
-    raf = requestAnimationFrame(draw);
+    // Fisher-Yates shuffle
+    for (var i = pts.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = pts[i]; pts[i] = pts[j]; pts[j] = tmp;
+    }
+    return pts.slice(0, isMobile ? 750 : 1500);
   }
-  draw();
 
-  // ── Expose stop function ──────────────────────────
+  // ── Neon palette (weighted toward cyan) ───────────────────────────────────────────
+  var PAL = [
+    [0,229,255],[0,229,255],[0,229,255],[20,210,245],
+    [178,0,255],[255,42,109],[57,255,20],[229,255,0],[0,180,255]
+  ];
+  var SHAPES = ['tri','sq','dia','hex','ring','sq','tri','dia'];
+
+  var particles = [];
+
+  function buildParticles() {
+    var pts = sampleText();
+    particles = [];
+    for (var i = 0; i < pts.length; i++) {
+      var col = PAL[Math.floor(Math.random() * PAL.length)];
+      particles.push({
+        x:  Math.random() * W,
+        y:  Math.random() * H,
+        tx: pts[i][0],
+        ty: pts[i][1],
+        vx: (Math.random()-0.5) * 1.3,
+        vy: (Math.random()-0.5) * 1.3,
+        shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+        size:  1.6 + Math.random() * 3.2,
+        rot:   Math.random() * Math.PI * 2,
+        rotS:  (Math.random()-0.5) * 0.028,
+        col:   col,
+        d:     Math.random() * 0.28
+      });
+    }
+  }
+
+  // ── Scroll / touch progress ─────────────────────────────────────────────────
+  var prog = 0, targetProg = 0;
+
+  splash.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 550));
+  }, { passive: false });
+
+  var ty0 = 0;
+  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
+  splash.addEventListener('touchmove', function(e) {
+    var dy = ty0 - e.touches[0].clientY;
+    ty0 = e.touches[0].clientY;
+    targetProg = Math.max(0, Math.min(1, targetProg + dy / 320));
+  }, { passive: true });
+
+  // Mobile: auto-assemble after 1.6s
+  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1600); }
+
+  // ── Draw a single geometric shape ────────────────────────────────────────────────
+  function geo(shape, x, y, s, rot, r, g, b, a) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.globalAlpha = a;
+    ctx.fillStyle   = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.strokeStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.lineWidth   = Math.max(0.7, s * 0.32);
+    switch (shape) {
+      case 'tri':
+        ctx.beginPath();
+        ctx.moveTo(0,-s); ctx.lineTo(s*0.866,s*0.5); ctx.lineTo(-s*0.866,s*0.5);
+        ctx.closePath(); ctx.fill(); break;
+      case 'sq':
+        ctx.fillRect(-s*0.54,-s*0.54,s*1.08,s*1.08); break;
+      case 'dia':
+        ctx.beginPath();
+        ctx.moveTo(0,-s); ctx.lineTo(s*0.6,0); ctx.lineTo(0,s); ctx.lineTo(-s*0.6,0);
+        ctx.closePath(); ctx.fill(); break;
+      case 'hex':
+        ctx.beginPath();
+        for (var i=0;i<6;i++){var ang=i*Math.PI/3; if(i===0)ctx.moveTo(s*Math.cos(ang),s*Math.sin(ang)); else ctx.lineTo(s*Math.cos(ang),s*Math.sin(ang));}
+        ctx.closePath(); ctx.fill(); break;
+      case 'ring':
+        ctx.beginPath(); ctx.arc(0,0,s*0.88,0,Math.PI*2); ctx.stroke(); break;
+    }
+    ctx.restore();
+  }
+
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  // ── Explosion state ───────────────────────────────────────────────────────────────────
+  var exploding = false;
+  window._splashExplode = function() {
+    exploding = true;
+    for (var i=0;i<particles.length;i++){
+      var ang = Math.random()*Math.PI*2;
+      var spd = 3 + Math.random()*10;
+      particles[i].vx = Math.cos(ang)*spd;
+      particles[i].vy = Math.sin(ang)*spd;
+    }
+  };
+
+  // ── Main animation loop ───────────────────────────────────────────────────────────────────
+  var raf, time = 0;
+
+  function draw() {
+    raf = requestAnimationFrame(draw);
+    prog += (targetProg - prog) * 0.058;
+    time += 0.016;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Ambient glow behind formed text
+    if (prog > 0.3) {
+      var ga = Math.min(1, (prog-0.3)/0.7) * 0.11;
+      var gr = ctx.createRadialGradient(W*0.5,H*0.38,0, W*0.5,H*0.5, W*0.58);
+      gr.addColorStop(0,   'rgba(0,180,255,'+(ga)+')');
+      gr.addColorStop(0.5, 'rgba(110,0,200,'+(ga*0.5)+')');
+      gr.addColorStop(1,   'transparent');
+      ctx.fillStyle = gr;
+      ctx.fillRect(0,0,W,H);
+    }
+
+    for (var i=0;i<particles.length;i++) {
+      var p = particles[i];
+      var r = p.col[0], g = p.col[1], b = p.col[2];
+
+      if (exploding) {
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.974; p.vy *= 0.974;
+        p.rot += p.rotS * 5;
+        var dx = p.x - W*0.5, dy = p.y - H*0.5;
+        var fade = Math.max(0, 1 - Math.sqrt(dx*dx+dy*dy)/(W*0.85));
+        if (fade > 0) geo(p.shape,p.x,p.y,p.size,p.rot,r,g,b,fade*0.88);
+        continue;
+      }
+
+      // Effective progress with per-particle delay
+      var ef = Math.max(0, (prog - p.d) / (1 - p.d + 0.001));
+      var t  = ease(Math.min(1, ef * 1.1));
+
+      if (t > 0.006) {
+        // Converge toward text target
+        p.x += (p.tx - p.x) * t * 0.092;
+        p.y += (p.ty - p.y) * t * 0.092;
+        p.rot += p.rotS * (1 - t * 0.94);
+      } else {
+        // Drift when scattered
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < -20 || p.x > W+20) p.vx *= -1;
+        if (p.y < -20 || p.y > H+20) p.vy *= -1;
+        p.rot += p.rotS;
+      }
+
+      // Pulse glow when fully assembled
+      var pulse = (prog > 0.88) ? 1 + Math.sin(time*1.8 + i*0.09)*0.14 : 1;
+      var alpha = 0.18 + t * 0.78;
+      geo(p.shape, p.x, p.y, p.size*pulse, p.rot, r, g, b, alpha);
+    }
+
+    // ENTRAR button visibility
+    var btn  = document.getElementById('splash-enter');
+    var hint = document.getElementById('splash-hint');
+    if (btn) {
+      var show = prog > 0.72;
+      if (show && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
+      if (!show && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
+    }
+    if (hint) hint.style.opacity = prog < 0.38 ? '1' : '0';
+  }
+
+  // Start after fonts load
+  document.fonts.ready.then(function() {
+    buildParticles();
+    draw();
+  });
+
+  window.addEventListener('resize', function() {
+    resize();
+    cancelAnimationFrame(raf);
+    document.fonts.ready.then(function() { buildParticles(); draw(); });
+  });
+
   window._stopNucleus = function() {
     cancelAnimationFrame(raf);
     ctx.clearRect(0, 0, W, H);
   };
 })();
 
-// ── Splash enter ──────────────────────────────────────────────────────────
+// ── Splash enter ────────────────────────────────────────────────────────────────────────────────
 window.enterDashboard = function() {
-  const splash = document.getElementById('splash');
+  var splash = document.getElementById('splash');
   splash.style.pointerEvents = 'none';
-  splash.style.transition = 'opacity 0.65s cubic-bezier(0.4,0,1,1), filter 0.65s cubic-bezier(0.4,0,1,1)';
-  splash.style.filter = 'blur(18px) brightness(1.4)';
-  splash.style.opacity = '0';
+  // Trigger particle explosion
+  if (window._splashExplode) window._splashExplode();
+  // Flash
   setTimeout(function() {
-    splash.style.display = 'none';
-    window._stopNucleus && window._stopNucleus();
-    setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
-    // Pedir permiso y arrancar polling de notificaciones
-    setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
-    setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2500);
-  }, 700);
+    splash.style.transition = 'opacity 0.75s cubic-bezier(0.4,0,1,1)';
+    splash.style.opacity = '0';
+    setTimeout(function() {
+      splash.style.display = 'none';
+      window._stopNucleus && window._stopNucleus();
+      setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 80);
+      setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1400);
+      setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2500);
+    }, 750);
+  }, 350);
 };
 </script>
 
