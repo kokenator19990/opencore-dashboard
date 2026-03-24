@@ -1018,26 +1018,26 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </script>
 
 <!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
-<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#030510;overflow:hidden;touch-action:none;">
+<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#020510;overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
-  <canvas id="bloom-canvas" style="position:absolute;inset:0;filter:blur(18px) brightness(1.8);mix-blend-mode:screen;opacity:0.45;pointer-events:none;"></canvas>
+  <canvas id="bloom-canvas" style="position:absolute;inset:0;filter:blur(20px) brightness(2.0);mix-blend-mode:screen;opacity:0.38;pointer-events:none;"></canvas>
   <div id="splash-ui" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
-    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.57rem;font-weight:600;letter-spacing:3.5px;color:rgba(155,205,255,0.30);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
-    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#c8e4ff;background:rgba(255,255,255,0.015);border:1px solid rgba(140,200,255,0.28);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;backdrop-filter:blur(8px);transition:all 0.4s ease;" onmouseover="this.style.background='rgba(100,180,255,0.07)';this.style.borderColor='rgba(180,225,255,0.8)';this.style.boxShadow='0 0 40px rgba(100,180,255,0.18),inset 0 0 15px rgba(100,180,255,0.06)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.015)';this.style.borderColor='rgba(140,200,255,0.28)';this.style.boxShadow='none';this.style.color='#c8e4ff'">ENTRAR &rarr;</button>
-    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.10);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
+    <div id="splash-hint" style="font-family:'Orbitron',sans-serif;font-size:0.52rem;font-weight:700;letter-spacing:4px;color:rgba(0,229,255,0.30);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; SCROLL TO REVEAL</div>
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Orbitron',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#00E5FF;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.30);padding:16px 60px;cursor:pointer;border-radius:4px;opacity:0;backdrop-filter:blur(8px);transition:all 0.35s ease;" onmouseover="this.style.background='rgba(0,229,255,0.10)';this.style.borderColor='rgba(0,229,255,0.85)';this.style.boxShadow='0 0 50px rgba(0,229,255,0.20),inset 0 0 20px rgba(0,229,255,0.05)';this.style.color='#fff';this.style.textShadow='0 0 20px rgba(0,229,255,0.6)'" onmouseout="this.style.background='rgba(0,229,255,0.03)';this.style.borderColor='rgba(0,229,255,0.30)';this.style.boxShadow='none';this.style.color='#00E5FF';this.style.textShadow='none'">ENTRAR &rarr;</button>
+    <div style="margin-top:1.3rem;font-family:'Orbitron',sans-serif;font-size:0.42rem;letter-spacing:3px;color:rgba(0,229,255,0.10);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA</div>
   </div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════════
-//  OPENCORE — GALAXY PARTICLE DUST v8
-//  Thousands of glowing particles assemble into crystal text
-//  Pre-rendered radial-gradient sprites · Additive blending · CSS HDR Bloom
-//  Mouse-reactive · Scintillation sparkle · Light sweep · 60fps
+//  OPENCORE — CONSTELLATION NETWORK v9
+//  Particles + dynamic connection lines = neural network / circuit board look
+//  Spatial hash grid for O(n) neighbor lookups · Energy pulse waves
+//  Mouse-reactive connections · Tech-authority cyan aesthetic
 // ═══════════════════════════════════════════════════════════════════════════════
 (function(){
 var canvas = document.getElementById('nucleus-canvas');
-var ctx = canvas.getContext('2d', {willReadFrequently: false});
+var ctx = canvas.getContext('2d');
 var bloomCanvas = document.getElementById('bloom-canvas');
 var bloomCtx = bloomCanvas.getContext('2d');
 var splash = document.getElementById('splash');
@@ -1047,6 +1047,10 @@ var prog = 0, tProg = 0;
 var exploding = false;
 var time = 0, raf, frameN = 0;
 var mx, my;
+
+// Spatial hash for fast neighbor lookups
+var CELL = 45; // cell size = max connection distance
+var gridW, gridH, grid;
 
 function resize() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1058,46 +1062,40 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   bloomCanvas.width = Math.floor(W / 3); bloomCanvas.height = Math.floor(H / 3);
   bloomCanvas.style.width = W + 'px'; bloomCanvas.style.height = H + 'px';
+  gridW = Math.ceil(W / CELL) + 1;
+  gridH = Math.ceil(H / CELL) + 1;
 }
 resize();
 
-// ── Pre-rendered glow sprites ────────────────────────────────────────────────
-// Each sprite is a small canvas with a radial gradient glow circle
+// ── Glow sprites ─────────────────────────────────────────────────────────────
 function makeSprite(r, g, b, sz) {
   var c = document.createElement('canvas');
   c.width = c.height = sz;
   var x = c.getContext('2d');
   var gr = x.createRadialGradient(sz/2, sz/2, 0, sz/2, sz/2, sz/2);
   gr.addColorStop(0, 'rgba('+r+','+g+','+b+',1)');
-  gr.addColorStop(0.08, 'rgba('+r+','+g+','+b+',0.85)');
-  gr.addColorStop(0.25, 'rgba('+Math.round(r*.85)+','+Math.round(g*.9)+','+Math.round(b*.95)+',0.35)');
-  gr.addColorStop(0.55, 'rgba('+Math.round(r*.6)+','+Math.round(g*.7)+','+Math.round(b*.85)+',0.08)');
+  gr.addColorStop(0.08, 'rgba('+r+','+g+','+b+',0.9)');
+  gr.addColorStop(0.22, 'rgba('+Math.round(r*.9)+','+Math.round(g*.92)+','+Math.round(b*.95)+',0.4)');
+  gr.addColorStop(0.5, 'rgba('+Math.round(r*.6)+','+Math.round(g*.7)+','+Math.round(b*.85)+',0.08)');
   gr.addColorStop(1, 'rgba('+Math.round(r*.3)+','+Math.round(g*.4)+','+Math.round(b*.6)+',0)');
   x.fillStyle = gr;
   x.fillRect(0, 0, sz, sz);
   return c;
 }
 
-var SZ = 48; // sprite canvas size
+var SZ = 48;
 var sprites = {
+  cyan:    makeSprite(0, 229, 255, SZ),
   white:   makeSprite(255, 255, 255, SZ),
-  ice:     makeSprite(200, 232, 255, SZ),
-  blue:    makeSprite(140, 190, 255, SZ),
-  deep:    makeSprite(90, 140, 230, SZ),
-  warm:    makeSprite(255, 240, 220, SZ),
-  fireR:   makeSprite(255, 140, 140, SZ),
-  fireG:   makeSprite(140, 255, 200, SZ),
-  fireB:   makeSprite(140, 200, 255, SZ),
-  fireY:   makeSprite(255, 230, 130, SZ),
-  fireP:   makeSprite(200, 140, 255, SZ)
+  ice:     makeSprite(180, 230, 255, SZ),
+  blue:    makeSprite(80, 160, 255, SZ),
+  bright:  makeSprite(200, 255, 255, SZ)
 };
-var spriteKeys = Object.keys(sprites);
 
-// ── Build particles from text ────────────────────────────────────────────────
+// ── Build particles ──────────────────────────────────────────────────────────
 function buildParticles() {
-  var spacing = isMob ? 5 : 4;
+  var spacing = isMob ? 6 : 5;
 
-  // Render text to offscreen canvas
   var off = document.createElement('canvas');
   off.width = W; off.height = H;
   var c = off.getContext('2d');
@@ -1105,7 +1103,6 @@ function buildParticles() {
   c.textAlign = 'center';
   c.textBaseline = 'middle';
 
-  // OPENCORE — fills ~85% width on desktop, ~82% on mobile
   var fs1 = Math.floor(W * (isMob ? 0.20 : 0.175));
   c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   var mw1 = c.measureText('OPENCORE').width;
@@ -1115,14 +1112,12 @@ function buildParticles() {
     c.font = '900 ' + fs1 + 'px "Orbitron", sans-serif';
   }
 
-  // SOFTWARE — proportionally smaller
   var fs2 = Math.floor(fs1 * 0.46);
   c.font = '900 ' + fs2 + 'px "Orbitron", sans-serif';
   var mw2 = c.measureText('SOFTWARE').width;
   var tw2 = W * (isMob ? 0.62 : 0.63);
   if (Math.abs(mw2 - tw2) > 8) fs2 = Math.floor(fs2 * tw2 / mw2);
 
-  // Vertical positions
   var y1 = H * (isMob ? 0.38 : 0.40);
   var y2 = H * (isMob ? 0.58 : 0.65);
 
@@ -1134,67 +1129,57 @@ function buildParticles() {
   var imgData = c.getImageData(0, 0, W, H).data;
   var arr = [];
 
-  // Sample text pixels on a grid with jitter
   for (var gy = 0; gy < H; gy += spacing) {
     for (var gx = 0; gx < W; gx += spacing) {
       var idx = (gy * W + gx) * 4 + 3;
       if (imgData[idx] < 80) continue;
 
-      // Target position (assembled) with slight jitter
-      var tx = gx + (Math.random() - 0.5) * spacing * 0.6;
-      var ty = gy + (Math.random() - 0.5) * spacing * 0.6;
+      var tx = gx + (Math.random() - 0.5) * spacing * 0.5;
+      var ty = gy + (Math.random() - 0.5) * spacing * 0.5;
 
-      // Scattered start position — fly from all directions
       var ang = Math.random() * Math.PI * 2;
-      var dist = 600 + Math.random() * 900;
+      var dist = 500 + Math.random() * 1000;
       var sx = tx + Math.cos(ang) * dist;
       var sy = ty + Math.sin(ang) * dist;
 
-      // Color distribution: diamond palette
       var rnd = Math.random();
       var sprKey;
-      if (rnd < 0.32)      sprKey = 'white';
-      else if (rnd < 0.55) sprKey = 'ice';
-      else if (rnd < 0.72) sprKey = 'blue';
-      else if (rnd < 0.82) sprKey = 'deep';
-      else if (rnd < 0.88) sprKey = 'warm';
-      else {
-        // Fire particles — rainbow dispersion
-        var fires = ['fireR', 'fireG', 'fireB', 'fireY', 'fireP'];
-        sprKey = fires[Math.floor(Math.random() * 5)];
-      }
+      if (rnd < 0.30)      sprKey = 'cyan';
+      else if (rnd < 0.52) sprKey = 'white';
+      else if (rnd < 0.72) sprKey = 'ice';
+      else if (rnd < 0.88) sprKey = 'bright';
+      else                  sprKey = 'blue';
 
-      // Brightness from text alpha — edges are dimmer, center brighter
       var alphaFactor = imgData[idx] / 255;
 
       arr.push({
-        tx: tx, ty: ty,       // target (assembled)
-        sx: sx, sy: sy,       // start (scattered)
-        x: sx, y: sy,         // current
-        size: (1.2 + Math.random() * 2.8) * (isMob ? 0.8 : 1), // draw diameter
-        brightness: (0.45 + Math.random() * 0.55) * alphaFactor,
+        tx: tx, ty: ty,
+        sx: sx, sy: sy,
+        x: sx, y: sy,
+        size: (1.0 + Math.random() * 2.2) * (isMob ? 0.85 : 1),
+        brightness: (0.5 + Math.random() * 0.5) * alphaFactor,
         sprite: sprites[sprKey],
-        delay: Math.random() * 0.30,
-        phase: Math.random() * Math.PI * 2,    // wobble phase
-        sparkPh: Math.random() * Math.PI * 10, // sparkle timing
-        sparkAmp: Math.random() < 0.12 ? 1 : 0 // 12% are sparkle-active
+        delay: Math.random() * 0.28,
+        phase: Math.random() * Math.PI * 2,
+        sparkPh: Math.random() * Math.PI * 10,
+        sparkAmp: Math.random() < 0.10 ? 1 : 0,
+        isNode: Math.random() < 0.15 // 15% are "network nodes" — slightly larger
       });
     }
   }
 
-  // Build ambient background particles (floating star dust)
+  // Ambient particles
   var ambArr = [];
-  var ambCount = isMob ? 80 : 180;
+  var ambCount = isMob ? 60 : 150;
   for (var i = 0; i < ambCount; i++) {
     ambArr.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      size: 0.5 + Math.random() * 1.5,
-      brightness: 0.08 + Math.random() * 0.18,
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: 0.4 + Math.random() * 1.2,
+      brightness: 0.06 + Math.random() * 0.12,
       phase: Math.random() * Math.PI * 2,
-      sprite: sprites[Math.random() < 0.5 ? 'ice' : 'blue']
+      sprite: sprites[Math.random() < 0.6 ? 'cyan' : 'blue']
     });
   }
 
@@ -1206,40 +1191,50 @@ function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 // ── Input ────────────────────────────────────────────────────────────────────
 splash.addEventListener('wheel', function(e) {
   e.preventDefault();
-  tProg = Math.max(0, Math.min(1, tProg + e.deltaY / 480));
+  tProg = Math.max(0, Math.min(1, tProg + e.deltaY / 460));
 }, { passive: false });
 
 var ty0 = 0;
 splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
 splash.addEventListener('touchmove', function(e) {
-  var dy = ty0 - e.touches[0].clientY;
-  ty0 = e.touches[0].clientY;
-  tProg = Math.max(0, Math.min(1, tProg + dy / 280));
+  var dy = ty0 - e.touches[0].clientY; ty0 = e.touches[0].clientY;
+  tProg = Math.max(0, Math.min(1, tProg + dy / 260));
 }, { passive: true });
 window.addEventListener('mousemove', function(e) { mx = e.clientX; my = e.clientY; }, { passive: true });
 if (isMob) setTimeout(function() { tProg = 1; }, 1200);
 
-// ── Explosion (on enter) ────────────────────────────────────────────────────
 window._splashExplode = function() {
   exploding = true;
-  // Reassign scattered positions to explode outward from current position
   for (var i = 0; i < particles.length; i++) {
     var p = particles[i];
-    p.sx = p.x;
-    p.sy = p.y;
+    p.sx = p.x; p.sy = p.y;
     var ang = Math.random() * Math.PI * 2;
     var dist = 400 + Math.random() * 800;
     p.tx = p.x + Math.cos(ang) * dist;
     p.ty = p.y + Math.sin(ang) * dist;
-    p.delay = Math.random() * 0.15;
+    p.delay = Math.random() * 0.12;
   }
-  tProg = 1; // drives prog toward 1, which now maps to exploded positions
+  tProg = 1;
 };
+
+// ── Spatial Hash ─────────────────────────────────────────────────────────────
+function buildGrid() {
+  grid = new Array(gridW * gridH);
+  for (var i = 0; i < grid.length; i++) grid[i] = [];
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var cx = Math.floor(p.x / CELL);
+    var cy = Math.floor(p.y / CELL);
+    if (cx >= 0 && cx < gridW && cy >= 0 && cy < gridH) {
+      grid[cy * gridW + cx].push(i);
+    }
+  }
+}
 
 // ── Render Loop ──────────────────────────────────────────────────────────────
 function draw() {
   raf = requestAnimationFrame(draw);
-  prog += (tProg - prog) * (exploding ? 0.06 : 0.055);
+  prog += (tProg - prog) * (exploding ? 0.07 : 0.052);
   time += 0.016;
   frameN++;
 
@@ -1247,15 +1242,115 @@ function draw() {
   ctx.globalAlpha = 1;
   ctx.clearRect(0, 0, W, H);
 
-  // Soft atmospheric glow behind text (grows with assembly)
-  if (prog > 0.1 && !exploding) {
-    var ga = Math.min(0.12, (prog - 0.1) * 0.14);
-    var gr = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.45);
-    gr.addColorStop(0, 'rgba(80, 160, 255, ' + ga + ')');
-    gr.addColorStop(0.5, 'rgba(30, 80, 180, ' + (ga*0.3) + ')');
+  // Background atmospheric glow
+  if (prog > 0.08 && !exploding) {
+    var ga = Math.min(0.10, (prog - 0.08) * 0.12);
+    var gr = ctx.createRadialGradient(W*0.5, H*0.47, 0, W*0.5, H*0.47, W*0.42);
+    gr.addColorStop(0, 'rgba(0, 229, 255, ' + ga + ')');
+    gr.addColorStop(0.4, 'rgba(0, 100, 180, ' + (ga*0.3) + ')');
     gr.addColorStop(1, 'transparent');
     ctx.fillStyle = gr;
     ctx.fillRect(0, 0, W, H);
+  }
+
+  // ── Update particle positions ──
+  var allAssembled = true;
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var rawT = Math.max(0, Math.min(1, (prog - p.delay) / (1 - p.delay + 0.001)));
+    var t = ease(rawT);
+    p._t = t;
+
+    p.x = p.sx + (p.tx - p.sx) * t;
+    p.y = p.sy + (p.ty - p.sy) * t;
+
+    if (t < 0.95) allAssembled = false;
+
+    // Subtle wobble when assembled
+    if (!exploding && t > 0.88) {
+      var w = (t - 0.88) / 0.12;
+      p.x += Math.sin(time * 1.1 + p.phase) * 0.5 * w;
+      p.y += Math.cos(time * 0.9 + p.phase * 1.3) * 0.4 * w;
+    }
+
+    // Mouse repel
+    if (!exploding && t > 0.7) {
+      var mdx = p.x - mx, mdy = p.y - my;
+      var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist < 60 && mDist > 0) {
+        var repel = (60 - mDist) / 60 * 4 * ((t - 0.7) / 0.3);
+        p.x += (mdx / mDist) * repel;
+        p.y += (mdy / mDist) * repel;
+      }
+    }
+  }
+
+  // ── Build spatial grid & draw connections ──
+  if (prog > 0.35 && !exploding) {
+    buildGrid();
+
+    // Energy pulse wave: a circle expanding from center periodically
+    var pulsePhase = (time * 0.6) % 4.0;
+    var pulseRadius = pulsePhase * Math.max(W, H) * 0.35;
+    var pulseWidth = 80;
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      if (p._t < 0.5) continue;
+
+      var cx = Math.floor(p.x / CELL);
+      var cy = Math.floor(p.y / CELL);
+
+      // Check 9 neighboring cells
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          var nx = cx + dx, ny = cy + dy;
+          if (nx < 0 || nx >= gridW || ny < 0 || ny >= gridH) continue;
+          var cell = grid[ny * gridW + nx];
+
+          for (var j = 0; j < cell.length; j++) {
+            var qi = cell[j];
+            if (qi <= i) continue; // avoid double-drawing
+            var q = particles[qi];
+            if (q._t < 0.5) continue;
+
+            var ddx = p.x - q.x, ddy = p.y - q.y;
+            var dist = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (dist > CELL || dist < 1) continue;
+
+            // Connection strength = inverse distance × assembly progress
+            var strength = (1 - dist / CELL) * Math.min(p._t, q._t);
+            strength *= strength; // quadratic falloff for cleaner look
+
+            // Energy pulse boost: connections near the pulse wave glow brighter
+            var midX = (p.x + q.x) / 2, midY = (p.y + q.y) / 2;
+            var distFromCenter = Math.sqrt((midX - W*0.5)*(midX - W*0.5) + (midY - H*0.47)*(midY - H*0.47));
+            var pulseDelta = Math.abs(distFromCenter - pulseRadius);
+            var pulseBoost = pulseDelta < pulseWidth ? (1 - pulseDelta / pulseWidth) * 0.6 : 0;
+
+            // Mouse proximity boost
+            var mMidDx = midX - mx, mMidDy = midY - my;
+            var mMidDist = Math.sqrt(mMidDx * mMidDx + mMidDy * mMidDy);
+            var mouseBoost = mMidDist < 100 ? (1 - mMidDist / 100) * 0.4 : 0;
+
+            var alpha = strength * 0.25 + pulseBoost + mouseBoost;
+            if (alpha < 0.01) continue;
+
+            // Line color: cyan to white based on strength
+            var lum = Math.min(255, Math.round(180 + strength * 75));
+            ctx.strokeStyle = 'rgba(0,' + lum + ',255,' + Math.min(0.6, alpha) + ')';
+            ctx.lineWidth = 0.4 + strength * 0.8 + pulseBoost * 1.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   // ── Draw ambient particles ──
@@ -1265,7 +1360,7 @@ function draw() {
     a.x += a.vx; a.y += a.vy;
     if (a.x < -20) a.x = W + 20; if (a.x > W + 20) a.x = -20;
     if (a.y < -20) a.y = H + 20; if (a.y > H + 20) a.y = -20;
-    var pulse = 0.7 + 0.3 * Math.sin(time * 0.8 + a.phase);
+    var pulse = 0.7 + 0.3 * Math.sin(time * 0.7 + a.phase);
     var drawSz = a.size * pulse * 8;
     ctx.globalAlpha = a.brightness * pulse;
     ctx.drawImage(a.sprite, a.x - drawSz/2, a.y - drawSz/2, drawSz, drawSz);
@@ -1274,81 +1369,46 @@ function draw() {
   // ── Draw text particles ──
   for (var i = 0; i < particles.length; i++) {
     var p = particles[i];
+    var t = p._t;
 
-    // Per-particle assembly progress
-    var rawT;
-    if (exploding) {
-      rawT = Math.max(0, Math.min(1, (prog - p.delay) / (1 - p.delay + 0.001)));
-    } else {
-      rawT = Math.max(0, Math.min(1, (prog - p.delay) / (1 - p.delay + 0.001)));
-    }
-    var t = ease(rawT);
-
-    // Position interpolation
-    p.x = p.sx + (p.tx - p.sx) * t;
-    p.y = p.sy + (p.ty - p.sy) * t;
-
-    // Wobble when assembled (alive feeling) — only in non-exploding state
-    if (!exploding && t > 0.85) {
-      var wobbleStr = (t - 0.85) / 0.15;
-      p.x += Math.sin(time * 1.2 + p.phase) * 0.6 * wobbleStr;
-      p.y += Math.cos(time * 1.0 + p.phase * 1.3) * 0.5 * wobbleStr;
-    }
-
-    // Mouse repel (subtle push when cursor is near assembled particles)
-    if (!exploding && t > 0.7) {
-      var mdx = p.x - mx, mdy = p.y - my;
-      var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-      if (mDist < 70 && mDist > 0) {
-        var repel = (70 - mDist) / 70 * 5 * ((t - 0.7) / 0.3);
-        p.x += (mdx / mDist) * repel;
-        p.y += (mdy / mDist) * repel;
-      }
-    }
-
-    // Scintillation sparkle — sharp brightness peaks
     var sparkle = 0;
     if (p.sparkAmp && !exploding && t > 0.85) {
-      sparkle = Math.pow(Math.max(0, Math.sin(time * 4.5 + p.sparkPh)), 20);
+      sparkle = Math.pow(Math.max(0, Math.sin(time * 4.5 + p.sparkPh)), 18);
       sparkle *= (t - 0.85) / 0.15;
     }
 
-    // Draw
-    var drawSz = p.size * (1 + sparkle * 1.2);
-    var alpha = p.brightness * (0.08 + t * 0.92) * (1 + sparkle * 0.8);
+    var drawSz = p.size * (1 + sparkle * 1.5);
+    if (p.isNode && t > 0.8) drawSz *= 1.3; // network nodes are larger
+    var alpha = p.brightness * (0.06 + t * 0.94) * (1 + sparkle * 0.7);
     if (exploding) alpha *= Math.max(0, 1 - t);
 
-    // Scale sprite: drawSz is the visible dot size, sprite needs to be larger for glow
     var spriteDraw = drawSz * 6;
     ctx.globalAlpha = Math.min(1, alpha);
     ctx.drawImage(p.sprite, p.x - spriteDraw/2, p.y - spriteDraw/2, spriteDraw, spriteDraw);
   }
   ctx.globalCompositeOperation = 'source-over';
 
-  // ── Light sweep across assembled text ──
-  if (!exploding && prog > 0.82) {
-    var sweepPhase = (time * 0.25) % 4;
-    if (sweepPhase < 3) {
-      var sweepX = W * (-0.2 + sweepPhase * 0.47);
-      ctx.globalCompositeOperation = 'lighter';
-      var sg = ctx.createLinearGradient(sweepX - 50, 0, sweepX + 50, 0);
-      sg.addColorStop(0, 'transparent');
-      sg.addColorStop(0.5, 'rgba(200, 230, 255, 0.025)');
-      sg.addColorStop(1, 'transparent');
-      ctx.fillStyle = sg;
-      ctx.globalAlpha = Math.min(1, (prog - 0.82) / 0.18);
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'source-over';
-    }
+  // ── Pulse wave ring effect ──
+  if (!exploding && prog > 0.6) {
+    var pulsePhase2 = (time * 0.6) % 4.0;
+    var pr = pulsePhase2 * Math.max(W, H) * 0.35;
+    var pw = 2;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath();
+    ctx.arc(W * 0.5, H * 0.47, pr, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 229, 255, ' + (0.04 * (1 - pulsePhase2/4)) + ')';
+    ctx.lineWidth = pw;
+    ctx.stroke();
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  // ── Bloom canvas (CSS-blurred copy for HDR glow) ──
+  // ── Bloom ──
   if (frameN % 2 === 0 && bloomCtx) {
     bloomCtx.clearRect(0, 0, bloomCanvas.width, bloomCanvas.height);
     bloomCtx.drawImage(canvas, 0, 0, bloomCanvas.width, bloomCanvas.height);
   }
 
-  // ── UI controls ──
+  // ── UI ──
   ctx.globalAlpha = 1;
   var btn = document.getElementById('splash-enter');
   var hint = document.getElementById('splash-hint');
@@ -1357,7 +1417,7 @@ function draw() {
     if (showBtn && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
     if (!showBtn && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
   }
-  if (hint) hint.style.opacity = (prog < 0.28 && !exploding) ? '1' : '0';
+  if (hint) hint.style.opacity = (prog < 0.26 && !exploding) ? '1' : '0';
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -1367,7 +1427,6 @@ function init() {
   ambient = result.amb;
   draw();
 }
-
 document.fonts.ready.then(init).catch(init);
 
 window.addEventListener('resize', function() {
