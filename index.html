@@ -1237,12 +1237,19 @@ function draw() {
   time += 0.016;
   frameN++;
 
-  ctx.fillStyle = '#020510';
+  // 1. Dynamic Dark Plasma Background
+  var gradX = W*0.5 + Math.sin(time*0.4) * W*0.15;
+  var gradY = H*0.5 + Math.cos(time*0.25) * H*0.15;
+  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.85);
+  bgGradient.addColorStop(0, '#06132D');  // Deep tech navy/blue
+  bgGradient.addColorStop(0.5, '#020612');
+  bgGradient.addColorStop(1, '#000105');
+  ctx.fillStyle = bgGradient;
   ctx.fillRect(0, 0, W, H);
 
-  // Background atmospheric glow
+  // Background atmospheric glow (cyan)
   if (prog > 0.05 && !exploding) {
-    var ga = Math.min(0.12, (prog - 0.05) * 0.15);
+    var ga = Math.min(0.08, (prog - 0.05) * 0.10);
     var gr = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.42);
     gr.addColorStop(0, 'rgba(0, 229, 255, ' + ga + ')');
     gr.addColorStop(0.5, 'rgba(0, 100, 180, ' + (ga*0.3) + ')');
@@ -1250,6 +1257,28 @@ function draw() {
     ctx.fillStyle = gr;
     ctx.fillRect(0, 0, W, H);
   }
+
+  // 2. Abstract Data Flow Waves (Energy Lines)
+  ctx.globalCompositeOperation = 'lighter';
+  var waveAmps = isMob ? [H*0.1, H*0.15] : [H*0.15, H*0.25, H*0.1];
+  var waveFreq = isMob ? [0.003, 0.002] : [0.002, 0.0012, 0.0035];
+  var waveSpds = isMob ? [0.8, 1.2] : [1.1, 0.7, 1.6];
+  
+  for(var w = 0; w < waveAmps.length; w++) {
+    ctx.beginPath();
+    var step = isMob ? 60 : 40;
+    for(var x = -50; x <= W + 50; x += step) {
+      var baseY = H * 0.5;
+      var y = baseY + Math.sin(x * waveFreq[w] + time * waveSpds[w]) * waveAmps[w];
+      y += Math.cos(x * 0.004 - time * 0.8) * 80; // Secondary twist
+      if(x === -50) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(0, 180, 255, ' + (0.015 + w * 0.01) + ')';
+    ctx.lineWidth = 1.5 + w * 0.5;
+    ctx.stroke();
+  }
+  ctx.globalCompositeOperation = 'source-over';
 
   // ── Update particle positions ──
   for (var i = 0; i < particles.length; i++) {
