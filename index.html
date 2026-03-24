@@ -1018,484 +1018,414 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </script>
 
 <!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
-<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#03050a;overflow:hidden;touch-action:none;">
+<div id="splash" style="position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% 45%,#0a1628 0%,#040810 50%,#020306 100%);overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
+  <canvas id="bloom-canvas" style="position:absolute;inset:0;filter:blur(16px) brightness(2.2);mix-blend-mode:screen;opacity:0.32;pointer-events:none;"></canvas>
   <div id="splash-ui" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
-    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.57rem;font-weight:600;letter-spacing:3.5px;color:rgba(155,205,255,0.34);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;text-shadow: 0 0 10px rgba(100,200,255,0.2);">&#8597; &nbsp; EXPLORA LA PANTALLA</div>
-    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#e8f4ff;background:rgba(255,255,255,0.015);border:1px solid rgba(140,200,255,0.40);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;backdrop-filter:blur(8px);transition:all 0.4s ease;" onmouseover="this.style.background='rgba(100,180,255,0.1)';this.style.borderColor='rgba(140,220,255,0.9)';this.style.boxShadow='0 0 35px rgba(100,180,255,0.25), inset 0 0 15px rgba(100,180,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.015)';this.style.borderColor='rgba(140,200,255,0.40)';this.style.boxShadow='none'">ENTRAR &rarr;</button>
-    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.15);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
+    <div id="splash-hint" style="font-family:'Space Grotesk',sans-serif;font-size:0.57rem;font-weight:600;letter-spacing:3.5px;color:rgba(155,205,255,0.34);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; DESLIZA PARA REVELAR</div>
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:#e8f4ff;background:rgba(255,255,255,0.02);border:1px solid rgba(140,200,255,0.35);padding:15px 56px;cursor:pointer;border-radius:6px;opacity:0;backdrop-filter:blur(8px);transition:all 0.4s ease;" onmouseover="this.style.background='rgba(100,180,255,0.08)';this.style.borderColor='rgba(180,225,255,0.85)';this.style.boxShadow='0 0 40px rgba(100,180,255,0.22),inset 0 0 20px rgba(100,180,255,0.08)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.02)';this.style.borderColor='rgba(140,200,255,0.35)';this.style.boxShadow='none';this.style.color='#e8f4ff'">ENTRAR &rarr;</button>
+    <div style="margin-top:1.3rem;font-family:'Inter',sans-serif;font-size:0.5rem;letter-spacing:2.5px;color:rgba(255,255,255,0.12);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA PRIVADA</div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════
-//  OPENCORE — HIGH-END 3D DIAMOND SYSTEM v6.0
-//
-//  - Fully calculated 3D bas-relief terrain based on accurate SDF beveling
-//  - 3D perspective projection renderer written entirely in Canvas2D
-//  - Deep physical diamond dispersion and chromatic aberration shaders
-//  - Thousands of triangulated shards flying in 3D space with quaternion/euler spins
-//  - "Opencore software" perfectly assembles into a solid 3D diamond jewel
-// ═══════════════════════════════════════════════════════════════════════
-(function() {
-  var canvas = document.getElementById('nucleus-canvas');
-  var ctx    = canvas.getContext('2d');
-  var splash = document.getElementById('splash');
-  var W, H, dpr, isMobile;
-  var facets = [], sortedFacets = [];
-  var prog = 0, targetProg = 0;
-  var exploding = false;
-  var time = 0, raf;
-  // Mouse interactivity
-  var mx = window.innerWidth/2, my = window.innerHeight/2;
+// ═══════════════════════════════════════════════════════════════════════════════
+//  OPENCORE DIAMOND v7 — WebGL Per-Pixel Diamond Shader
+//  Fresnel IOR 2.42 · Chromatic Dispersion · Studio Environment · HDR Bloom
+// ═══════════════════════════════════════════════════════════════════════════════
+(function(){
+var canvas=document.getElementById('nucleus-canvas'),
+    bloomCanvas=document.getElementById('bloom-canvas'),
+    splash=document.getElementById('splash'),
+    W,H,dpr,isMob,gl,bloomCtx,prog=0,tProg=0,time=0,raf,exploding=false,
+    mx,my,frameN=0,numVerts=0,vBuf,shProg;
 
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth; H = window.innerHeight;
-    isMobile = W < 800;
-    canvas.width  = W * dpr; canvas.height = H * dpr;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  resize();
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth;H=window.innerHeight;
+  isMob=W<800; mx=W/2; my=H/2;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  bloomCanvas.width=Math.floor(W/4);bloomCanvas.height=Math.floor(H/4);
+  bloomCanvas.style.width=W+'px';bloomCanvas.style.height=H+'px';
+}
+resize();
+bloomCtx=bloomCanvas.getContext('2d');
 
-  window.addEventListener('mousemove', function(e) { mx = e.clientX; my = e.clientY; }, {passive: true});
+// ─── WebGL Init ──────────────────────────────────────────────────────────────
+gl=canvas.getContext('webgl',{alpha:false,antialias:true,premultipliedAlpha:false})
+  ||canvas.getContext('experimental-webgl',{alpha:false,antialias:true});
+if(!gl){document.getElementById('splash-hint').textContent='WebGL not supported';return;}
 
-  function rot3d(v, rx, ry, rz) {
-    // X
-    var cx=Math.cos(rx), sx=Math.sin(rx);
-    var y1=v[1]*cx - v[2]*sx;
-    var z1=v[1]*sx + v[2]*cx;
-    // Y
-    var cy=Math.cos(ry), sy=Math.sin(ry);
-    var x2=v[0]*cy + z1*sy;
-    var z2=-v[0]*sy + z1*cy;
-    // Z
-    var cz=Math.cos(rz), sz=Math.sin(rz);
-    var x3=x2*cz - y1*sz;
-    var y3=x2*sz + y1*cz;
-    return [x3, y3, z2];
-  }
+function compileShader(src,type){
+  var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));}
+  return s;
+}
 
-  // Pure environment shader — realistic diamond ray refraction
-  // Receives world normal (nx, ny, nz)
-  function envColor(nx, ny, nz, tPhase) {
-    // Dynamic lights swinging according to time and mouse
-    var mlx = (mx/W - 0.5)*1.5;
-    var mly = (my/H - 0.5)*1.5;
-    
-    // Light 1: dynamic front-top highlight
-    var L1x = Math.sin(time*0.5) * 0.4 + mlx;
-    var L1y = -0.6 + mly;
-    var L1z = 0.8;
-    var L1L = Math.sqrt(L1x*L1x + L1y*L1y + L1z*L1z);
-    L1x/=L1L; L1y/=L1L; L1z/=L1L;
+// ─── Vertex Shader ───────────────────────────────────────────────────────────
+var VS=[
+'precision highp float;',
+'attribute vec3 aP;',     // assembled vertex position
+'attribute vec3 aC;',     // assembled centroid
+'attribute vec3 aN;',     // face normal
+'attribute vec3 aSP;',    // scattered centroid start
+'attribute vec3 aSR;',    // scattered rotation (euler)
+'attribute float aD;',    // delay
+'attribute float aPh;',   // sparkle phase
+'uniform float uProg;',
+'uniform float uTime;',
+'uniform vec2 uRes;',
+'varying vec3 vN;',
+'varying vec3 vW;',
+'varying float vPh;',
+'varying float vT;',
+'float eio(float t){return t<.5?4.*t*t*t:1.-pow(-2.*t+2.,3.)*.5;}',
+'void main(){',
+'  float ef=clamp((uProg-aD)/(1.-aD+.001),0.,1.);',
+'  float t=eio(ef); vT=t; vPh=aPh;',
+'  vec3 off=aP-aC;',
+'  vec3 r=aSR*(1.-t);',
+'  float cx=cos(r.x),sx=sin(r.x),cy=cos(r.y),sy=sin(r.y),cz=cos(r.z),sz=sin(r.z);',
+'  float oy=off.y*cx-off.z*sx, oz=off.y*sx+off.z*cx;',
+'  float ox=off.x*cy+oz*sy; oz=-off.x*sy+oz*cy;',
+'  vec3 p=vec3(ox*cz-oy*sz, ox*sz+oy*cz, oz);',
+'  float ny2=aN.y*cx-aN.z*sx, nz2=aN.y*sx+aN.z*cx;',
+'  float nx2=aN.x*cy+nz2*sy; nz2=-aN.x*sy+nz2*cy;',
+'  vN=vec3(nx2*cz-ny2*sz, nx2*sz+ny2*cz, nz2);',
+'  vec3 cen=mix(aSP,aC,t);',
+'  vec3 wp=cen+p; vW=wp;',
+'  float fl=1400.; float camZ=-max(uRes.x,uRes.y)*.8;',
+'  float sc=fl/max(1.,wp.z-camZ);',
+'  float sx2=uRes.x*.5+(wp.x-uRes.x*.5)*sc;',
+'  float sy2=uRes.y*.5+(wp.y-uRes.y*.5)*sc;',
+'  gl_Position=vec4(sx2/uRes.x*2.-1., 1.-sy2/uRes.y*2., wp.z/3000., 1.);',
+'}'
+].join('\n');
 
-    // Light 2: sharp rim light (blue/cyan)
-    var L2x = -0.7; var L2y = 0.3; var L2z = 0.4;
-    
-    // Light 3: back diagonal (warm)
-    var L3x = 0.6; var L3y = 0.5; var L3z = -0.3;
+// ─── Fragment Shader ─────────────────────────────────────────────────────────
+var FS=[
+'precision highp float;',
+'varying vec3 vN;',
+'varying vec3 vW;',
+'varying float vPh;',
+'varying float vT;',
+'uniform float uTime;',
+'uniform vec2 uRes;',
+'uniform vec2 uMouse;',
+'float fschlick(float c,float ior){float f0=pow((ior-1.)/(ior+1.),2.);return f0+(1.-f0)*pow(clamp(1.-c,0.,1.),5.);}',
+// Procedural studio environment for diamond reflections
+'vec3 env(vec3 d,float tOff){',
+'  vec3 c=vec3(.003,.005,.015);',
+// White studio panels (creates brilliance pattern)
+'  float p1=smoothstep(.55,.85,abs(sin(d.x*5.+d.z*3.+tOff*.25)));',
+'  c+=vec3(2.8,2.7,2.6)*p1;',
+'  float p2=smoothstep(.65,.9,abs(sin(d.y*7.+d.x*4.-tOff*.15)));',
+'  c+=vec3(1.2,1.3,1.6)*p2*.35;',
+// Dynamic key light (mouse-reactive)
+'  vec3 kd=normalize(vec3((uMouse.x/uRes.x-.5)*1.2,-(uMouse.y/uRes.y-.5)*1.2-.4,.8));',
+'  float kDot=max(0.,dot(d,kd));',
+'  c+=vec3(4.,3.8,3.5)*pow(kDot,300.);',  // razor-sharp specular
+'  c+=vec3(.15,.12,.08)*pow(kDot,3.);',    // broad fill
+// Cool rim
+'  c+=vec3(.3,.6,1.2)*pow(max(0.,dot(d,normalize(vec3(-.5,.2,-.7)))),24.);',
+// Warm accent
+'  c+=vec3(1.,.7,.35)*pow(max(0.,dot(d,normalize(vec3(.6,-.4,-.4)))),40.)*.7;',
+// Ring lights (6)
+'  for(int i=0;i<6;i++){',
+'    float a=float(i)*1.0472;',
+'    float dl=max(0.,dot(d,normalize(vec3(cos(a),-.15,sin(a)))));',
+'    c+=vec3(.9,.95,1.)*pow(dl,220.)*1.8;',
+'  }',
+'  c*=smoothstep(-.6,0.,d.y)*.6+.4;',
+'  return c;',
+'}',
+'void main(){',
+'  vec3 N=normalize(vN);',
+'  vec3 camP=vec3(uRes.x*.5,uRes.y*.5,-max(uRes.x,uRes.y)*.8);',
+'  vec3 V=normalize(camP-vW);',
+'  if(dot(N,V)<0.)N=-N;',
+'  float NdV=max(dot(N,V),0.);',
+'  float fresnel=fschlick(NdV,2.42);',
+// Chromatic dispersion — separate R/G/B reflection directions
+'  float disp=.038;',
+'  vec3 Nr=normalize(N+vec3(disp,0.,0.));',
+'  vec3 Nb=normalize(N-vec3(disp,0.,0.));',
+'  vec3 Rr=reflect(-V,Nr);',
+'  vec3 Rg=reflect(-V,N);',
+'  vec3 Rb=reflect(-V,Nb);',
+'  float tOff=uTime*.5;',
+'  vec3 col;',
+'  col.r=env(Rr,tOff).r;',
+'  col.g=env(Rg,tOff).g;',
+'  col.b=env(Rb,tOff).b;',
+'  col=mix(vec3(.008,.012,.035),col,fresnel);',
+// Direct specular (brilliance)
+'  vec3 lDir=normalize(vec3(.3,-.6,.7));',
+'  vec3 H2=normalize(V+lDir);',
+'  col+=vec3(2.5)*pow(max(dot(N,H2),0.),600.);',
+// Second specular from opposite side
+'  vec3 lDir2=normalize(vec3(-.4,-.5,.5));',
+'  vec3 H3=normalize(V+lDir2);',
+'  col+=vec3(.8,1.,1.4)*pow(max(dot(N,H3),0.),400.)*.6;',
+// Scintillation
+'  if(vT>.8){',
+'    float sp=pow(max(0.,sin(uTime*3.5+vPh)),24.)*smoothstep(.8,.95,vT);',
+'    col+=vec3(4.)*sp*fresnel;',
+'  }',
+// Edge glow (subtle blue)
+'  float edge=1.-NdV;',
+'  col+=vec3(.05,.12,.3)*pow(edge,3.)*.5;',
+// Alpha fade-in
+'  float alpha=smoothstep(0.,.12,vT);',
+// Reinhard tone mapping
+'  col=col/(1.+col);',
+'  col=pow(col,vec3(.92));',
+'  gl_FragColor=vec4(col,alpha);',
+'}'
+].join('\n');
 
-    var dot1 = nx*L1x + ny*L1y + nz*L1z;
-    var dot2 = nx*L2x + ny*L2y + nz*L2z;
-    var dot3 = nx*L3x + ny*L3y + nz*L3z;
+// ─── Compile & Link ──────────────────────────────────────────────────────────
+var vs=compileShader(VS,gl.VERTEX_SHADER);
+var fs=compileShader(FS,gl.FRAGMENT_SHADER);
+shProg=gl.createProgram();
+gl.attachShader(shProg,vs);gl.attachShader(shProg,fs);gl.linkProgram(shProg);
+if(!gl.getProgramParameter(shProg,gl.LINK_STATUS)){console.error(gl.getProgramInfoLog(shProg));}
 
-    // R1 = 2(N.L)N - L
-    var R1z = 2 * Math.max(0, dot1) * nz - L1z;
+var aP=gl.getAttribLocation(shProg,'aP'),
+    aC=gl.getAttribLocation(shProg,'aC'),
+    aN=gl.getAttribLocation(shProg,'aN'),
+    aSP=gl.getAttribLocation(shProg,'aSP'),
+    aSR=gl.getAttribLocation(shProg,'aSR'),
+    aD=gl.getAttribLocation(shProg,'aD'),
+    aPh=gl.getAttribLocation(shProg,'aPh');
+var uProg_l=gl.getUniformLocation(shProg,'uProg'),
+    uTime_l=gl.getUniformLocation(shProg,'uTime'),
+    uRes_l=gl.getUniformLocation(shProg,'uRes'),
+    uMouse_l=gl.getUniformLocation(shProg,'uMouse');
 
-    var viewReflect = Math.max(0, R1z); 
-
-    // Chromatic dispersion offsets: red and blue bend at slightly different angles
-    var rSpec = Math.pow(Math.max(0, 2*Math.max(0, dot1)*(nx+0.04) - L1x), 70);
-    var gSpec = Math.pow(viewReflect, 70); 
-    var bSpec = Math.pow(Math.max(0, 2*Math.max(0, dot1)*(nx-0.04) - L1x), 70);
-
-    // Rim and bounce spec
-    var rRim = Math.pow(Math.max(0, dot2), 15);
-    var rWarm= Math.pow(Math.max(0, dot3), 8);
-
-    // Environmental noise reflection
-    var envPhase = nx*15 + nz*8 + time;
-    var neon = Math.max(0, Math.sin(envPhase) * Math.cos(ny*10 - time*0.6)) * 0.4;
-
-    // Diamond interior base (dark sleek navy)
-    var zGradient = Math.max(0, nz) * 0.8; 
-    
-    // Mix components
-    // Red channel
-    var r = 3 + neon*80 + rSpec*255 + rRim*20 + rWarm*110 + zGradient*15;
-    // Green channel
-    var g = 8 + neon*140 + gSpec*255 + rRim*60 + rWarm*60 + zGradient*40;
-    // Blue channel
-    var b = 24 + neon*255 + bSpec*255 + rRim*150 + rWarm*30 + zGradient*110;
-    
-    // Tiny scintillation flashes
-    if (tPhase !== undefined) {
-      var sparkle = Math.pow(Math.max(0, Math.sin(time*2.5 + tPhase)), 400); // very sharp
-      if (sparkle > 0.1 && nz > 0.4) { r += sparkle*255; g += sparkle*255; b += sparkle*255; }
-    }
-
-    return [Math.min(255,r), Math.min(255,g), Math.min(255,b)];
-  }
-
-  // Distance to alpha edge for 3D bevel
-  function computeSDF(alphaData, W, H, s, maxDist) {
-    var Z = new Float32Array((W/s+1) * (H/s+1));
-    var DIRS = [];
-    for(var a=0; a<Math.PI*2; a+=Math.PI/12) DIRS.push([Math.cos(a), Math.sin(a)]);
-    
-    var gw = Math.floor(W/s);
-    var gh = Math.floor(H/s);
-    
-    for (var gy = 0; gy <= gh; gy++) {
-      for (var gx = 0; gx <= gw; gx++) {
-        var px0 = gx*s, py0 = gy*s;
-        var adx = (py0*W + px0)*4 + 3;
-        var val = adx >= 0 && adx < alphaData.length ? alphaData[adx] : 0;
-        
-        if (val < 60) {
-          Z[gy*(gw+1) + gx] = 0;
-          continue;
-        }
-
-        var minD = maxDist;
-        for (var di=0; di<DIRS.length; di++) {
-          var dx=DIRS[di][0], dy=DIRS[di][1];
-          for(var r=s*0.5; r<=maxDist; r+=s) {
-            var rx=(px0+dx*r)|0, ry=(py0+dy*r)|0;
-            if (rx<0 || rx>=W || ry<0 || ry>=H) { if(r<minD) minD=r; break; }
-            var id = (ry*W + rx)*4 + 3;
-            if (alphaData[id] < 60) {
-              if (r < minD) minD = r; break;
-            }
-          }
-        }
-        var zVal = 0;
-        if (minD > 0) {
-          // Rounded bevel formula (cylinder intersection)
-          var R = maxDist; 
-          var d = Math.min(minD, R);
-          zVal = Math.sqrt(R*R - (R-d)*(R-d));
-        }
-        // Exaggerate Z depth to make the diamond super chunky and 3D!
-        Z[gy*(gw+1) + gx] = zVal * 2.8; 
-      }
-    }
-    return Z;
-  }
-
-  function buildFacets() {
-    var s = isMobile ? 5 : 6;
-    var off = document.createElement('canvas');
-    off.width = W; off.height = H;
-    var c = off.getContext('2d');
-    
-    // Draw text cleanly
-    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    var fs1 = Math.floor(W * (isMobile ? 0.22 : 0.17));
-    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
-    var mw1 = c.measureText('OPENCORE').width, tw1 = W * (isMobile ? 0.80 : 0.85);
-    if (Math.abs(mw1 - tw1) > 8) { fs1 = Math.floor(fs1 * tw1 / mw1); c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif'; }
-
-    var fs2 = Math.floor(fs1 * 0.45);
-    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
-    var mw2 = c.measureText('SOFTWARE').width, tw2 = W * (isMobile ? 0.65 : 0.63);
-    if (Math.abs(mw2 - tw2) > 8) fs2 = Math.floor(fs2 * tw2 / mw2);
-
-    // Desktop vs mobile spacing
-    var y1 = H * (isMobile ? 0.40 : 0.43);
-    var y2 = H * (isMobile ? 0.58 : 0.68);
-    
-    c.font = '900 ' + fs1 + 'px "Space Grotesk", sans-serif';
-    c.fillText('OPENCORE', W * 0.5, y1);
-    c.font = '900 ' + fs2 + 'px "Space Grotesk", sans-serif';
-    c.fillText('SOFTWARE', W * 0.5, y2);
-
-    var data = c.getImageData(0, 0, W, H).data;
-    var maxBevel = s * 5.0; // depth penetration radius
-    var Z = computeSDF(data, W, H, s, maxBevel);
-    
-    var arr = [];
-    var gw = Math.floor(W/s);
-    var gh = Math.floor(H/s);
-
-    var camZ = -Math.max(W, H) * 0.8;
-    var fl = 1400;
-
-    function proj(vt_offset, tcx, tcy, tcz, rx, ry, rz) {
-      var rv = rot3d(vt_offset, rx, ry, rz);
-      var ax = tcx + rv[0], ay = tcy + rv[1], az = tcz + rv[2];
-      var scale = fl / Math.max(1, az - camZ);
-      return [ W*0.5 + (ax-W*0.5)*scale, H*0.5 + (ay-H*0.5)*scale, az ];
-    }
-
-    for (var gy = 0; gy < gh; gy++) {
-      for (var gx = 0; gx < gw; gx++) {
-        var pid = (gy*s * W + gx*s) * 4 + 3;
-        var palpha = data[pid];
-        if (palpha < 20) continue; // Skip completely empty
-
-        var z00 = Z[gy*(gw+1) + gx];
-        var z10 = Z[gy*(gw+1) + gx+1];
-        var z01 = Z[(gy+1)*(gw+1) + gx];
-        var z11 = Z[(gy+1)*(gw+1) + gx+1];
-
-        if (z00===0 && z10===0 && z01===0 && z11===0) continue;
-
-        var vx = gx*s, vy = gy*s;
-        var alt = (gx + gy) & 1;
-        var v00=[vx,vy,z00], v10=[vx+s,vy,z10], v11=[vx+s,vy+s,z11], v01=[vx,vy+s,z01];
-        var pairs = alt===0 ? [[v00, v10, v01], [v10, v11, v01]] : [[v00, v10, v11], [v00, v11, v01]];
-
-        for (var pi=0; pi<2; pi++) {
-          var tri = pairs[pi];
-          var tcx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3;
-          var tcy = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
-          var tcz = (tri[0][2] + tri[1][2] + tri[2][2]) / 3;
-
-          // Exaggerate normal calculation to make facets pop wildly
-          // Mix geometric normal with smoothed SDF normal for "faceted jewel" effect
-          var gnx = (tri[1][1]-tri[0][1])*(tri[2][2]-tri[0][2]) - (tri[1][2]-tri[0][2])*(tri[2][1]-tri[0][1]);
-          var gny = (tri[1][2]-tri[0][2])*(tri[2][0]-tri[0][0]) - (tri[1][0]-tri[0][0])*(tri[2][2]-tri[0][2]);
-          var gnz = (tri[1][0]-tri[0][0])*(tri[2][1]-tri[0][1]) - (tri[1][1]-tri[0][1])*(tri[2][0]-tri[0][0]);
-          var gnl = Math.sqrt(gnx*gnx + gny*gny + gnz*gnz)||1;
-          gnx/=gnl; gny/=gnl; gnz/=gnl;
-          
-          if (gnz < 0) { gnx=-gnx; gny=-gny; gnz=-gnz; }
-
-          // Slight outward explosion of vertices to prevent any rendering gaps at t=1
-          var expand = 0.6; 
-          var vertsOffset = [0,1,2].map(function(i) {
-             var dx = tri[i][0]-tcx, dy = tri[i][1]-tcy, dz = tri[i][2]-tcz;
-             var L = Math.sqrt(dx*dx+dy*dy+dz*dz)||1;
-             return [dx*(1+expand/L), dy*(1+expand/L), dz];
-          });
-
-          var scatter = 1400;
-          var ang1 = Math.random()*Math.PI*2;
-          var ang2 = Math.random()*Math.PI;
-          var sx = W*0.5 + Math.cos(ang1)*Math.sin(ang2)*scatter;
-          var sy = H*0.5 + Math.sin(ang1)*Math.sin(ang2)*scatter;
-          var sz = Math.cos(ang2)*scatter + 500; // start deep or far
-
-          // Precompute final assembled 2D screen positions (massive speedup for t=1)
-          var assembled2D = [
-             proj(vertsOffset[0], tcx, tcy, tcz, 0,0,0),
-             proj(vertsOffset[1], tcx, tcy, tcz, 0,0,0),
-             proj(vertsOffset[2], tcx, tcy, tcz, 0,0,0)
-          ];
-
-          arr.push({
-            tx: tcx, ty: tcy, tz: tcz,
-            nx: gnx, ny: gny, nz: gnz,
-            sx: sx, sy: sy, sz: sz,
-            srx: (Math.random()-0.5)*Math.PI*8,
-            sry: (Math.random()-0.5)*Math.PI*8,
-            srz: (Math.random()-0.5)*Math.PI*8,
-            vertsOffset: vertsOffset,
-            asm2D: assembled2D,
-            asmZ: (assembled2D[0][2] + assembled2D[1][2] + assembled2D[2][2])/3,
-            d: Math.random() * 0.28,
-            sparklePh: Math.random() * Math.PI * 10
-          });
+// ─── SDF Depth Field ─────────────────────────────────────────────────────────
+function computeSDF(alphaData,w,h,s,maxD){
+  var gw=Math.floor(w/s)+1, gh=Math.floor(h/s)+1;
+  var Z=new Float32Array(gw*gh);
+  var DIRS=[];
+  for(var a=0;a<Math.PI*2;a+=Math.PI/10) DIRS.push([Math.cos(a),Math.sin(a)]);
+  for(var gy=0;gy<gh;gy++){
+    for(var gx=0;gx<gw;gx++){
+      var px0=gx*s,py0=gy*s;
+      var idx=(py0*w+px0)*4+3;
+      if(idx<0||idx>=alphaData.length||alphaData[idx]<50){Z[gy*gw+gx]=0;continue;}
+      var minD=maxD;
+      for(var di=0;di<DIRS.length;di++){
+        var dx=DIRS[di][0],dy=DIRS[di][1];
+        for(var r=s;r<=maxD;r+=s){
+          var rx=(px0+dx*r)|0,ry=(py0+dy*r)|0;
+          if(rx<0||rx>=w||ry<0||ry>=h){if(r<minD)minD=r;break;}
+          if(alphaData[(ry*w+rx)*4+3]<50){if(r<minD)minD=r;break;}
         }
       }
+      var R=maxD,d=Math.min(minD,R);
+      Z[gy*gw+gx]=Math.sqrt(R*R-(R-d)*(R-d))*2.5;
     }
-    
-    // Sort array once for the pre-calculated terminal state:
-    // When t=1, the back-to-front rendering order is constant.
-    arr.sort(function(a,b) { return a.asmZ - b.asmZ; });
-    sortedFacets = arr.slice();
-    return arr;
   }
+  return {Z:Z,gw:gw,gh:gh};
+}
 
-  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-  function lerp(a, b, t) { return a + (b - a) * t; }
+// ─── Build Geometry ──────────────────────────────────────────────────────────
+function buildGeometry(){
+  var s=isMob?6:4;
+  var off=document.createElement('canvas');
+  off.width=W;off.height=H;
+  var c=off.getContext('2d');
+  c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
 
-  // Progress controls
-  splash.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    targetProg = Math.max(0, Math.min(1, targetProg + e.deltaY / 490));
-  }, { passive: false });
+  var fs1=Math.floor(W*(isMob?.22:.17));
+  c.font='900 '+fs1+'px "Space Grotesk",sans-serif';
+  var mw1=c.measureText('OPENCORE').width, tw1=W*(isMob?.80:.85);
+  if(Math.abs(mw1-tw1)>8){fs1=Math.floor(fs1*tw1/mw1);c.font='900 '+fs1+'px "Space Grotesk",sans-serif';}
 
-  var ty0 = 0;
-  splash.addEventListener('touchstart', function(e) { ty0 = e.touches[0].clientY; }, { passive: true });
-  splash.addEventListener('touchmove', function(e) {
-    var dy = ty0 - e.touches[0].clientY; ty0 = e.touches[0].clientY;
-    targetProg = Math.max(0, Math.min(1, targetProg + Math.abs(dy) / 290));
-  }, { passive: true });
+  var fs2=Math.floor(fs1*.45);
+  c.font='900 '+fs2+'px "Space Grotesk",sans-serif';
+  var mw2=c.measureText('SOFTWARE').width,tw2=W*(isMob?.65:.63);
+  if(Math.abs(mw2-tw2)>8)fs2=Math.floor(fs2*tw2/mw2);
 
-  if (isMobile) { setTimeout(function() { targetProg = 1; }, 1100); }
+  var y1=H*(isMob?.40:.43), y2=H*(isMob?.58:.68);
+  c.font='900 '+fs1+'px "Space Grotesk",sans-serif';
+  c.fillText('OPENCORE',W*.5,y1);
+  c.font='900 '+fs2+'px "Space Grotesk",sans-serif';
+  c.fillText('SOFTWARE',W*.5,y2);
 
-  window._splashExplode = function() {
-    exploding = true;
-    for (var i = 0; i < facets.length; i++) {
-        var f = facets[i];
-        f.tx = f.tx + (Math.random()-0.5)*3000;
-        f.ty = f.ty + (Math.random()-0.5)*3000;
-        f.tz = f.tz + Math.random()*2000 - 1000;
-        f.srx = (Math.random()-0.5)*Math.PI*5;
-        f.sry = (Math.random()-0.5)*Math.PI*5;
-    }
-    // Reverse animation
-    targetProg = -0.05; 
-  };
+  var data=c.getImageData(0,0,W,H).data;
+  var sdf=computeSDF(data,W,H,s,s*5);
+  var Z=sdf.Z,gw=sdf.gw,gh=sdf.gh;
 
-  // Main Render Loop
-  var camZGlobal = -Math.max(window.innerWidth, window.innerHeight) * 0.8;
-  var flGlobal = 1400;
+  // 17 floats per vertex: aP(3)+aC(3)+aN(3)+aSP(3)+aSR(3)+aD(1)+aPh(1)=17
+  var tris=[];
+  var expand=0.55;
 
-  function draw() {
-    raf = requestAnimationFrame(draw);
-    prog += (targetProg - prog) * (exploding ? 0.09 : 0.055);
-    time += 0.016;
-    
-    // Clear
-    ctx.globalAlpha = 1;
-    ctx.clearRect(0, 0, W, H);
+  for(var gy=0;gy<gh-1;gy++){
+    for(var gx=0;gx<gw-1;gx++){
+      var pid=(gy*s*W+gx*s)*4+3;
+      if(pid>=data.length||data[pid]<15)continue;
+      var z00=Z[gy*gw+gx],z10=Z[gy*gw+gx+1],z01=Z[(gy+1)*gw+gx],z11=Z[(gy+1)*gw+gx+1];
+      if(z00===0&&z10===0&&z01===0&&z11===0)continue;
 
-    // Dynamic environmental background pulse
-    var ga = Math.min(1, prog*1.2) * 0.17;
-    var gr = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.6);
-    gr.addColorStop(0,    'rgba(140, 205, 255, ' + ga + ')');
-    gr.addColorStop(0.35, 'rgba(40, 90, 190, ' + ga*0.5 + ')');
-    gr.addColorStop(1,    'transparent');
-    ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+      var vx=gx*s,vy=gy*s;
+      var alt=(gx+gy)&1;
+      var v00=[vx,vy,z00],v10=[vx+s,vy,z10],v11=[vx+s,vy+s,z11],v01=[vx,vy+s,z01];
+      var pairs=alt===0?[[v00,v10,v01],[v10,v11,v01]]:[[v00,v10,v11],[v00,v11,v01]];
 
-    ctx.lineJoin = 'round';
-    
-    // If fully assembled (t=1 for all), we just iterate through sorted array
-    // This is the ultra-fast fastpath with no complex 3D math per frame
-    var almostAllDone = true;
+      for(var pi=0;pi<2;pi++){
+        var tri=pairs[pi];
+        var tcx=(tri[0][0]+tri[1][0]+tri[2][0])/3;
+        var tcy=(tri[0][1]+tri[1][1]+tri[2][1])/3;
+        var tcz=(tri[0][2]+tri[1][2]+tri[2][2])/3;
 
-    for (var i = 0; i < sortedFacets.length; i++) {
-      var f = sortedFacets[i];
-      var ef = Math.max(0, Math.min(1, (prog - f.d) / (1.0 - f.d + 1e-5)));
-      var t  = ease(ef);
+        // Normal
+        var e1x=tri[1][0]-tri[0][0],e1y=tri[1][1]-tri[0][1],e1z=tri[1][2]-tri[0][2];
+        var e2x=tri[2][0]-tri[0][0],e2y=tri[2][1]-tri[0][1],e2z=tri[2][2]-tri[0][2];
+        var nx=e1y*e2z-e1z*e2y, ny=e1z*e2x-e1x*e2z, nz=e1x*e2y-e1y*e2x;
+        var nl=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+        nx/=nl;ny/=nl;nz/=nl;
+        if(nz<0){nx=-nx;ny=-ny;nz=-nz;}
 
-      if (t < 0.999) almostAllDone = false;
+        // Expand verts to seal gaps
+        var ev=[];
+        for(var vi=0;vi<3;vi++){
+          var dx=tri[vi][0]-tcx,dy=tri[vi][1]-tcy;
+          var L=Math.sqrt(dx*dx+dy*dy)||1;
+          ev.push([tcx+dx*(1+expand/L), tcy+dy*(1+expand/L), tri[vi][2]]);
+        }
 
-      // Draw Color Calculation
-      var c;
-      if (t > 0.999) {
-         // Snapped: use its final 3D normal for lighting
-         c = envColor(f.nx, f.ny, f.nz, f.sparklePh);
-         ctx.fillStyle = 'rgb('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+')';
-         ctx.beginPath();
-         var a2d = f.asm2D;
-         ctx.moveTo(a2d[0][0], a2d[0][1]);
-         ctx.lineTo(a2d[1][0], a2d[1][1]);
-         ctx.lineTo(a2d[2][0], a2d[2][1]);
-         ctx.closePath();
-         ctx.fill();
-         // Tiny stroke to hide canvas antialiasing boundary gaps perfectly 
-         ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 0.7; ctx.stroke();
-      } else {
-         // Flying/Spinning state 
-         var cx = lerp(f.sx, f.tx, t);
-         var cy = lerp(f.sy, f.ty, t);
-         var cz = lerp(f.sz, f.tz, t);
-         var rx = f.srx * (1 - t);
-         var ry = f.sry * (1 - t);
-         var rz = f.srz * (1 - t);
+        // Scatter
+        var ang1=Math.random()*Math.PI*2;
+        var ang2=Math.random()*Math.PI;
+        var scatter=1200+Math.random()*600;
+        var sx=W*.5+Math.cos(ang1)*Math.sin(ang2)*scatter;
+        var sy=H*.5+Math.sin(ang1)*Math.sin(ang2)*scatter;
+        var sz=Math.cos(ang2)*scatter+400;
+        var srx=(Math.random()-.5)*Math.PI*6;
+        var sry=(Math.random()-.5)*Math.PI*6;
+        var srz=(Math.random()-.5)*Math.PI*6;
+        var delay=Math.random()*.28;
+        var sparkle=Math.random()*Math.PI*10;
 
-         // Rotate local vertices & normal
-         var v0 = rot3d(f.vertsOffset[0], rx, ry, rz);
-         var v1 = rot3d(f.vertsOffset[1], rx, ry, rz);
-         var v2 = rot3d(f.vertsOffset[2], rx, ry, rz);
-
-         // Perspective projection
-         var s1 = flGlobal / Math.max(1, (cz+v0[2]) - camZGlobal);
-         var p0x = W*0.5 + (cx+v0[0]-W*0.5)*s1; var p0y = H*0.5 + (cy+v0[1]-H*0.5)*s1;
-         
-         var s2 = flGlobal / Math.max(1, (cz+v1[2]) - camZGlobal);
-         var p1x = W*0.5 + (cx+v1[0]-W*0.5)*s2; var p1y = H*0.5 + (cy+v1[1]-H*0.5)*s2;
-         
-         var s3 = flGlobal / Math.max(1, (cz+v2[2]) - camZGlobal);
-         var p2x = W*0.5 + (cx+v2[0]-W*0.5)*s3; var p2y = H*0.5 + (cy+v2[1]-H*0.5)*s3;
-
-         // Dynamic 3D Normal for refraction/lighting while flying
-         var cx_nx = (v1[1]-v0[1])*(v2[2]-v0[2]) - (v1[2]-v0[2])*(v2[1]-v0[1]);
-         var cy_ny = (v1[2]-v0[2])*(v2[0]-v0[0]) - (v1[0]-v0[0])*(v2[2]-v0[2]);
-         var cz_nz = (v1[0]-v0[0])*(v2[1]-v0[1]) - (v1[1]-v0[1])*(v2[0]-v0[0]);
-         var cnl = Math.sqrt(cx_nx*cx_nx + cy_ny*cy_ny + cz_nz*cz_nz)||1;
-         
-         // Fix normal facing away from camera
-         var dnz = cz_nz/cnl;
-         if (dnz < 0) { cx_nx=-cx_nx; cy_ny=-cy_ny; dnz=-dnz; }
-
-         // Opacity fade in
-         ctx.globalAlpha = Math.min(1, t*1.5);
-         
-         c = envColor(cx_nx/cnl, cy_ny/cnl, dnz);
-         ctx.fillStyle = 'rgb('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+')';
-         
-         ctx.beginPath();
-         ctx.moveTo(p0x, p0y);
-         ctx.lineTo(p1x, p1y);
-         ctx.lineTo(p2x, p2y);
-         ctx.closePath();
-         ctx.fill();
-         ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 0.5; ctx.stroke();
-         ctx.globalAlpha = 1;
+        for(var vi=0;vi<3;vi++){
+          tris.push(
+            ev[vi][0],ev[vi][1],ev[vi][2],  // aP
+            tcx,tcy,tcz,                    // aC
+            nx,ny,nz,                       // aN
+            sx,sy,sz,                       // aSP
+            srx,sry,srz,                    // aSR
+            delay,                          // aD
+            sparkle                         // aPh
+          );
+        }
       }
     }
+  }
+  return new Float32Array(tris);
+}
 
-    // Interactive sweep reflection when assembled
-    if (almostAllDone) {
-      if (Math.sin(time*0.4) > 0.0) {
-         var sweep = W * (0.5 + Math.sin(time*1.2)*0.8);
-         var sg = ctx.createLinearGradient(sweep-80, 0, sweep+80, 0);
-         sg.addColorStop(0, 'transparent');
-         sg.addColorStop(0.5, 'rgba(255,255,255,0.06)');
-         sg.addColorStop(1, 'transparent');
-         ctx.fillStyle = sg; ctx.fillRect(0,0,W,H);
-      }
-    }
+// ─── Upload Buffer ───────────────────────────────────────────────────────────
+function uploadGeom(arr){
+  vBuf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,vBuf);
+  gl.bufferData(gl.ARRAY_BUFFER,arr,gl.STATIC_DRAW);
+  numVerts=arr.length/17;
+}
 
-    // UI logic
-    var btn  = document.getElementById('splash-enter');
-    var hint = document.getElementById('splash-hint');
-    if (btn) {
-      var showBtn = prog > 0.65 && !exploding;
-      if (showBtn && btn.style.opacity !== '1') { btn.style.opacity='1'; btn.style.pointerEvents='all'; }
-      if (!showBtn && btn.style.opacity !== '0') { btn.style.opacity='0'; btn.style.pointerEvents='none'; }
-    }
-    if (hint) hint.style.opacity = (prog < 0.25 && !exploding) ? '1' : '0';
+// ─── Input ───────────────────────────────────────────────────────────────────
+splash.addEventListener('wheel',function(e){e.preventDefault();tProg=Math.max(0,Math.min(1,tProg+e.deltaY/490));},{passive:false});
+var ty0=0;
+splash.addEventListener('touchstart',function(e){ty0=e.touches[0].clientY;},{passive:true});
+splash.addEventListener('touchmove',function(e){var dy=ty0-e.touches[0].clientY;ty0=e.touches[0].clientY;tProg=Math.max(0,Math.min(1,tProg+dy/290));},{passive:true});
+window.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;},{passive:true});
+if(isMob)setTimeout(function(){tProg=1;},1100);
+
+window._splashExplode=function(){
+  exploding=true;tProg=-0.05;
+};
+
+// ─── Render Loop ─────────────────────────────────────────────────────────────
+function draw(){
+  raf=requestAnimationFrame(draw);
+  prog+=(tProg-prog)*(exploding?.09:.052);
+  time+=0.016; frameN++;
+
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.clearColor(.012,.02,.035,1);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+
+  gl.useProgram(shProg);
+  gl.uniform1f(uProg_l,prog);
+  gl.uniform1f(uTime_l,time);
+  gl.uniform2f(uRes_l,W,H);
+  gl.uniform2f(uMouse_l,mx,my);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER,vBuf);
+  var stride=17*4;
+  gl.enableVertexAttribArray(aP);  gl.vertexAttribPointer(aP,3,gl.FLOAT,false,stride,0);
+  gl.enableVertexAttribArray(aC);  gl.vertexAttribPointer(aC,3,gl.FLOAT,false,stride,12);
+  gl.enableVertexAttribArray(aN);  gl.vertexAttribPointer(aN,3,gl.FLOAT,false,stride,24);
+  gl.enableVertexAttribArray(aSP); gl.vertexAttribPointer(aSP,3,gl.FLOAT,false,stride,36);
+  gl.enableVertexAttribArray(aSR); gl.vertexAttribPointer(aSR,3,gl.FLOAT,false,stride,48);
+  gl.enableVertexAttribArray(aD);  gl.vertexAttribPointer(aD,1,gl.FLOAT,false,stride,60);
+  gl.enableVertexAttribArray(aPh); gl.vertexAttribPointer(aPh,1,gl.FLOAT,false,stride,64);
+
+  gl.drawArrays(gl.TRIANGLES,0,numVerts);
+
+  // CSS Bloom: copy WebGL output at 1/4 res every 3 frames
+  if(frameN%3===0&&bloomCtx){
+    bloomCtx.clearRect(0,0,bloomCanvas.width,bloomCanvas.height);
+    bloomCtx.drawImage(canvas,0,0,bloomCanvas.width,bloomCanvas.height);
   }
 
-  function init() { facets = buildFacets(); draw(); }
-  document.fonts.ready.then(init).catch(init);
+  // UI
+  var btn=document.getElementById('splash-enter');
+  var hint=document.getElementById('splash-hint');
+  if(btn){
+    var show=prog>.65&&!exploding;
+    if(show&&btn.style.opacity!=='1'){btn.style.opacity='1';btn.style.pointerEvents='all';}
+    if(!show&&btn.style.opacity!=='0'){btn.style.opacity='0';btn.style.pointerEvents='none';}
+  }
+  if(hint)hint.style.opacity=(prog<.25&&!exploding)?'1':'0';
+}
 
-  window.addEventListener('resize', function() {
-    resize(); cancelAnimationFrame(raf);
-    document.fonts.ready.then(function(){ facets = buildFacets(); draw(); });
-  });
+function init(){var g=buildGeometry();uploadGeom(g);draw();}
+document.fonts.ready.then(init).catch(init);
 
-  window._stopNucleus = function() { cancelAnimationFrame(raf); ctx.clearRect(0,0,W,H); };
+window.addEventListener('resize',function(){
+  resize();cancelAnimationFrame(raf);
+  if(gl){gl.viewport(0,0,canvas.width,canvas.height);}
+  document.fonts.ready.then(function(){var g=buildGeometry();uploadGeom(g);draw();});
+});
+
+window._stopNucleus=function(){cancelAnimationFrame(raf);if(gl)gl.clear(gl.COLOR_BUFFER_BIT);};
 })();
 
 // ── Splash enter ────────────────────────────────────────────────────────────
-window.enterDashboard = function() {
-  var splash = document.getElementById('splash');
-  if(!splash) return;
-  splash.style.pointerEvents = 'none';
-  if (window._splashExplode) window._splashExplode();
-  document.getElementById('splash-ui').style.transition = 'opacity 0.4s';
-  document.getElementById('splash-ui').style.opacity = '0';
-  
-  setTimeout(function() {
-    splash.style.transition = 'opacity 1.0s cubic-bezier(0.5,0,0.8,1)';
-    splash.style.opacity = '0';
-    setTimeout(function() {
-      splash.style.display = 'none';
-      if(window._stopNucleus) window._stopNucleus();
-      setTimeout(function() { if (window._sndEnter) window._sndEnter(); }, 50);
-      setTimeout(function() { if (typeof _askNotifPermission==='function') _askNotifPermission(); }, 1200);
-      setTimeout(function() { if (typeof _startPolling==='function') _startPolling(); }, 2000);
-    }, 1000);
-  }, 300);
+window.enterDashboard=function(){
+  var splash=document.getElementById('splash');
+  if(!splash)return;
+  splash.style.pointerEvents='none';
+  if(window._splashExplode)window._splashExplode();
+  var ui=document.getElementById('splash-ui');
+  if(ui){ui.style.transition='opacity 0.4s';ui.style.opacity='0';}
+  setTimeout(function(){
+    splash.style.transition='opacity 1s cubic-bezier(0.5,0,0.8,1)';
+    splash.style.opacity='0';
+    setTimeout(function(){
+      splash.style.display='none';
+      if(window._stopNucleus)window._stopNucleus();
+      setTimeout(function(){if(window._sndEnter)window._sndEnter();},50);
+      setTimeout(function(){if(typeof _askNotifPermission==='function')_askNotifPermission();},1200);
+      setTimeout(function(){if(typeof _startPolling==='function')_startPolling();},2000);
+    },1000);
+  },300);
 };
 </script>
 <div class="particles-bg"></div>
