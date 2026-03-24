@@ -1018,21 +1018,25 @@ textarea.ar { resize: none; overflow: hidden; line-height: 1.5; box-sizing: bord
 </script>
 
 <!-- ═══════════════════════════════════════ SPLASH SCREEN ═══════════════════════════════════════ -->
-<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#020510;overflow:hidden;touch-action:none;">
+<div id="splash" style="position:fixed;inset:0;z-index:9000;background:#000;overflow:hidden;touch-action:none;">
   <canvas id="nucleus-canvas" style="position:absolute;inset:0;"></canvas>
-  <canvas id="bloom-canvas" style="position:absolute;inset:0;filter:blur(18px) brightness(1.8);mix-blend-mode:screen;opacity:0.35;pointer-events:none;"></canvas>
+  <canvas id="bloom-canvas" style="position:absolute;inset:0;filter:blur(24px) brightness(1.6);mix-blend-mode:screen;opacity:0.25;pointer-events:none;"></canvas>
+  
   <div id="splash-ui" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:max(6vh,40px);pointer-events:none;user-select:none;z-index:4;">
-    <div id="splash-hint" style="font-family:'Orbitron',sans-serif;font-size:0.52rem;font-weight:700;letter-spacing:4px;color:rgba(0,229,255,0.30);text-transform:uppercase;margin-bottom:1.5rem;transition:opacity 0.6s ease;">&#8597; &nbsp; SCROLL TO REVEAL</div>
-    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Orbitron',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#00E5FF;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.30);padding:16px 60px;cursor:pointer;border-radius:4px;opacity:0;backdrop-filter:blur(8px);transition:all 0.35s ease;" onmouseover="this.style.background='rgba(0,229,255,0.10)';this.style.borderColor='rgba(0,229,255,0.85)';this.style.boxShadow='0 0 50px rgba(0,229,255,0.20),inset 0 0 20px rgba(0,229,255,0.05)';this.style.color='#fff';this.style.textShadow='0 0 20px rgba(0,229,255,0.6)'" onmouseout="this.style.background='rgba(0,229,255,0.03)';this.style.borderColor='rgba(0,229,255,0.30)';this.style.boxShadow='none';this.style.color='#00E5FF';this.style.textShadow='none'">ENTRAR &rarr;</button>
-    <div style="margin-top:1.3rem;font-family:'Orbitron',sans-serif;font-size:0.42rem;letter-spacing:3px;color:rgba(0,229,255,0.10);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA</div>
+    
+    <div id="splash-hint" style="font-family:'Orbitron',sans-serif;font-size:0.48rem;font-weight:700;letter-spacing:6px;color:rgba(0,229,255,0.18);text-transform:uppercase;margin-bottom:1.8rem;transition:opacity 0.8s ease;">&#8597; &nbsp; SCROLL TO REVEAL</div>
+    
+    <button id="splash-enter" onclick="enterDashboard()" style="pointer-events:none;font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(0,229,255,0.8);background:rgba(0,229,255,0.015);border:1px solid rgba(0,229,255,0.15);padding:16px 64px;cursor:pointer;border-radius:4px;opacity:0;backdrop-filter:blur(10px);transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.background='rgba(0,229,255,0.06)';this.style.borderColor='rgba(0,229,255,0.6)';this.style.boxShadow='0 0 40px rgba(0,229,255,0.15),inset 0 0 15px rgba(0,229,255,0.05)';this.style.color='#fff';this.style.textShadow='0 0 12px rgba(0,229,255,0.5)'" onmouseout="this.style.background='rgba(0,229,255,0.015)';this.style.borderColor='rgba(0,229,255,0.15)';this.style.boxShadow='none';this.style.color='rgba(0,229,255,0.8)';this.style.textShadow='none'">ENTRAR &rarr;</button>
+    
+    <div style="margin-top:1.5rem;font-family:'Inter',sans-serif;font-weight:500;font-size:0.45rem;letter-spacing:3.5px;color:rgba(255,255,255,0.08);text-transform:uppercase;">&#169; 2026 OPENCORE &nbsp;&middot;&nbsp; PLATAFORMA EJECUTIVA</div>
   </div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════════
-//  OPENCORE — CONSTELLATION NETWORK v10 (HIGH PERFORMANCE)
-//  Particles + dynamic connection lines = neural network / circuit board look
-//  Batched line rendering (Path2D), grid throttling, limited connections (60fps target)
+//  OPENCORE — CONSTELLATION NETWORK PRO v12
+//  High-end visual polish: Deep indigo/black gradients, hairline fiber waves,
+//  vignette framing, precise bloom dynamics, geometric Orbitron typography.
 // ═══════════════════════════════════════════════════════════════════════════════
 (function(){
 var canvas = document.getElementById('nucleus-canvas');
@@ -1054,11 +1058,10 @@ function resize() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   W = window.innerWidth; H = window.innerHeight;
   isMob = W < 800;
-  CELL = isMob ? 38 : 46; // slightly shorter connections on mobile
+  CELL = isMob ? 38 : 46; 
   canvas.width = W * dpr; canvas.height = H * dpr;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  // Optional bloom context sizing
   bloomCanvas.width = Math.floor(W / 3); bloomCanvas.height = Math.floor(H / 3);
   bloomCanvas.style.width = W + 'px'; bloomCanvas.style.height = H + 'px';
   gridW = Math.ceil(W / CELL) + 1;
@@ -1083,15 +1086,14 @@ function makeSprite(r, g, b, sz) {
 
 var SZ = 48;
 var sprites = {
-  cyan:    makeSprite(0, 229, 255, SZ),
+  cyan:    makeSprite(0, 210, 255, SZ), // slightly deeper cyan
   white:   makeSprite(255, 255, 255, SZ),
-  ice:     makeSprite(180, 230, 255, SZ),
-  blue:    makeSprite(80, 160, 255, SZ),
-  bright:  makeSprite(200, 255, 255, SZ)
+  ice:     makeSprite(160, 220, 255, SZ),
+  blue:    makeSprite(40, 120, 255, SZ),
+  bright:  makeSprite(180, 255, 255, SZ)
 };
 
 function buildParticles() {
-  // Increased spacing = FEWER particles exponentially (better performance)
   var spacing = isMob ? 9 : 7; 
 
   var off = document.createElement('canvas');
@@ -1129,8 +1131,7 @@ function buildParticles() {
 
   for (var gy = 0; gy < H; gy += spacing) {
     for (var gx = 0; gx < W; gx += spacing) {
-      var idx = (gy * W + gx) * 4 + 3;
-      if (imgData[idx] < 60) continue;
+      if (imgData[(gy * W + gx) * 4 + 3] < 60) continue;
 
       var tx = gx + (Math.random() - 0.5) * spacing * 0.5;
       var ty = gy + (Math.random() - 0.5) * spacing * 0.5;
@@ -1142,18 +1143,16 @@ function buildParticles() {
 
       var rnd = Math.random();
       var sprKey;
-      if (rnd < 0.30)      sprKey = 'cyan';
-      else if (rnd < 0.52) sprKey = 'white';
-      else if (rnd < 0.72) sprKey = 'ice';
-      else if (rnd < 0.88) sprKey = 'bright';
+      if (rnd < 0.35)      sprKey = 'cyan';
+      else if (rnd < 0.55) sprKey = 'white';
+      else if (rnd < 0.75) sprKey = 'ice';
+      else if (rnd < 0.90) sprKey = 'bright';
       else                  sprKey = 'blue';
 
-      var alphaFactor = imgData[idx] / 255;
+      var alphaFactor = imgData[(gy * W + gx) * 4 + 3] / 255;
 
       arr.push({
-        tx: tx, ty: ty,
-        sx: sx, sy: sy,
-        x: sx, y: sy,
+        tx: tx, ty: ty, sx: sx, sy: sy, x: sx, y: sy,
         size: (1.2 + Math.random() * 2.8) * (isMob ? 0.9 : 1.1),
         brightness: (0.4 + Math.random() * 0.6) * alphaFactor,
         sprite: sprites[sprKey],
@@ -1161,23 +1160,21 @@ function buildParticles() {
         phase: Math.random() * Math.PI * 2,
         sparkPh: Math.random() * Math.PI * 10,
         sparkAmp: Math.random() < 0.12 ? 1 : 0,
-        isNode: Math.random() < 0.20 // 20% are nodes
+        isNode: Math.random() < 0.20
       });
     }
   }
 
-  // Ambient particles
   var ambArr = [];
   var ambCount = isMob ? 40 : 100;
   for (var i = 0; i < ambCount; i++) {
     ambArr.push({
       x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
+      vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
       size: 0.5 + Math.random() * 1.5,
-      brightness: 0.05 + Math.random() * 0.15,
+      brightness: 0.04 + Math.random() * 0.12,
       phase: Math.random() * Math.PI * 2,
-      sprite: sprites[Math.random() < 0.6 ? 'cyan' : 'blue']
+      sprite: sprites[Math.random() < 0.7 ? 'cyan' : 'blue']
     });
   }
 
@@ -1186,10 +1183,8 @@ function buildParticles() {
 
 function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
 
-// ── Input ────────────────────────────────────────────────────────────────────
 splash.addEventListener('wheel', function(e) {
-  e.preventDefault();
-  tProg = Math.max(0, Math.min(1, tProg + e.deltaY / 440));
+  e.preventDefault(); tProg = Math.max(0, Math.min(1, tProg + e.deltaY / 440));
 }, { passive: false });
 
 var ty0 = 0;
@@ -1204,136 +1199,118 @@ if (isMob) setTimeout(function() { tProg = 1; }, 1200);
 window._splashExplode = function() {
   exploding = true;
   for (var i = 0; i < particles.length; i++) {
-    var p = particles[i];
-    p.sx = p.x; p.sy = p.y;
+    var p = particles[i]; p.sx = p.x; p.sy = p.y;
     var ang = Math.random() * Math.PI * 2;
     var dist = 400 + Math.random() * 800;
-    p.tx = p.x + Math.cos(ang) * dist;
-    p.ty = p.y + Math.sin(ang) * dist;
+    p.tx = p.x + Math.cos(ang) * dist; p.ty = p.y + Math.sin(ang) * dist;
     p.delay = Math.random() * 0.1;
   }
   tProg = 1;
 };
 
 function buildGrid() {
-  if (frameN % 2 !== 0) return; // throttle grid updates to half framerate
-  grid.length = 0; // faster clear
+  if (frameN % 2 !== 0) return; 
+  grid.length = 0; 
   var len = gridW * gridH;
   for (var i = 0; i < len; i++) grid.push([]);
   for (var i = 0; i < particles.length; i++) {
     var p = particles[i];
-    var cx = Math.floor(p.x / CELL);
-    var cy = Math.floor(p.y / CELL);
-    if (cx >= 0 && cx < gridW && cy >= 0 && cy < gridH) {
-      grid[cy * gridW + cx].push(i);
-    }
+    var cx = Math.floor(p.x / CELL), cy = Math.floor(p.y / CELL);
+    if (cx >= 0 && cx < gridW && cy >= 0 && cy < gridH) { grid[cy * gridW + cx].push(i); }
   }
 }
 
-// ── Render Loop ──────────────────────────────────────────────────────────────
 function draw() {
   raf = requestAnimationFrame(draw);
   prog += (tProg - prog) * (exploding ? 0.08 : 0.055);
-  time += 0.016;
+  time += 0.012; // slightly slower global time for elegance
   frameN++;
 
-  // 1. Dynamic Dark Plasma Background
-  var gradX = W*0.5 + Math.sin(time*0.4) * W*0.15;
-  var gradY = H*0.5 + Math.cos(time*0.25) * H*0.15;
-  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.85);
-  bgGradient.addColorStop(0, '#06132D');  // Deep tech navy/blue
-  bgGradient.addColorStop(0.5, '#020612');
-  bgGradient.addColorStop(1, '#000105');
+  // 1. DYNAMIC PROFESSIONAL DEEP BACKGROUND
+  var gradX = W*0.5 + Math.sin(time*0.3) * W*0.15;
+  var gradY = H*0.5 + Math.cos(time*0.2) * H*0.15;
+  var bgGradient = ctx.createRadialGradient(gradX, gradY, 0, W*0.5, H*0.5, Math.max(W, H)*0.9);
+  bgGradient.addColorStop(0, '#040B1A');  // Deepest indigo/navy
+  bgGradient.addColorStop(0.5, '#01030B'); // Near black
+  bgGradient.addColorStop(1, '#000000');   // Pure black edges
   ctx.fillStyle = bgGradient;
   ctx.fillRect(0, 0, W, H);
 
-  // Background atmospheric glow (cyan)
+  // Core atmospheric cyan glow
   if (prog > 0.05 && !exploding) {
-    var ga = Math.min(0.08, (prog - 0.05) * 0.10);
+    var ga = Math.min(0.06, (prog - 0.05) * 0.08); // Subdued elegant glow
     var gr = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.42);
-    gr.addColorStop(0, 'rgba(0, 229, 255, ' + ga + ')');
-    gr.addColorStop(0.5, 'rgba(0, 100, 180, ' + (ga*0.3) + ')');
+    gr.addColorStop(0, 'rgba(0, 180, 255, ' + ga + ')');
+    gr.addColorStop(0.5, 'rgba(0, 80, 150, ' + (ga*0.3) + ')');
     gr.addColorStop(1, 'transparent');
     ctx.fillStyle = gr;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // 2. Abstract Data Flow Waves (Energy Lines)
+  // 2. ABSTRACT FIBER DATA WAVES (HAIRLINE & ELEGANT)
   ctx.globalCompositeOperation = 'lighter';
-  var waveAmps = isMob ? [H*0.1, H*0.15] : [H*0.15, H*0.25, H*0.1];
+  var waveAmps = isMob ? [H*0.1, H*0.15] : [H*0.15, H*0.25, H*0.08];
   var waveFreq = isMob ? [0.003, 0.002] : [0.002, 0.0012, 0.0035];
-  var waveSpds = isMob ? [0.8, 1.2] : [1.1, 0.7, 1.6];
+  var waveSpds = isMob ? [0.6, 1.0] : [0.9, 0.6, 1.3];
   
   for(var w = 0; w < waveAmps.length; w++) {
     ctx.beginPath();
     var step = isMob ? 60 : 40;
     for(var x = -50; x <= W + 50; x += step) {
-      var baseY = H * 0.5;
-      var y = baseY + Math.sin(x * waveFreq[w] + time * waveSpds[w]) * waveAmps[w];
-      y += Math.cos(x * 0.004 - time * 0.8) * 80; // Secondary twist
-      if(x === -50) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      var y = H * 0.5 + Math.sin(x * waveFreq[w] + time * waveSpds[w]) * waveAmps[w];
+      y += Math.cos(x * 0.004 - time * 0.8) * 60; // Secondary twist
+      if(x === -50) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = 'rgba(0, 180, 255, ' + (0.015 + w * 0.01) + ')';
-    ctx.lineWidth = 1.5 + w * 0.5;
+    ctx.strokeStyle = 'rgba(0, 180, 255, ' + (0.01 + w * 0.008) + ')';
+    ctx.lineWidth = 0.6 + w * 0.3; // Hairline thin
     ctx.stroke();
   }
   ctx.globalCompositeOperation = 'source-over';
 
-  // ── Update particle positions ──
+  // ── UPDATE PARTICLES ──
   for (var i = 0; i < particles.length; i++) {
     var p = particles[i];
     var rawT = Math.max(0, Math.min(1, (prog - p.delay) / (1 - p.delay + 0.001)));
-    var t = ease(rawT);
-    p._t = t;
+    var t = ease(rawT); p._t = t;
 
     p.x = p.sx + (p.tx - p.sx) * t;
     p.y = p.sy + (p.ty - p.sy) * t;
 
-    // Subtle wobble when assembled
     if (!exploding && t > 0.88) {
       var w = (t - 0.88) / 0.12;
       p.x += Math.sin(time * 1.2 + p.phase) * 0.4 * w;
       p.y += Math.cos(time * 1.0 + p.phase * 1.3) * 0.3 * w;
     }
 
-    // Mouse repel
     if (!exploding && t > 0.6) {
       var mdx = p.x - mx, mdy = p.y - my;
       var distSq = mdx * mdx + mdy * mdy;
-      if (distSq < 4900 && distSq > 0) { // 70px radius
+      if (distSq < 4900 && distSq > 0) { 
         var mDist = Math.sqrt(distSq);
         var repel = (70 - mDist) / 70 * 4.5 * ((t - 0.6) / 0.4);
-        p.x += (mdx / mDist) * repel;
-        p.y += (mdy / mDist) * repel;
+        p.x += (mdx / mDist) * repel; p.y += (mdy / mDist) * repel;
       }
     }
   }
 
-  // ── Build spatial grid & BATCH DRAW connections ──
+  // ── SPATIAL GRID & HIGH-END CONNECTIONS ──
   if (prog > 0.30 && !exploding) {
     buildGrid();
 
-    // Limit maximum connections drawn per node for massive performance boost
     var maxConn = isMob ? 3 : 4; 
     var maxDistSq = CELL * CELL;
-
-    var pulsePhase = (time * 0.6) % 4.0;
+    var pulsePhase = (time * 0.5) % 4.0;
     var pulseRadius = pulsePhase * Math.max(W, H) * 0.35;
-    var pulseWidth = 60;
+    var pulseWidth = 70;
 
-    // Batched path rendering: 4 alpha buckets instead of infinite individual strokes
     var paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D()];
-    var buckets = [0.12, 0.28, 0.50, 0.85];
+    var buckets = [0.10, 0.25, 0.45, 0.80];
 
     ctx.globalCompositeOperation = 'lighter';
 
     for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      if (p._t < 0.5) continue;
-
-      var cx = Math.floor(p.x / CELL);
-      var cy = Math.floor(p.y / CELL);
+      var p = particles[i]; if (p._t < 0.5) continue;
+      var cx = Math.floor(p.x / CELL), cy = Math.floor(p.y / CELL);
       var connCount = 0;
 
       for (var dy = -1; dy <= 1; dy++) {
@@ -1343,12 +1320,9 @@ function draw() {
           var cell = grid[ny * gridW + nx];
 
           for (var j = 0; j < cell.length; j++) {
-            var qi = cell[j];
-            if (qi <= i) continue; // avoid double
+            var qi = cell[j]; if (qi <= i) continue; 
             if (connCount >= maxConn) break;
-
-            var q = particles[qi];
-            if (q._t < 0.5) continue;
+            var q = particles[qi]; if (q._t < 0.5) continue;
 
             var ddx = p.x - q.x, ddy = p.y - q.y;
             var distSq = ddx * ddx + ddy * ddy;
@@ -1358,27 +1332,24 @@ function draw() {
             var strength = (1 - dist / CELL) * Math.min(p._t, q._t);
             strength *= strength; // quadratic
 
-            // Energy pulse
             var midX = (p.x + q.x) / 2, midY = (p.y + q.y) / 2;
             var dxC = midX - W*0.5, dyC = midY - H*0.48;
             var distCenter = Math.sqrt(dxC*dxC + dyC*dyC);
             var pulseDelta = Math.abs(distCenter - pulseRadius);
             var pulseBoost = pulseDelta < pulseWidth ? (1 - pulseDelta / pulseWidth) * 0.5 : 0;
 
-            // Mouse intensity boost (max 80px distance)
             var mouseBoost = 0;
             var dxm = midX - mx, dym = midY - my;
             var mdSq = dxm*dxm + dym*dym;
             if (mdSq < 6400) mouseBoost = (1 - Math.sqrt(mdSq) / 80) * 0.5;
 
-            var alpha = strength * 0.35 + pulseBoost + mouseBoost;
-            if (alpha < 0.05) continue;
+            var alpha = strength * 0.30 + pulseBoost + mouseBoost;
+            if (alpha < 0.04) continue;
 
-            // Quantize alpha to bucket (0 to 3)
             var bIdx = 0;
-            if (alpha > 0.6) bIdx = 3;
-            else if (alpha > 0.35) bIdx = 2;
-            else if (alpha > 0.15) bIdx = 1;
+            if (alpha > 0.55) bIdx = 3;
+            else if (alpha > 0.32) bIdx = 2;
+            else if (alpha > 0.12) bIdx = 1;
 
             paths[bIdx].moveTo(p.x, p.y);
             paths[bIdx].lineTo(q.x, q.y);
@@ -1390,60 +1361,54 @@ function draw() {
       }
     }
 
-    // Execute only 4 GPU draw calls for ALL lines
+    // Pro-Tier Connection Rendering
     for (var b = 0; b < 4; b++) {
-      ctx.strokeStyle = 'rgba(0, 229, 255, ' + buckets[b] + ')';
-      ctx.lineWidth = 0.5 + b * 0.4;
+      ctx.strokeStyle = 'rgba(0, 200, 255, ' + buckets[b] + ')'; // refined cyan
+      ctx.lineWidth = 0.4 + b * 0.3; // precise crisp sub-pixel lines
       ctx.stroke(paths[b]);
-    }
-    
-    // ── Pulse wave ring effect ──
-    if (!exploding && prog > 0.6) {
-      ctx.beginPath();
-      ctx.arc(W * 0.5, H * 0.48, pulseRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 229, 255, ' + (0.05 * (1 - pulsePhase/4)) + ')';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
     }
   }
 
-  // ── Draw ambient particles ──
+  // ── AMBIENT PARTICLES ──
   ctx.globalCompositeOperation = 'lighter';
   for (var i = 0; i < ambient.length; i++) {
-    var a = ambient[i];
-    a.x += a.vx; a.y += a.vy;
+    var a = ambient[i]; a.x += a.vx; a.y += a.vy;
     if (a.x < -20) a.x = W + 20; if (a.x > W + 20) a.x = -20;
     if (a.y < -20) a.y = H + 20; if (a.y > H + 20) a.y = -20;
-    var pulse = 0.7 + 0.3 * Math.sin(time * 0.7 + a.phase);
-    var drawSz = a.size * pulse * 8;
+    var pulse = 0.6 + 0.4 * Math.sin(time * 0.5 + a.phase);
+    var drawSz = a.size * pulse * 7;
     ctx.globalAlpha = a.brightness * pulse;
     ctx.drawImage(a.sprite, a.x - drawSz/2, a.y - drawSz/2, drawSz, drawSz);
   }
 
-  // ── Draw text particles ──
+  // ── TEXT PARTICLES ──
   for (var i = 0; i < particles.length; i++) {
-    var p = particles[i];
-    var t = p._t;
-
+    var p = particles[i]; var t = p._t;
     var sparkle = 0;
     if (p.sparkAmp && !exploding && t > 0.85) {
-      sparkle = Math.pow(Math.max(0, Math.sin(time * 4.5 + p.sparkPh)), 18);
+      sparkle = Math.pow(Math.max(0, Math.sin(time * 4.0 + p.sparkPh)), 12);
       sparkle *= (t - 0.85) / 0.15;
     }
-
     var drawSz = p.size * (1 + sparkle * 1.5);
-    if (p.isNode && t > 0.8) drawSz *= 1.4; // nodes are 40% larger
+    if (p.isNode && t > 0.8) drawSz *= 1.35; 
     var alpha = p.brightness * (0.05 + t * 0.95) * (1 + sparkle * 0.8);
     if (exploding) alpha *= Math.max(0, 1 - t);
 
-    var spriteDraw = drawSz * 6;
+    var spriteDraw = drawSz * 5.5; // crisp glow
     ctx.globalAlpha = Math.min(1, alpha);
     ctx.drawImage(p.sprite, p.x - spriteDraw/2, p.y - spriteDraw/2, spriteDraw, spriteDraw);
   }
-  ctx.globalCompositeOperation = 'source-over';
 
-  // ── Bloom Throttling (expensive 2D operation) ──
-  // Update bloom less frequently, especially on mobile
+  // ── VIGNETTE OVERLAY (Pro Cinematic Framing) ──
+  ctx.globalCompositeOperation = 'source-over';
+  var vig = ctx.createRadialGradient(W*0.5, H*0.5, Math.min(W,H)*0.2, W*0.5, H*0.5, Math.max(W,H)*0.75);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(0.65, 'rgba(0,0,0,0.3)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.85)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── BLOOM ──
   var bloomFreq = isMob ? 6 : 3; 
   if (frameN % bloomFreq === 0 && bloomCtx) {
     bloomCtx.clearRect(0, 0, bloomCanvas.width, bloomCanvas.height);
@@ -1455,37 +1420,28 @@ function draw() {
   var btn = document.getElementById('splash-enter');
   var hint = document.getElementById('splash-hint');
   if (btn) {
-    var showBtn = prog > 0.68 && !exploding;
+    var showBtn = prog > 0.72 && !exploding;
     if (showBtn && btn.style.opacity !== '1') { btn.style.opacity = '1'; btn.style.pointerEvents = 'all'; }
     if (!showBtn && btn.style.opacity !== '0') { btn.style.opacity = '0'; btn.style.pointerEvents = 'none'; }
   }
-  if (hint) hint.style.opacity = (prog < 0.23 && !exploding) ? '1' : '0';
+  if (hint) hint.style.opacity = (prog < 0.20 && !exploding) ? '1' : '0';
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────────
 function init() {
-  var result = buildParticles();
-  particles = result.text;
-  ambient = result.amb;
-  draw();
+  var result = buildParticles(); particles = result.text; ambient = result.amb; draw();
 }
 document.fonts.ready.then(init).catch(init);
 
 window.addEventListener('resize', function() {
-  resize();
-  cancelAnimationFrame(raf);
+  resize(); cancelAnimationFrame(raf);
   document.fonts.ready.then(function() {
-    var result = buildParticles();
-    particles = result.text;
-    ambient = result.amb;
-    prog = 0; tProg = 0; exploding = false;
-    draw();
+    var result = buildParticles(); particles = result.text; ambient = result.amb;
+    prog = 0; tProg = 0; exploding = false; draw();
   });
 });
 
 window._stopNucleus = function() {
-  cancelAnimationFrame(raf);
-  ctx.clearRect(0, 0, W, H);
+  cancelAnimationFrame(raf); ctx.clearRect(0, 0, W, H);
   bloomCtx && bloomCtx.clearRect(0, 0, bloomCanvas.width, bloomCanvas.height);
 };
 })();
@@ -1499,8 +1455,7 @@ window.enterDashboard = function() {
   var ui = document.getElementById('splash-ui');
   if (ui) { ui.style.transition = 'opacity 0.4s'; ui.style.opacity = '0'; }
   setTimeout(function() {
-    splash.style.transition = 'opacity 1s cubic-bezier(0.5,0,0.8,1)';
-    splash.style.opacity = '0';
+    splash.style.transition = 'opacity 1s cubic-bezier(0.5,0,0.8,1)'; splash.style.opacity = '0';
     setTimeout(function() {
       splash.style.display = 'none';
       if (window._stopNucleus) window._stopNucleus();
