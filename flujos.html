@@ -217,6 +217,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 /* ── FORM FIELDS ─────────────────────────────────── */
 .ef{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:var(--font-s);font-size:.77rem;padding:7px 10px;margin-bottom:6px;outline:none;transition:border-color .18s}
 .ef:focus{border-color:rgba(0,229,255,.4)}
+select.ef{appearance:none;-webkit-appearance:none;cursor:pointer}
+select.ef option{background:#1a1a2e;color:#fff}
 .ef-label{font-size:.58rem;color:rgba(255,255,255,.35);letter-spacing:.8px;margin-bottom:3px;display:block}
 .btn-save{font-family:var(--font-h);font-size:.56rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:rgba(0,229,255,.1);color:var(--c-cyan);border:1px solid rgba(0,229,255,.25);border-radius:7px;padding:6px 12px;cursor:pointer;transition:all .18s;margin-bottom:.5rem}
 .btn-save:hover{background:rgba(0,229,255,.18)}
@@ -283,6 +285,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 .m-lbl{font-size:.59rem;color:rgba(255,255,255,.36);letter-spacing:.8px;margin-bottom:3px;display:block}
 .m-field{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#fff;font-family:var(--font-s);font-size:.79rem;padding:8px 10px;margin-bottom:9px;outline:none;transition:border-color .18s}
 .m-field:focus{border-color:rgba(0,229,255,.4)}
+select.m-field{appearance:none;-webkit-appearance:none;cursor:pointer}
+select.m-field option{background:#1a1a2e;color:#fff}
 .m-row{display:flex;gap:8px;margin-top:4px}
 .m-ok{flex:1;background:rgba(0,229,255,.12);color:var(--c-cyan);border:1px solid rgba(0,229,255,.28);border-radius:9px;font-family:var(--font-h);font-size:.59rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px;cursor:pointer;transition:all .18s}
 .m-ok:hover{background:rgba(0,229,255,.22)}
@@ -460,6 +464,18 @@ body.pmode #panel{display:none}
       <input class="m-field" id="m-sub" placeholder="ej. Distribución interna" autocomplete="off">
       <label class="m-lbl">Responsable</label>
       <input class="m-field" id="m-resp" placeholder="ej. Juan Pérez" autocomplete="off">
+      <label class="m-lbl">Nivel</label>
+      <select class="m-field" id="m-level">
+        <option value="">Sin nivel</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select>
       <label class="m-lbl">Icono</label>
       <div class="ic-grid" id="m-ic-grid"></div>
       <input class="m-field" id="m-icon" value="⬡" placeholder="Emoji personalizado" autocomplete="off" style="margin-top:4px">
@@ -878,8 +894,8 @@ function updateEdges(){
     // Visual params derived from state
     const drawCol=isLinked?'#00E5FF':baseCol;
     const markerKey=isLinked?'active':th;
-    const opacity=isEdgeSel?1:isLinked?0.9:isDimmed?0.05:0.20;
-    const strokeW=isEdgeSel?4:isLinked?3.5:isDimmed?1.2:1.8;
+    const opacity=isEdgeSel?1:isLinked?0.9:0.20;
+    const strokeW=isEdgeSel?4:isLinked?3.5:1.8;
     const useGlow=isEdgeSel||isLinked;
     const showFlow=isEdgeSel||isLinked;
 
@@ -1431,6 +1447,11 @@ function renderPanelBody(id,tab){
         <div class="st-row">
           ${['active','planning','paused','critical'].map(s=>`<button class="st-btn${status===s?' active':''}" data-s="${s}" onclick="setNodeStatus('${id}','${s}')">${{active:'Activo',planning:'Plan',paused:'Pausado',critical:'Crítico'}[s]}</button>`).join('')}
         </div>
+        <label class="ef-label">Nivel</label>
+        <select class="ef" id="ep-level">
+          <option value="">Sin nivel</option>
+          ${[0,1,2,3,4,5,6,7].map(v=>`<option value="${v}"${(props.level===String(v)||props.level===v)?' selected':''}>${v}</option>`).join('')}
+        </select>
         <label class="ef-label">Color</label>
         <div class="cp-row" id="ep-cp"></div>
         <label class="ef-label">Icono</label>
@@ -1482,6 +1503,7 @@ function saveNodeProps(id){
   const sub=document.getElementById('ep-sub')?.value.trim();
   const resp=document.getElementById('ep-resp')?.value.trim();
   const budget=document.getElementById('ep-budget')?.value.trim();
+  const level=document.getElementById('ep-level')?.value;
   const theme=document.getElementById('ep-cp')?.dataset.val||n.theme;
   const icon=document.getElementById('ep-icon')?.value.trim()||n.icon;
   if(label)n.label=label;
@@ -1491,6 +1513,7 @@ function saveNodeProps(id){
   if(!S.nodeProps[id])S.nodeProps[id]={};
   S.nodeProps[id].responsible=resp||'';
   S.nodeProps[id].budget=budget||'';
+  if(level!==undefined)S.nodeProps[id].level=level!==''?level:null;
   render();
   if(panel.classList.contains('open')){
     document.getElementById('p-icon').textContent=n.icon;
@@ -1708,6 +1731,7 @@ function hideModal(){
   ['m-label','m-sub','m-resp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('m-icon').value='⬡';
   document.getElementById('m-theme').value='cyan';
+  document.getElementById('m-level').value='';
 }
 
 function submitModal(){
@@ -1716,6 +1740,7 @@ function submitModal(){
   const icon=document.getElementById('m-icon').value.trim()||'⬡';
   const theme=document.getElementById('m-theme').value||'cyan';
   const resp=document.getElementById('m-resp').value.trim();
+  const lvl=document.getElementById('m-level').value;
   if(!label){document.getElementById('m-label').focus();return;}
   snapshot();
   const vpCX=(cwrap.clientWidth/2-S.tx)/S.scale;
@@ -1723,7 +1748,9 @@ function submitModal(){
   const id='c_'+Date.now();
   const nn={id,label:label.toUpperCase(),sub,icon,theme,x:snapVal(vpCX-80),y:snapVal(vpCY-40),custom:true,detail:null};
   S.nodes.push(nn);
-  if(resp){if(!S.nodeProps[id])S.nodeProps[id]={};S.nodeProps[id].responsible=resp;}
+  if(!S.nodeProps[id])S.nodeProps[id]={};
+  if(resp)S.nodeProps[id].responsible=resp;
+  if(lvl!=='')S.nodeProps[id].level=lvl;
   hideModal();render();saveState();
   setTimeout(()=>{selectNode(id);openPanel(id,'props');},80);
   toast('Nodo creado','ok');
