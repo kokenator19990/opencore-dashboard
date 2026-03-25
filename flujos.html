@@ -878,7 +878,7 @@ function updateEdges(){
     // Visual params derived from state
     const drawCol=isLinked?'#00E5FF':baseCol;
     const markerKey=isLinked?'active':th;
-    const opacity=isEdgeSel?1:isLinked?.9:isDimmed?.05:.20;
+    const opacity=isEdgeSel?1:isLinked?0.9:isDimmed?0.05:0.20;
     const strokeW=isEdgeSel?4:isLinked?3.5:isDimmed?1.2:1.8;
     const useGlow=isEdgeSel||isLinked;
     const showFlow=isEdgeSel||isLinked;
@@ -1307,6 +1307,12 @@ function onNodeClick(e,id){
 function selectNode(id){
   const prev=S.selected;
   if(prev&&prev!==id)document.getElementById('node-'+prev)?.classList.remove('selected');
+  // Clear edge selection so node-click focus takes over
+  if(edgeCtxIdx!=null){
+    edgeCtxIdx=null;
+    S.selectedEdge=null;
+    document.getElementById('edge-ctx').style.display='none';
+  }
   S.selected=id;
   document.getElementById('node-'+id)?.classList.add('selected');
   updateEdges(); // refresh edge highlight focus
