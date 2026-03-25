@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0a0a0a; --nav-h:36px; --tb-h:44px; --panel-w:370px;
+  --bg:#0a0a0a; --nav-h:40px; --tb-h:52px; --panel-w:380px;
   --c-cyan:#00E5FF; --c-green:#00FF85; --c-yellow:#E5FF00;
   --font-h:'Space Grotesk',sans-serif; --font-s:'Inter',sans-serif;
 }
@@ -28,26 +28,37 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 @keyframes gScroll{0%{transform:perspective(400px) rotateX(65deg) translateY(0)}100%{transform:perspective(400px) rotateX(65deg) translateY(60px)}}
 
 /* ── TOPNAV ──────────────────────────────────────── */
-.topnav{position:fixed;top:0;left:0;right:0;z-index:201;height:var(--nav-h);background:rgba(10,10,10,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 1.4rem}
-.topnav a{font-family:var(--font-h);font-size:.62rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;color:rgba(255,255,255,.32);padding:0 13px;height:var(--nav-h);display:flex;align-items:center;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
-.topnav a:hover{color:rgba(255,255,255,.65)}
+.topnav{position:fixed;top:0;left:0;right:0;z-index:201;height:var(--nav-h);background:rgba(8,8,12,.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 1.6rem}
+.topnav a{font-family:var(--font-h);font-size:.68rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;color:rgba(255,255,255,.35);padding:0 16px;height:var(--nav-h);display:flex;align-items:center;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
+.topnav a:hover{color:rgba(255,255,255,.7)}
 .topnav a.active{color:#fff;border-bottom-color:var(--c-cyan)}
-.tn-sep{width:1px;height:14px;background:rgba(255,255,255,.1);margin:0 2px}
+.tn-sep{width:1px;height:16px;background:rgba(255,255,255,.12);margin:0 2px}
 
 /* ── TOOLBAR ─────────────────────────────────────── */
-#toolbar{position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;height:var(--tb-h);background:rgba(12,12,16,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:2px;padding:0 1rem;overflow-x:auto}
+#toolbar{position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;height:var(--tb-h);background:rgba(10,10,16,.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.09);display:flex;align-items:center;gap:3px;padding:0 1.2rem;overflow-x:auto}
 #toolbar::-webkit-scrollbar{display:none}
-.tb-btn{display:flex;align-items:center;gap:5px;font-family:var(--font-h);font-size:.59rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.38);background:transparent;border:1px solid transparent;padding:5px 8px;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
-.tb-btn:hover{color:rgba(255,255,255,.78);background:rgba(255,255,255,.06)}
-.tb-btn.active{color:var(--c-cyan);border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.08)}
-.tb-btn.m-connect.active{color:var(--c-green);border-color:rgba(0,255,133,.3);background:rgba(0,255,133,.07)}
-.tb-btn.m-pan.active{color:#B200FF;border-color:rgba(178,0,255,.3);background:rgba(178,0,255,.07)}
-.tb-btn.danger:hover{color:#FF4444;border-color:rgba(255,68,68,.3);background:rgba(255,68,68,.06)}
-.tb-btn:disabled{opacity:.3;cursor:not-allowed}
-.tb-btn.active-toggle{color:var(--c-yellow);border-color:rgba(229,255,0,.3);background:rgba(229,255,0,.06)}
-.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 4px;flex-shrink:0}
+.tb-btn{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--font-h);font-size:.65rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(255,255,255,.55);
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  padding:7px 12px;border-radius:8px;
+  cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;
+  line-height:1;
+}
+.tb-btn:hover{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.tb-btn.active{color:var(--c-cyan);border-color:rgba(0,229,255,.45);background:rgba(0,229,255,.12);box-shadow:0 0 12px rgba(0,229,255,.15)}
+.tb-btn.m-connect.active{color:var(--c-green);border-color:rgba(0,255,133,.45);background:rgba(0,255,133,.1);box-shadow:0 0 12px rgba(0,255,133,.12)}
+.tb-btn.m-pan.active{color:#B200FF;border-color:rgba(178,0,255,.45);background:rgba(178,0,255,.1);box-shadow:0 0 12px rgba(178,0,255,.12)}
+.tb-btn.danger:hover{color:#FF4444;border-color:rgba(255,68,68,.4);background:rgba(255,68,68,.08)}
+.tb-btn:disabled{opacity:.28;cursor:not-allowed;pointer-events:none}
+.tb-btn.active-toggle{color:var(--c-yellow);border-color:rgba(229,255,0,.45);background:rgba(229,255,0,.08);box-shadow:0 0 12px rgba(229,255,0,.1)}
+.tb-sep{width:1px;height:24px;background:rgba(255,255,255,.1);margin:0 5px;flex-shrink:0}
 .tb-sp{flex:1}
-@media(max-width:900px){.tb-lbl{display:none}}
+.tb-ico{font-size:.85rem;line-height:1}
+@media(max-width:1100px){.tb-lbl{display:none}}
+@media(max-width:600px){.tb-sep{margin:0 2px}.tb-btn{padding:6px 8px}}
 
 /* ── CANVAS ──────────────────────────────────────── */
 #cwrap{position:fixed;top:calc(var(--nav-h) + var(--tb-h));left:0;right:0;bottom:0;z-index:10;overflow:hidden;cursor:default}
@@ -57,34 +68,34 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 #diagram{position:absolute;transform-origin:0 0;will-change:transform}
 
 /* ── NODE CARDS ──────────────────────────────────── */
-.node{position:absolute;user-select:none;min-width:160px;transition:filter .12s}
+.node{position:absolute;user-select:none;min-width:180px;transition:filter .12s}
 .nc{
-  background:rgba(15,15,22,.98);
-  border:1px solid rgba(255,255,255,.09);
-  border-left:5px solid var(--nc,#00E5FF);
-  border-radius:13px;
-  box-shadow:0 4px 16px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
-  transition:box-shadow .22s,transform .12s;
+  background:rgba(13,13,20,.99);
+  border:1px solid rgba(255,255,255,.11);
+  border-left:6px solid var(--nc,#00E5FF);
+  border-radius:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:box-shadow .22s,transform .14s;
   cursor:pointer;overflow:hidden;
 }
-.node:hover .nc{box-shadow:0 6px 24px rgba(0,0,0,.55),0 0 20px var(--ng,rgba(0,229,255,.15)),inset 0 1px 0 rgba(255,255,255,.06);transform:translateY(-1px)}
-.node.selected .nc{border-color:rgba(255,255,255,.18);border-left-color:var(--nc,#00E5FF);box-shadow:0 0 0 2px var(--nc,#00E5FF),0 6px 30px rgba(0,0,0,.6),0 0 28px var(--ng,rgba(0,229,255,.3))}
-.node.is-drag .nc{box-shadow:0 18px 48px rgba(0,0,0,.7);cursor:grabbing!important;transform:translateY(-3px) scale(1.015)}
+.node:hover .nc{box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 22px var(--ng,rgba(0,229,255,.18)),inset 0 1px 0 rgba(255,255,255,.07);transform:translateY(-2px)}
+.node.selected .nc{border-color:rgba(255,255,255,.2);border-left-color:var(--nc,#00E5FF);box-shadow:0 0 0 2px var(--nc,#00E5FF),0 8px 32px rgba(0,0,0,.65),0 0 32px var(--ng,rgba(0,229,255,.32))}
+.node.is-drag .nc{box-shadow:0 22px 52px rgba(0,0,0,.75);cursor:grabbing!important;transform:translateY(-4px) scale(1.018)}
 .node.is-drag{z-index:1000}
-.nh{display:flex;align-items:center;gap:7px;padding:10px 12px 7px 10px}
-.n-icon{font-size:1.05rem;flex-shrink:0;line-height:1}
-.n-lbl{font-family:var(--font-h);font-size:.67rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex:1;color:var(--nc,#00E5FF);line-height:1.2}
-.n-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.nh{display:flex;align-items:center;gap:9px;padding:13px 14px 8px 12px}
+.n-icon{font-size:1.2rem;flex-shrink:0;line-height:1}
+.n-lbl{font-family:var(--font-h);font-size:.78rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;flex:1;color:var(--nc,#00E5FF);line-height:1.2}
+.n-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .ns-active{background:#00FF85}
 .ns-paused{background:#888}
 .ns-critical{background:#FF4444;animation:crit .7s ease-in-out infinite}
 .ns-planning{background:#E5FF00}
 @keyframes crit{0%,100%{opacity:1}50%{opacity:.35}}
-.n-sub{font-size:.59rem;color:rgba(255,255,255,.34);padding:0 12px 6px 10px;letter-spacing:.3px;line-height:1.35}
-.n-meta{display:flex;gap:6px;padding:0 10px 6px;flex-wrap:wrap}
-.n-meta-tag{font-size:.55rem;color:rgba(255,255,255,.32);background:rgba(255,255,255,.04);border-radius:4px;padding:1px 5px;white-space:nowrap}
-.n-badge{display:flex;gap:6px;align-items:center;padding:0 10px 8px}
-.n-badge-item{font-size:.54rem;color:var(--c-cyan);opacity:.65;display:flex;align-items:center;gap:3px}
+.n-sub{font-size:.68rem;color:rgba(255,255,255,.48);padding:0 14px 8px 12px;letter-spacing:.2px;line-height:1.4}
+.n-meta{display:flex;gap:6px;padding:0 12px 7px;flex-wrap:wrap}
+.n-meta-tag{font-size:.62rem;color:rgba(255,255,255,.42);background:rgba(255,255,255,.05);border-radius:5px;padding:2px 7px;white-space:nowrap}
+.n-badge{display:flex;gap:7px;align-items:center;padding:0 12px 9px}
+.n-badge-item{font-size:.62rem;color:var(--c-cyan);opacity:.7;display:flex;align-items:center;gap:3px}
 
 /* ── CONNECT SOURCE ──────────────────────────────── */
 .node.c-source .nc{animation:pGlow 1s ease-in-out infinite}
@@ -258,30 +269,53 @@ body.pmode #panel{display:none}
 <!-- TOOLBAR -->
 <div id="toolbar">
   <!-- Modos -->
-  <button class="tb-btn active" id="btn-sel" onclick="setMode('select')" title="Select (S)">↖ <span class="tb-lbl">Select</span></button>
-  <button class="tb-btn m-connect" id="btn-con" onclick="setMode('connect')" title="Conectar (C)">⤢ <span class="tb-lbl">Connect</span></button>
-  <button class="tb-btn m-pan" id="btn-pan" onclick="setMode('pan')" title="Pan (P)">✋ <span class="tb-lbl">Pan</span></button>
+  <button class="tb-btn active" id="btn-sel" onclick="setMode('select')" title="Seleccionar (S)">
+    <span class="tb-ico">↖</span><span class="tb-lbl">Select</span>
+  </button>
+  <button class="tb-btn m-connect" id="btn-con" onclick="setMode('connect')" title="Conectar nodos (C)">
+    <span class="tb-ico">⤢</span><span class="tb-lbl">Connect</span>
+  </button>
+  <button class="tb-btn m-pan" id="btn-pan" onclick="setMode('pan')" title="Mover canvas (P)">
+    <span class="tb-ico">✋</span><span class="tb-lbl">Pan</span>
+  </button>
   <div class="tb-sep"></div>
   <!-- Acciones nodo -->
-  <button class="tb-btn" onclick="showModal()" title="Nuevo nodo (+N)">＋ <span class="tb-lbl">Nodo</span></button>
-  <button class="tb-btn danger" id="btn-del" onclick="deleteSelected()" title="Eliminar (Del)">⌫ <span class="tb-lbl">Delete</span></button>
+  <button class="tb-btn" onclick="showModal()" title="Nuevo nodo (N)">
+    <span class="tb-ico">＋</span><span class="tb-lbl">Nodo</span>
+  </button>
+  <button class="tb-btn danger" id="btn-del" onclick="deleteSelected()" title="Eliminar selección (Del)">
+    <span class="tb-ico">🗑</span><span class="tb-lbl">Borrar</span>
+  </button>
   <div class="tb-sep"></div>
   <!-- Historial -->
-  <button class="tb-btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)" disabled>↩ <span class="tb-lbl">Undo</span></button>
-  <button class="tb-btn" id="btn-redo" onclick="redo()" title="Rehacer (Ctrl+Y)" disabled>↪ <span class="tb-lbl">Redo</span></button>
+  <button class="tb-btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)" disabled>
+    <span class="tb-ico">↩</span><span class="tb-lbl">Undo</span>
+  </button>
+  <button class="tb-btn" id="btn-redo" onclick="redo()" title="Rehacer (Ctrl+Y)" disabled>
+    <span class="tb-ico">↪</span><span class="tb-lbl">Redo</span>
+  </button>
   <div class="tb-sep"></div>
   <!-- Herramientas -->
-  <button class="tb-btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grid">⊞ <span class="tb-lbl">Grid</span></button>
-  <button class="tb-btn" id="btn-pres" onclick="togglePresentation()" title="Presentación (F11)">⬛ <span class="tb-lbl">Presentar</span></button>
+  <button class="tb-btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla">
+    <span class="tb-ico">⊞</span><span class="tb-lbl">Grid</span>
+  </button>
+  <button class="tb-btn" id="btn-pres" onclick="togglePresentation()" title="Modo presentación (F11)">
+    <span class="tb-ico">⛶</span><span class="tb-lbl">Presentar</span>
+  </button>
   <div class="tb-sep"></div>
   <!-- Import / Export -->
-  <button class="tb-btn" onclick="exportJSON()" title="Exportar JSON">⬇ <span class="tb-lbl">Export</span></button>
-  <label class="tb-btn" title="Importar JSON" style="cursor:pointer">⬆ <span class="tb-lbl">Import</span><input type="file" accept=".json" id="imp-file" style="display:none" onchange="importJSON(event)"></label>
+  <button class="tb-btn" onclick="exportJSON()" title="Exportar diagrama JSON">
+    <span class="tb-ico">⬇</span><span class="tb-lbl">Export</span>
+  </button>
+  <label class="tb-btn" title="Importar diagrama JSON" style="cursor:pointer">
+    <span class="tb-ico">⬆</span><span class="tb-lbl">Import</span>
+    <input type="file" accept=".json" id="imp-file" style="display:none" onchange="importJSON(event)">
+  </label>
   <div class="tb-sp"></div>
   <!-- Zoom -->
-  <button class="tb-btn" onclick="zoom(.84)" title="Alejar">−</button>
-  <button class="tb-btn" onclick="zoom(1.19)" title="Acercar">＋</button>
-  <button class="tb-btn" onclick="fitView()" title="Ajustar (F)">⌖</button>
+  <button class="tb-btn" onclick="zoom(.89)" title="Alejar (−)"><span class="tb-ico">−</span></button>
+  <button class="tb-btn" onclick="zoom(1.12)" title="Acercar (+)"><span class="tb-ico">＋</span></button>
+  <button class="tb-btn" onclick="fitView()" title="Ajustar vista (F)"><span class="tb-ico">⌖</span></button>
 </div>
 
 <!-- CANVAS -->
@@ -751,9 +785,9 @@ function updateEdges(){
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d',d);
     path.setAttribute('stroke',col);
-    path.setAttribute('stroke-width',isSelected?'2.5':'1.6');
+    path.setAttribute('stroke-width',isSelected?'3':'2.2');
     path.setAttribute('fill','none');
-    path.setAttribute('opacity',isSelected?'0.9':'0.44');
+    path.setAttribute('opacity',isSelected?'0.95':'0.62');
     path.style.pointerEvents='none';
     // Markers by direction
     if(dir==='forward'||dir==='both') path.setAttribute('marker-end',`url(#ae-${th})`);
@@ -1573,7 +1607,7 @@ cwrap.addEventListener('wheel',e=>{
   e.preventDefault();
   const r=cwrap.getBoundingClientRect();
   const mx=e.clientX-r.left,my=e.clientY-r.top;
-  const f=e.deltaY<0?1.1:.91;
+  const f=e.deltaY<0?1.05:.952;
   S.tx=mx-(mx-S.tx)*f;S.ty=my-(my-S.ty)*f;
   S.scale=Math.min(3,Math.max(.15,S.scale*f));
   applyTransform(false);updateMinimap();
