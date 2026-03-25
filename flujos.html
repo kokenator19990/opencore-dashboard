@@ -385,6 +385,8 @@ TC.hub = TC.cyan;
 const TG = Object.fromEntries(Object.entries(THEMES).map(([k,v])=>[k,v.g]));
 TG.hub = TG.cyan;
 
+const FILES_API = 'https://opencore.cl/dashboard/upload.php';
+
 const ICONS = ['⚙️','📦','💼','🌐','📋','🏭','🏗️','💱','⚖️','📊','🗃️','🔩','🔧','🤝','🧾','🔄','💡','🏢','🚚','🔬','💻','📱','🔐','📈','💰','🎯','⬡','🏆','📌','🔑'];
 
 // ─── NODES BASE ───────────────────────────────────────────────────────────────
@@ -570,8 +572,22 @@ function loadState(){
     if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
     S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
     S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
-    S.attachments=JSON.parse(localStorage.getItem('ocf-files')||'{}');
   }catch(e){console.warn('LS load',e)}
+  // Cargar adjuntos desde el servidor (igual que tareas)
+  loadAttachments();
+}
+
+function loadAttachments(){
+  fetch(FILES_API)
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(data=>{
+      S.attachments=data||{};
+      S.nodes.forEach(n=>refreshBadge(n.id));
+    })
+    .catch(err=>{
+      console.warn('upload.php no disponible, usando localStorage',err);
+      try{S.attachments=JSON.parse(localStorage.getItem('ocf-files')||'{}');}catch(e){}
+    });
 }
 
 function saveState(){
@@ -584,12 +600,7 @@ function saveState(){
     }));
     localStorage.setItem('ocf-props',JSON.stringify(S.nodeProps));
     localStorage.setItem('ocf-comments',JSON.stringify(S.comments));
-    // Salvar attachments sin dataURLs muy grandes para no llenar LS
-    const safeAtt={};
-    Object.entries(S.attachments).forEach(([k,arr])=>{
-      safeAtt[k]=arr.map(a=>a.type==='link'?a:{...a,dataUrl:a.dataUrl&&a.dataUrl.length<200000?a.dataUrl:null});
-    });
-    localStorage.setItem('ocf-files',JSON.stringify(safeAtt));
+    // Adjuntos se guardan en el servidor — no en localStorage
   }catch(e){console.warn('LS save',e)}
 }
 
@@ -1262,28 +1273,22 @@ function handleFileUpload(id,input){
   const files=Array.from(input.files);
   if(!files.length)return;
   files.forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=async e=>{
-      const raw=e.target.result;
-      let dataUrl=null;
-      if(file.type.startsWith('image/')){
-        dataUrl=await compressImage(file);
-      }else if(file.size<512*1024){
-        dataUrl=raw;
-      }
-      if(!S.attachments[id])S.attachments[id]=[];
-      S.attachments[id].push({
-        id:'a'+Date.now()+Math.random().toString(36).slice(2),
-        type:'file',name:file.name,mime:file.type,
-        size:formatSize(file.size),
-        dataUrl,date:new Date().toLocaleDateString('es-CL')
-      });
-      saveState();
-      if(panelNodeId===id)renderPanelBody(id,'files');
-      refreshBadge(id);
-      toast(`📎 ${file.name} adjuntado`,'ok');
-    };
-    reader.readAsDataURL(file);
+    const fd=new FormData();
+    fd.append('action','upload');
+    fd.append('nodeId',id);
+    fd.append('file',file);
+    toast(`Subiendo ${file.name}…`,'info');
+    fetch(FILES_API,{method:'POST',body:fd})
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.error){toast('Error: '+data.error,'err');return;}
+        if(!S.attachments[id])S.attachments[id]=[];
+        S.attachments[id].push(data.entry);
+        if(panelNodeId===id)renderPanelBody(id,'files');
+        refreshBadge(id);
+        toast(`📎 ${file.name} adjuntado`,'ok');
+      })
+      .catch(()=>toast('Sin conexión al servidor de archivos','err'));
   });
   input.value='';
 }
@@ -1317,13 +1322,23 @@ function submitLink(){
   const name=document.getElementById('lnk-name').value.trim()||url;
   if(!url){document.getElementById('lnk-url').focus();return;}
   const id=pendingLinkNodeId;if(!id)return;
-  if(!S.attachments[id])S.attachments[id]=[];
-  S.attachments[id].push({id:'a'+Date.now(),type:'link',name,url,date:new Date().toLocaleDateString('es-CL')});
-  saveState();
-  hideLinkModal();
-  if(panelNodeId===id)renderPanelBody(id,'files');
-  refreshBadge(id);
-  toast('🔗 Link adjuntado','ok');
+  const fd=new FormData();
+  fd.append('action','add_link');
+  fd.append('nodeId',id);
+  fd.append('url',url);
+  fd.append('name',name);
+  fetch(FILES_API,{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.error){toast('Error: '+data.error,'err');return;}
+      if(!S.attachments[id])S.attachments[id]=[];
+      S.attachments[id].push(data.entry);
+      hideLinkModal();
+      if(panelNodeId===id)renderPanelBody(id,'files');
+      refreshBadge(id);
+      toast('🔗 Link adjuntado','ok');
+    })
+    .catch(()=>toast('Sin conexión al servidor','err'));
 }
 
 function renderAttItem(nodeId,a,idx){
@@ -1345,17 +1360,28 @@ function renderAttItem(nodeId,a,idx){
 }
 
 function deleteAtt(id,idx){
-  S.attachments[id]?.splice(idx,1);
-  if(!S.attachments[id]?.length)delete S.attachments[id];
-  saveState();
-  if(panelNodeId===id)renderPanelBody(id,'files');
-  refreshBadge(id);
+  const a=S.attachments[id]?.[idx];if(!a)return;
+  const fd=new FormData();
+  fd.append('action','delete');
+  fd.append('nodeId',id);
+  fd.append('id',a.id);
+  fetch(FILES_API,{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.error){toast('Error: '+data.error,'err');return;}
+      S.attachments[id]?.splice(idx,1);
+      if(!S.attachments[id]?.length)delete S.attachments[id];
+      if(panelNodeId===id)renderPanelBody(id,'files');
+      refreshBadge(id);
+      toast('Archivo eliminado','info');
+    })
+    .catch(()=>toast('Sin conexión al servidor','err'));
 }
 
 function downloadAtt(id,idx){
-  const a=S.attachments[id]?.[idx];if(!a||!a.dataUrl)return;
-  const link=document.createElement('a');
-  link.href=a.dataUrl;link.download=a.name;link.click();
+  const a=S.attachments[id]?.[idx];if(!a)return;
+  if(a.url){window.open(a.url,'_blank');return;}
+  if(a.dataUrl){const l=document.createElement('a');l.href=a.dataUrl;l.download=a.name;l.click();}
 }
 
 // ─── COMMENTS ────────────────────────────────────────────────────────────────
