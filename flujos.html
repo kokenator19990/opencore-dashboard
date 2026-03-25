@@ -35,30 +35,87 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 .tn-sep{width:1px;height:16px;background:rgba(255,255,255,.12);margin:0 2px}
 
 /* ── TOOLBAR ─────────────────────────────────────── */
-#toolbar{position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;height:var(--tb-h);background:rgba(10,10,16,.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.09);display:flex;align-items:center;gap:3px;padding:0 1.2rem;overflow-x:auto}
+#toolbar{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;height:var(--tb-h);
+  background:linear-gradient(180deg,rgba(12,12,22,.99) 0%,rgba(8,8,16,.97) 100%);
+  backdrop-filter:blur(28px) saturate(1.4);
+  -webkit-backdrop-filter:blur(28px) saturate(1.4);
+  border-bottom:1px solid rgba(0,229,255,.1);
+  box-shadow:0 1px 0 rgba(0,229,255,.06), 0 8px 40px rgba(0,0,0,.55);
+  display:flex;align-items:center;gap:4px;padding:0 1.4rem;overflow-x:auto;
+}
+#toolbar::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,229,255,.25) 30%,rgba(178,0,255,.2) 70%,transparent 100%);
+  pointer-events:none;
+}
 #toolbar::-webkit-scrollbar{display:none}
 .tb-btn{
   display:flex;align-items:center;gap:8px;
-  font-family:var(--font-h);font-size:1.05rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
-  color:rgba(255,255,255,.55);
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.1);
-  padding:12px 20px;border-radius:10px;
-  cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;
-  line-height:1;
+  font-family:var(--font-h);font-size:.95rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(255,255,255,.42);
+  background:rgba(255,255,255,.028);
+  border:1px solid rgba(255,255,255,.07);
+  padding:10px 18px;border-radius:10px;
+  cursor:pointer;
+  transition:color .18s ease, background .18s ease, border-color .18s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .18s ease;
+  white-space:nowrap;flex-shrink:0;line-height:1;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 1px 3px rgba(0,0,0,.25);
+  position:relative;overflow:hidden;
 }
-.tb-btn:hover{color:#fff;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
-.tb-btn.active{color:var(--c-cyan);border-color:rgba(0,229,255,.45);background:rgba(0,229,255,.12);box-shadow:0 0 12px rgba(0,229,255,.15)}
-.tb-btn.m-connect.active{color:var(--c-green);border-color:rgba(0,255,133,.45);background:rgba(0,255,133,.1);box-shadow:0 0 12px rgba(0,255,133,.12)}
-.tb-btn.m-pan.active{color:#B200FF;border-color:rgba(178,0,255,.45);background:rgba(178,0,255,.1);box-shadow:0 0 12px rgba(178,0,255,.12)}
-.tb-btn.danger:hover{color:#FF4444;border-color:rgba(255,68,68,.4);background:rgba(255,68,68,.08)}
-.tb-btn:disabled{opacity:.28;cursor:not-allowed;pointer-events:none}
-.tb-btn.active-toggle{color:var(--c-yellow);border-color:rgba(229,255,0,.45);background:rgba(229,255,0,.08);box-shadow:0 0 12px rgba(229,255,0,.1)}
-.tb-sep{width:1px;height:38px;background:rgba(255,255,255,.1);margin:0 6px;flex-shrink:0}
+.tb-btn::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,transparent 60%);
+  pointer-events:none;opacity:0;transition:opacity .18s;
+}
+.tb-btn:hover{
+  color:rgba(255,255,255,.9);
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.16);
+  transform:translateY(-1px) scale(1.015);
+  box-shadow:0 4px 18px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.07);
+}
+.tb-btn:hover::after{opacity:1}
+.tb-btn:active{transform:translateY(0) scale(.985);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tb-btn.active{
+  color:var(--c-cyan);
+  border-color:rgba(0,229,255,.45);
+  background:rgba(0,229,255,.09);
+  box-shadow:0 0 18px rgba(0,229,255,.2), 0 0 0 1px rgba(0,229,255,.08) inset, inset 0 1px 0 rgba(0,229,255,.15);
+}
+.tb-btn.m-connect.active{
+  color:var(--c-green);
+  border-color:rgba(0,255,133,.45);
+  background:rgba(0,255,133,.08);
+  box-shadow:0 0 18px rgba(0,255,133,.18), inset 0 1px 0 rgba(0,255,133,.12);
+}
+.tb-btn.m-pan.active{
+  color:#B200FF;
+  border-color:rgba(178,0,255,.45);
+  background:rgba(178,0,255,.08);
+  box-shadow:0 0 18px rgba(178,0,255,.18), inset 0 1px 0 rgba(178,0,255,.12);
+}
+.tb-btn.danger:hover{
+  color:#FF5555;
+  border-color:rgba(255,68,68,.42);
+  background:rgba(255,68,68,.07);
+  box-shadow:0 4px 16px rgba(0,0,0,.4), 0 0 12px rgba(255,68,68,.14);
+}
+.tb-btn:disabled{opacity:.2;cursor:not-allowed;pointer-events:none;transform:none}
+.tb-btn.active-toggle{
+  color:var(--c-yellow);
+  border-color:rgba(229,255,0,.45);
+  background:rgba(229,255,0,.07);
+  box-shadow:0 0 18px rgba(229,255,0,.14), inset 0 1px 0 rgba(229,255,0,.1);
+}
+.tb-sep{
+  width:1px;height:32px;flex-shrink:0;margin:0 6px;
+  background:linear-gradient(180deg,transparent 0%,rgba(255,255,255,.14) 50%,transparent 100%);
+}
 .tb-sp{flex:1}
-.tb-ico{font-size:1.4rem;line-height:1}
+.tb-ico{font-size:1.35rem;line-height:1}
 @media(max-width:1100px){.tb-lbl{display:none}}
-@media(max-width:600px){.tb-sep{margin:0 2px}.tb-btn{padding:6px 8px}}
+@media(max-width:600px){.tb-sep{margin:0 2px}.tb-btn{padding:7px 9px}}
 
 /* ── CANVAS ──────────────────────────────────────── */
 #cwrap{position:fixed;top:calc(var(--nav-h) + var(--tb-h));left:0;right:0;bottom:0;z-index:10;overflow:hidden;cursor:default}
@@ -255,6 +312,54 @@ body.pmode #panel{display:none}
   :root{--panel-w:100%}
   #minimap{display:none}
 }
+
+/* ── TOOLBAR TOOLTIPS ────────────────────────────── */
+.tb-btn[data-tooltip]{position:relative}
+.tb-btn[data-tooltip]::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  top:calc(100% + 10px);
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(10,10,20,.98);
+  color:rgba(255,255,255,.92);
+  font-family:var(--font-s);
+  font-size:.76rem;
+  font-weight:400;
+  letter-spacing:.2px;
+  text-transform:none;
+  padding:8px 14px;
+  border-radius:9px;
+  border:1px solid rgba(0,229,255,.28);
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .18s;
+  z-index:9999;
+  box-shadow:0 6px 20px rgba(0,0,0,.55);
+  line-height:1.45;
+}
+.tb-btn[data-tooltip]:hover::after{opacity:1}
+label.tb-btn[data-tooltip]::after{pointer-events:none}
+
+/* ── EDGE FLOW ANIMATION ─────────────────────────── */
+@keyframes edgeFlow{to{stroke-dashoffset:-32}}
+
+/* ── PRINT / PDF EXPORT ──────────────────────────── */
+@media print {
+  @page { size: A3 landscape; margin: 0; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #0a0a0a !important; overflow: visible !important; }
+  .topnav, #toolbar, #minimap, #panel, #edge-ctx, #toasts,
+  #m-overlay, #lnk-overlay { display: none !important; }
+  .grid-bg { display: none !important; }
+  #cwrap {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+    right: 0 !important; bottom: 0 !important;
+    overflow: visible !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -269,53 +374,53 @@ body.pmode #panel{display:none}
 <!-- TOOLBAR -->
 <div id="toolbar">
   <!-- Modos -->
-  <button class="tb-btn active" id="btn-sel" onclick="setMode('select')" title="Seleccionar (S)">
+  <button class="tb-btn active" id="btn-sel" onclick="setMode('select')" data-tooltip="SELECCIONAR — Haz clic en un nodo para seleccionarlo y arrastrarlo. Clic en fondo para deseleccionar. (tecla S)">
     <span class="tb-ico">↖</span><span class="tb-lbl">Select</span>
   </button>
-  <button class="tb-btn m-connect" id="btn-con" onclick="setMode('connect')" title="Conectar nodos (C)">
+  <button class="tb-btn m-connect" id="btn-con" onclick="setMode('connect')" data-tooltip="CONECTAR — Dibuja flechas entre nodos. Haz clic en el nodo origen y luego en el destino para crear la conexión. (tecla C)">
     <span class="tb-ico">⤢</span><span class="tb-lbl">Connect</span>
   </button>
-  <button class="tb-btn m-pan" id="btn-pan" onclick="setMode('pan')" title="Mover canvas (P)">
+  <button class="tb-btn m-pan" id="btn-pan" onclick="setMode('pan')" data-tooltip="DESPLAZAR CANVAS — Arrastra el canvas completo para moverte por el diagrama sin mover ningún nodo. (tecla P)">
     <span class="tb-ico">✋</span><span class="tb-lbl">Pan</span>
   </button>
   <div class="tb-sep"></div>
   <!-- Acciones nodo -->
-  <button class="tb-btn" onclick="showModal()" title="Nuevo nodo (N)">
+  <button class="tb-btn" onclick="showModal()" data-tooltip="NUEVO NODO — Abre el formulario para agregar un nuevo bloque al diagrama. (tecla N)">
     <span class="tb-ico">＋</span><span class="tb-lbl">Nodo</span>
   </button>
-  <button class="tb-btn danger" id="btn-del" onclick="deleteSelected()" title="Eliminar selección (Del)">
+  <button class="tb-btn danger" id="btn-del" onclick="deleteSelected()" data-tooltip="BORRAR — Elimina el nodo o conexión seleccionado. Primero selecciona algo, luego haz clic aquí. (tecla Supr)">
     <span class="tb-ico">🗑</span><span class="tb-lbl">Borrar</span>
   </button>
   <div class="tb-sep"></div>
   <!-- Historial -->
-  <button class="tb-btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)" disabled>
+  <button class="tb-btn" id="btn-undo" onclick="undo()" data-tooltip="DESHACER — Revierte el último cambio hecho en el diagrama. (Ctrl + Z)" disabled>
     <span class="tb-ico">↩</span><span class="tb-lbl">Undo</span>
   </button>
-  <button class="tb-btn" id="btn-redo" onclick="redo()" title="Rehacer (Ctrl+Y)" disabled>
+  <button class="tb-btn" id="btn-redo" onclick="redo()" data-tooltip="REHACER — Vuelve a aplicar un cambio que fue deshecho. (Ctrl + Y)" disabled>
     <span class="tb-ico">↪</span><span class="tb-lbl">Redo</span>
   </button>
   <div class="tb-sep"></div>
   <!-- Herramientas -->
-  <button class="tb-btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla">
+  <button class="tb-btn" id="btn-snap" onclick="toggleSnap()" data-tooltip="CUADRÍCULA MAGNÉTICA — Activa o desactiva el snap a grilla. Con esto activo, los nodos se alinean automáticamente al soltarlos.">
     <span class="tb-ico">⊞</span><span class="tb-lbl">Grid</span>
   </button>
-  <button class="tb-btn" id="btn-pres" onclick="togglePresentation()" title="Modo presentación (F11)">
+  <button class="tb-btn" id="btn-pres" onclick="togglePresentation()" data-tooltip="MODO PRESENTACIÓN — Oculta la barra de herramientas para mostrar solo el flujo. Ideal para reuniones. (tecla F11)">
     <span class="tb-ico">⛶</span><span class="tb-lbl">Presentar</span>
   </button>
   <div class="tb-sep"></div>
-  <!-- Import / Export -->
-  <button class="tb-btn" onclick="exportJSON()" title="Exportar diagrama JSON">
-    <span class="tb-ico">⬇</span><span class="tb-lbl">Export</span>
+  <!-- Organizar / Export -->
+  <button class="tb-btn" onclick="organizeLayout()" data-tooltip="ORGANIZAR — Redistribuye todos los nodos automáticamente ocupando el espacio disponible en pantalla: pocos nodos quedan centrados y separados, muchos nodos se organizan en columnas y filas simétricas.">
+    <span class="tb-ico">◈</span><span class="tb-lbl">Organizar</span>
   </button>
-  <label class="tb-btn" title="Importar diagrama JSON" style="cursor:pointer">
-    <span class="tb-ico">⬆</span><span class="tb-lbl">Import</span>
-    <input type="file" accept=".json" id="imp-file" style="display:none" onchange="importJSON(event)">
-  </label>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="exportPDF()" data-tooltip="EXPORTAR PDF — Abre el diálogo de impresión del navegador. Selecciona 'Guardar como PDF' para descargar el diagrama tal como se ve en pantalla, sin barras ni botones.">
+    <span class="tb-ico">⬇</span><span class="tb-lbl">PDF</span>
+  </button>
   <div class="tb-sp"></div>
   <!-- Zoom -->
-  <button class="tb-btn" onclick="zoom(.93)" title="Alejar (−)"><span class="tb-ico">−</span></button>
-  <button class="tb-btn" onclick="zoom(1.07)" title="Acercar (+)"><span class="tb-ico">＋</span></button>
-  <button class="tb-btn" onclick="fitView()" title="Ajustar vista (F)"><span class="tb-ico">⌖</span></button>
+  <button class="tb-btn" onclick="zoom(.93)" data-tooltip="ALEJAR — Reduce el zoom del canvas. También puedes usar la rueda del ratón. (tecla −)"><span class="tb-ico">−</span></button>
+  <button class="tb-btn" onclick="zoom(1.07)" data-tooltip="ACERCAR — Aumenta el zoom del canvas. También puedes usar la rueda del ratón. (tecla +)"><span class="tb-ico">＋</span></button>
+  <button class="tb-btn" onclick="fitView()" data-tooltip="AJUSTAR VISTA — Centra y escala el diagrama para que todos los nodos quepan en pantalla sin reorganizarlos. (tecla F)"><span class="tb-ico">⌖</span></button>
 </div>
 
 <!-- CANVAS -->
@@ -751,23 +856,43 @@ function updateEdges(){
     const n=S.nodes.find(n=>n.id===e.from);
     if(n)needed.add(n.theme||'cyan');
   });
+  // Glow filter for edges
+  defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   needed.forEach(th=>{
     const col=TC[th]||TC.cyan;
-    // end marker (forward)
-    defs.innerHTML+=`<marker id="ae-${th}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${col}" opacity=".7"/></marker>`;
-    // start marker (back / both)
-    defs.innerHTML+=`<marker id="as-${th}" markerWidth="8" markerHeight="8" refX="1" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="${col}" opacity=".7"/></marker>`;
+    defs.innerHTML+=`<marker id="ae-${th}" markerWidth="12" markerHeight="12" refX="10" refY="4.5" orient="auto"><path d="M0,0 L0,9 L12,4.5 z" fill="${col}" opacity=".85"/></marker>`;
+    defs.innerHTML+=`<marker id="as-${th}" markerWidth="12" markerHeight="12" refX="2" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L0,9 L12,4.5 z" fill="${col}" opacity=".85"/></marker>`;
   });
+  // Active (cyan) markers for node-selection highlight
+  defs.innerHTML+=`<marker id="ae-active" markerWidth="14" markerHeight="14" refX="12" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#00E5FF"/></marker>`;
+  defs.innerHTML+=`<marker id="as-active" markerWidth="14" markerHeight="14" refX="2" refY="5" orient="auto-start-reverse"><path d="M0,0 L0,10 L14,5 z" fill="#00E5FF"/></marker>`;
   svgEl.appendChild(defs);
+
+  // Determine node-selection context
+  const selNode=S.selected;
+  const hasSel=!!selNode;
 
   S.edges.forEach((e,idx)=>{
     const a=getAnchors(e.from,e.to);
     if(!a)return;
     const fn=S.nodes.find(n=>n.id===e.from);
     const th=(fn?.theme)||'cyan';
-    const col=TC[th]||TC.cyan;
+    const baseCol=TC[th]||TC.cyan;
     const dir=e.dir||'forward';
-    const isSelected=S.selectedEdge===idx;
+    const isEdgeSel=S.selectedEdge===idx;
+
+    // Node highlight states
+    const isLinked=hasSel&&(e.from===selNode||e.to===selNode);
+    const isDimmed=hasSel&&!isLinked;
+
+    // Visual params derived from state
+    const drawCol=isLinked?'#00E5FF':baseCol;
+    const markerKey=isLinked?'active':th;
+    const opacity=isEdgeSel?1:isLinked?.9:isDimmed?.05:.20;
+    const strokeW=isEdgeSel?4:isLinked?3.5:isDimmed?1.2:1.8;
+    const useGlow=isEdgeSel||isLinked;
+    const showFlow=isEdgeSel||isLinked;
+
     const d=`M${a.sx},${a.sy} C${a.c1x},${a.c1y} ${a.c2x},${a.c2y} ${a.ex},${a.ey}`;
 
     // Hit area (invisible, wide for easy click)
@@ -784,16 +909,30 @@ function updateEdges(){
     // Visual path
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d',d);
-    path.setAttribute('stroke',col);
-    path.setAttribute('stroke-width',isSelected?'3':'2.2');
+    path.setAttribute('stroke',drawCol);
+    path.setAttribute('stroke-width',String(strokeW));
     path.setAttribute('fill','none');
-    path.setAttribute('opacity',isSelected?'0.95':'0.62');
+    path.setAttribute('opacity',String(opacity));
+    if(useGlow)path.setAttribute('filter','url(#edge-glow)');
     path.style.pointerEvents='none';
-    // Markers by direction
-    if(dir==='forward'||dir==='both') path.setAttribute('marker-end',`url(#ae-${th})`);
-    if(dir==='back'||dir==='both') path.setAttribute('marker-start',`url(#as-${th})`);
-    if(isSelected) path.setAttribute('stroke-dasharray','0');
+    if(dir==='forward'||dir==='both')path.setAttribute('marker-end',`url(#ae-${markerKey})`);
+    if(dir==='back'||dir==='both')path.setAttribute('marker-start',`url(#as-${markerKey})`);
     svgEl.appendChild(path);
+
+    // Animated flow dash — only for highlighted/selected edges
+    if(showFlow){
+      const flow=document.createElementNS('http://www.w3.org/2000/svg','path');
+      flow.setAttribute('d',d);
+      flow.setAttribute('stroke',drawCol);
+      flow.setAttribute('stroke-width','2');
+      flow.setAttribute('fill','none');
+      flow.setAttribute('stroke-dasharray','8 18');
+      flow.setAttribute('opacity',isEdgeSel?'0.75':'0.55');
+      flow.style.pointerEvents='none';
+      flow.style.animation='edgeFlow 1.8s linear infinite';
+      if(dir==='back')flow.style.animationDirection='reverse';
+      svgEl.appendChild(flow);
+    }
 
     // Edge label
     const lbl=e.label||'';
@@ -959,6 +1098,88 @@ function fitView(){
   applyTransform(true);updateMinimap();
 }
 
+// ─── AUTO LAYOUT ──────────────────────────────────────────────────────────────
+function organizeLayout(){
+  if(!S.nodes.length)return;
+  snapshot();
+
+  const ids=S.nodes.map(n=>n.id);
+  const idSet=new Set(ids);
+
+  // Build adjacency (ignore self-loops, only edges between known nodes)
+  const inCount={};
+  const outAdj={};
+  ids.forEach(id=>{inCount[id]=0;outAdj[id]=[];});
+  S.edges.forEach(e=>{
+    if(idSet.has(e.from)&&idSet.has(e.to)&&e.from!==e.to){
+      inCount[e.to]++;
+      outAdj[e.from].push(e.to);
+    }
+  });
+
+  // BFS level assignment (longest path to each node = its column)
+  const lvl={};
+  const visited=new Set();
+  const q=[];
+  ids.forEach(id=>{
+    if(inCount[id]===0){lvl[id]=0;q.push(id);visited.add(id);}
+  });
+  // If graph is fully cyclic, seed everything at level 0
+  if(!q.length)ids.forEach(id=>{lvl[id]=0;q.push(id);visited.add(id);});
+
+  for(let qi=0;qi<q.length;qi++){
+    const cur=q[qi];
+    (outAdj[cur]||[]).forEach(nxt=>{
+      const nl=(lvl[cur]||0)+1;
+      if(lvl[nxt]===undefined||lvl[nxt]<nl)lvl[nxt]=nl;
+      if(!visited.has(nxt)){visited.add(nxt);q.push(nxt);}
+    });
+  }
+  // Catch any nodes not reached (isolated or extra cycles)
+  ids.forEach(id=>{if(lvl[id]===undefined)lvl[id]=0;});
+
+  // Group by level
+  const maxLvl=Math.max(...ids.map(id=>lvl[id]));
+  const byLvl=[];
+  for(let l=0;l<=maxLvl;l++)byLvl[l]=ids.filter(id=>lvl[id]===l);
+
+  // Node size estimate (use real cache when available)
+  const NW=300,NH=95;
+
+  // Compute spacing to fill screen gracefully
+  // Goal: use cwrap dimensions as reference so fitView centres everything
+  const vpW=Math.max(cwrap.clientWidth,800);
+  const vpH=Math.max(cwrap.clientHeight,600);
+  const numCols=maxLvl+1;
+  const maxNodesInCol=Math.max(...byLvl.map(l=>l.length));
+
+  // Spacing: enough so nodes don't overlap, but fill the available space
+  const gapX=Math.max(80,Math.min(180,(vpW-NW*numCols)/(numCols+1)));
+  const gapY=Math.max(50,Math.min(120,(vpH-NH*maxNodesInCol)/(maxNodesInCol+1)));
+  const colW=NW+gapX;
+  const rowH=NH+gapY;
+
+  byLvl.forEach((levelNodes,l)=>{
+    const totalColH=levelNodes.length*rowH-gapY;
+    levelNodes.forEach((id,i)=>{
+      const n=S.nodes.find(n=>n.id===id);
+      if(!n)return;
+      n.x=l*colW;
+      n.y=i*rowH-totalColH/2;
+    });
+  });
+
+  // Normalize: shift so top-left corner is (40, 40)
+  const minX=Math.min(...S.nodes.map(n=>n.x));
+  const minY=Math.min(...S.nodes.map(n=>n.y));
+  S.nodes.forEach(n=>{n.x=n.x-minX+40;n.y=n.y-minY+40;});
+
+  render();
+  setTimeout(()=>fitView(),80);
+  saveState();
+  toast('Diagrama organizado','ok');
+}
+
 // ─── MODES ────────────────────────────────────────────────────────────────────
 function setMode(m){
   if(S.connecting)cancelConnect();
@@ -1078,11 +1299,13 @@ function selectNode(id){
   if(prev&&prev!==id)document.getElementById('node-'+prev)?.classList.remove('selected');
   S.selected=id;
   document.getElementById('node-'+id)?.classList.add('selected');
+  updateEdges(); // refresh edge highlight focus
 }
 
 function deselectAll(){
   if(S.selected){document.getElementById('node-'+S.selected)?.classList.remove('selected');S.selected=null;}
   closePanel();
+  updateEdges(); // restore edge base state
 }
 
 function deleteSelected(){
@@ -1491,6 +1714,15 @@ function submitModal(){
 }
 
 // ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
+function exportPDF(){
+  // Fit the view first so everything is centred and visible
+  fitView();
+  toast('Preparando PDF — abrirá el diálogo de impresión…','info');
+  setTimeout(()=>{
+    window.print();
+  },420);
+}
+
 function exportJSON(){
   const data={
     version:2,
