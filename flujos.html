@@ -313,34 +313,21 @@ body.pmode #panel{display:none}
   #minimap{display:none}
 }
 
-/* ── TOOLBAR TOOLTIPS ────────────────────────────── */
-.tb-btn[data-tooltip]{position:relative}
-.tb-btn[data-tooltip]::after{
-  content:attr(data-tooltip);
-  position:absolute;
-  top:calc(100% + 10px);
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(10,10,20,.98);
-  color:rgba(255,255,255,.92);
-  font-family:var(--font-s);
-  font-size:.76rem;
-  font-weight:400;
-  letter-spacing:.2px;
-  text-transform:none;
-  padding:8px 14px;
-  border-radius:9px;
-  border:1px solid rgba(0,229,255,.28);
-  white-space:nowrap;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .18s;
-  z-index:9999;
-  box-shadow:0 6px 20px rgba(0,0,0,.55);
-  line-height:1.45;
+/* ── TOOLBAR TOOLTIPS (fixed — no clippeado por overflow) ── */
+#tb-tip{
+  position:fixed;z-index:9999;pointer-events:none;
+  background:rgba(8,8,18,.98);
+  color:rgba(255,255,255,.93);
+  font-family:var(--font-s);font-size:.78rem;font-weight:400;
+  letter-spacing:.2px;line-height:1.52;
+  padding:10px 15px;
+  border-radius:10px;
+  border:1px solid rgba(0,229,255,.32);
+  box-shadow:0 8px 28px rgba(0,0,0,.65), 0 0 0 1px rgba(0,229,255,.06);
+  max-width:280px;text-align:center;
+  opacity:0;transition:opacity .18s;
+  white-space:normal;
 }
-.tb-btn[data-tooltip]:hover::after{opacity:1}
-label.tb-btn[data-tooltip]::after{pointer-events:none}
 
 /* ── EDGE FLOW ANIMATION ─────────────────────────── */
 @keyframes edgeFlow{to{stroke-dashoffset:-32}}
@@ -501,6 +488,9 @@ label.tb-btn[data-tooltip]::after{pointer-events:none}
     </div>
   </div>
 </div>
+
+<!-- TOOLBAR TOOLTIP -->
+<div id="tb-tip"></div>
 
 <!-- TOAST CONTAINER -->
 <div id="toasts"></div>
@@ -1860,6 +1850,37 @@ document.addEventListener('click',e=>{
 },true);
 
 document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault();submitModal();});
+
+// ─── TOOLBAR TOOLTIPS ────────────────────────────────────────────────────────
+(()=>{
+  const tip=document.getElementById('tb-tip');
+  let hideTimer;
+  document.querySelectorAll('.tb-btn[data-tooltip]').forEach(btn=>{
+    btn.addEventListener('mouseenter',()=>{
+      clearTimeout(hideTimer);
+      tip.textContent=btn.getAttribute('data-tooltip');
+      tip.style.opacity='0';
+      tip.style.display='block';
+      // Position below button, clamped to viewport
+      const r=btn.getBoundingClientRect();
+      tip.style.maxWidth='280px';
+      tip.style.left='0';tip.style.top='0'; // reset to measure
+      // Force layout to get tip width
+      requestAnimationFrame(()=>{
+        const tw=Math.min(280,tip.offsetWidth||220);
+        let left=r.left+r.width/2-tw/2;
+        left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
+        tip.style.left=left+'px';
+        tip.style.top=(r.bottom+9)+'px';
+        tip.style.opacity='1';
+      });
+    });
+    btn.addEventListener('mouseleave',()=>{
+      hideTimer=setTimeout(()=>{tip.style.opacity='0';},120);
+    });
+    btn.addEventListener('mousedown',()=>{tip.style.opacity='0';});
+  });
+})();
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 loadState();
