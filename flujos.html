@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujos de Negocio — OpenCore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg-panel: #141414;
+  --border: #222222;
+  --text-main: #ffffff;
+  --text-dim: #c8c8c8;
+  --accent-cyan: #00E5FF;
+  --accent-yellow: #E5FF00;
+  --accent-red: #FF2A2A;
+  --accent-purple: #B200FF;
+  --accent-green: #00FF85;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ANIMATED GRID */
+.particles-bg {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+}
+.particles-bg::before {
+  content: "";
+  position: absolute; width: 200%; height: 200%; top: -50%; left: -25%;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(400px) rotateX(65deg);
+  animation: gridScroll 15s linear infinite;
+}
+@keyframes gridScroll {
+  0%   { transform: perspective(400px) rotateX(65deg) translateY(0); }
+  100% { transform: perspective(400px) rotateX(65deg) translateY(60px); }
+}
+
+/* TOP NAV TABS */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 201;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center;
+  padding: 0 2rem; height: 36px;
+}
+.topnav-inner {
+  max-width: 1400px; margin: 0 auto; width: 100%;
+  display: flex; align-items: center; gap: 0;
+}
+.topnav a {
+  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase; text-decoration: none;
+  color: rgba(255,255,255,0.32);
+  padding: 0 16px; height: 36px;
+  display: flex; align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.topnav a:hover { color: rgba(255,255,255,0.65); }
+.topnav a.active { color: #ffffff; border-bottom-color: var(--accent-cyan); }
+.topnav-sep { width: 1px; height: 14px; background: rgba(255,255,255,0.1); margin: 0 2px; }
+
+/* HEADER */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 1.1rem 2rem;
+  position: fixed; top: 36px; left: 0; right: 0;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 1.5rem; }
+.page-title {
+  font-family: var(--font-heading); font-size: 0.7rem;
+  letter-spacing: 3px; color: rgba(0,229,255,0.6);
+  text-transform: uppercase;
+}
+.header-right { display: flex; align-items: center; gap: 1rem; }
+.hint {
+  font-size: 0.68rem; color: rgba(255,255,255,0.3);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.zoom-controls { display: flex; gap: 6px; }
+.zoom-btn {
+  font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700;
+  color: var(--text-dim); background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  transition: all 0.2s;
+}
+.zoom-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* CANVAS AREA */
+#canvas-wrap {
+  position: fixed; top: 101px; left: 0; right: 0; bottom: 0;
+  z-index: 10; cursor: grab; overflow: hidden;
+}
+#canvas-wrap.dragging { cursor: grabbing; }
+#diagram {
+  position: absolute;
+  transform-origin: 0 0;
+  transition: none;
+}
+
+/* NODES */
+.node {
+  position: absolute;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.25s, transform 0.25s;
+  user-select: none;
+}
+.node:hover { transform: translateY(-2px); }
+.node-inner {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid;
+  min-width: 130px;
+  text-align: center;
+}
+.node-icon {
+  font-size: 1.3rem; margin-bottom: 6px; display: block;
+}
+.node-label {
+  font-family: var(--font-heading); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; line-height: 1.3;
+}
+.node-sub {
+  font-size: 0.6rem; color: rgba(255,255,255,0.45);
+  margin-top: 4px; letter-spacing: 0.5px;
+}
+
+/* Node color themes */
+.node-cyan .node-inner {
+  background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.4);
+  color: #00E5FF;
+}
+.node-cyan:hover { box-shadow: 0 0 20px rgba(0,229,255,0.35); }
+.node-yellow .node-inner {
+  background: rgba(229,255,0,0.07); border-color: rgba(229,255,0,0.4);
+  color: #E5FF00;
+}
+.node-yellow:hover { box-shadow: 0 0 20px rgba(229,255,0,0.3); }
+.node-purple .node-inner {
+  background: rgba(178,0,255,0.08); border-color: rgba(178,0,255,0.4);
+  color: #B200FF;
+}
+.node-purple:hover { box-shadow: 0 0 20px rgba(178,0,255,0.3); }
+.node-green .node-inner {
+  background: rgba(0,255,133,0.07); border-color: rgba(0,255,133,0.35);
+  color: #00FF85;
+}
+.node-green:hover { box-shadow: 0 0 20px rgba(0,255,133,0.28); }
+.node-red .node-inner {
+  background: rgba(255,42,42,0.07); border-color: rgba(255,42,42,0.35);
+  color: #FF2A2A;
+}
+.node-red:hover { box-shadow: 0 0 20px rgba(255,42,42,0.28); }
+.node-white .node-inner {
+  background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2);
+  color: #fff;
+}
+.node-white:hover { box-shadow: 0 0 20px rgba(255,255,255,0.15); }
+
+/* HUB node (ACME/ERP) */
+.node-hub .node-inner {
+  background: rgba(0,229,255,0.12); border-color: rgba(0,229,255,0.7);
+  color: #00E5FF; padding: 18px 24px; min-width: 160px;
+  box-shadow: 0 0 30px rgba(0,229,255,0.2), inset 0 0 20px rgba(0,229,255,0.05);
+}
+.node-hub:hover { box-shadow: 0 0 40px rgba(0,229,255,0.5); }
+.node-hub .node-label { font-size: 0.85rem; letter-spacing: 2px; }
+
+/* SVG arrows */
+#arrows-svg {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; overflow: visible;
+}
+
+/* DETAIL PANEL */
+#detail-panel {
+  position: fixed; top: 101px; right: 0; bottom: 0;
+  width: 360px; z-index: 300;
+  background: rgba(12,12,16,0.97);
+  border-left: 1px solid rgba(0,229,255,0.2);
+  backdrop-filter: blur(16px);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  overflow-y: auto;
+  padding: 2rem;
+}
+#detail-panel.open { transform: translateX(0); }
+.panel-close {
+  position: absolute; top: 1.2rem; right: 1.2rem;
+  font-size: 1.2rem; color: var(--text-dim); cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.panel-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.panel-icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
+.panel-title {
+  font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.panel-subtitle {
+  font-size: 0.75rem; color: var(--text-dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 1.5rem; padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.panel-section {
+  margin-bottom: 1.4rem;
+}
+.panel-section-title {
+  font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent-cyan); margin-bottom: 0.6rem;
+}
+.panel-section ul {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.panel-section ul li {
+  font-size: 0.82rem; color: rgba(255,255,255,0.78);
+  padding-left: 1rem; position: relative; line-height: 1.45;
+}
+.panel-section ul li::before {
+  content: "→"; position: absolute; left: 0;
+  color: var(--accent-cyan); font-size: 0.7rem;
+}
+.panel-tag {
+  display: inline-block; font-size: 0.62rem; font-weight: 700;
+  font-family: var(--font-heading); letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px; margin: 2px;
+}
+.tag-cyan { background: rgba(0,229,255,0.12); color: #00E5FF; border: 1px solid rgba(0,229,255,0.3); }
+.tag-yellow { background: rgba(229,255,0,0.1); color: #E5FF00; border: 1px solid rgba(229,255,0,0.3); }
+.tag-green { background: rgba(0,255,133,0.1); color: #00FF85; border: 1px solid rgba(0,255,133,0.25); }
+.panel-opportunity {
+  background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 10px; padding: 1rem; margin-top: 1rem;
+}
+.panel-opportunity .opp-label {
+  font-family: var(--font-heading); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+}
+.panel-opportunity p {
+  font-size: 0.8rem; color: rgba(255,255,255,0.75); line-height: 1.5;
+}
+
+/* LEGEND */
+#legend {
+  position: fixed; bottom: 1.5rem; left: 1.5rem;
+  z-index: 200; display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.62rem; font-family: var(--font-heading);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+</style>
+</head>
+<body>
+<div class="particles-bg"></div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="dashboard.html">Stats</a>
+    <div class="topnav-sep"></div>
+    <a href="flujos.html" class="active">Flujos</a>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="page-title">Flujos de Negocio</div>
+  </div>
+  <div class="header-right">
+    <span class="hint">Click nodo · Drag · Scroll</span>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="zoom(1.2)">+</button>
+      <button class="zoom-btn" onclick="zoom(0.8)">−</button>
+      <button class="zoom-btn" onclick="resetView()">⌖</button>
+    </div>
+  </div>
+</header>
+
+<!-- CANVAS -->
+<div id="canvas-wrap">
+  <div id="diagram">
+    <svg id="arrows-svg" width="2400" height="1600"></svg>
+    <!-- Nodes injected by JS -->
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#00E5FF"></div>Importación</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#E5FF00"></div>Finanzas</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#B200FF"></div>Inventario</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#00FF85"></div>Ventas</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF2A2A"></div>Técnico</div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="detail-panel">
+  <div class="panel-close" onclick="closePanel()">✕</div>
+  <div class="panel-icon" id="p-icon"></div>
+  <div class="panel-title" id="p-title"></div>
+  <div class="panel-subtitle" id="p-subtitle"></div>
+  <div id="p-body"></div>
+</div>
+
+<script>
+// ─── NODE DATA ───────────────────────────────────────────────────────────────
+const NODES = [
+  {
+    id: 'comex', label: 'COMEX', sub: 'Comercio Exterior', icon: '🌐',
+    x: 80, y: 120, theme: 'cyan',
+    detail: {
+      subtitle: 'Gestión de Importaciones / Exportaciones',
+      procesos: ['Coordinación de embarques internacionales','Documentación aduanera','Negociación con proveedores (CAT, Morton)','Gestión de fletes y seguros','Control de tiempos de tránsito'],
+      integraciones: ['Aduana / Informes de Importación','Finanzas Internacional','Fábrica CAT / Morton'],
+      criticos: ['Errores en clasificación arancelaria','Demoras en liberación aduanera','Fluctuación tipo de cambio'],
+      tags: ['cyan','cyan','cyan'],
+      oportunidad: 'Automatizar seguimiento de embarques y alertas de retrasos. Dashboard de tránsito en tiempo real integrado al ERP.'
+    }
+  },
+  {
+    id: 'finanzas', label: 'FINANZAS INTL', sub: 'Pagos & FX', icon: '💱',
+    x: 310, y: 70, theme: 'yellow',
+    detail: {
+      subtitle: 'Finanzas Internacionales y Control de Pagos',
+      procesos: ['Pagos a proveedores internacionales (USD/EUR)','Gestión de cartas de crédito','Control de tipo de cambio','Conciliación de facturas de importación','Provisión de landed cost'],
+      integraciones: ['COMEX','Contabilidad','Control Contable','ACME/ERP'],
+      criticos: ['Diferencias de cambio no provisionadas','Retrasos en aprobación de pagos','Falta de trazabilidad de facturas'],
+      oportunidad: 'Módulo de FX tracking automático con alerta de exposición cambiaria. Integración directa con banco para confirmación de pagos.'
+    }
+  },
+  {
+    id: 'aduana', label: 'ADUANA', sub: 'Inf. Importación', icon: '📋',
+    x: 80, y: 310, theme: 'cyan',
+    detail: {
+      subtitle: 'Despacho Aduanero e Informes de Importación',
+      procesos: ['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
+      integraciones: ['COMEX','ACME/ERP','Almacén Particular','Contabilidad'],
+      criticos: ['Corrección de glosas aduaneras','Tiempos de liberación','Aplicación correcta de aranceles'],
+      oportunidad: 'Digitalización de informes de importación con OCR. Carga automática al ERP al momento de liberación aduanera.'
+    }
+  },
+  {
+    id: 'almacen', label: 'ALMACÉN PART.', sub: 'Custodia Temporal', icon: '🏭',
+    x: 80, y: 500, theme: 'cyan',
+    detail: {
+      subtitle: 'Almacén Particular / Zona de Tránsito',
+      procesos: ['Recepción de mercancía liberada de aduana','Control de estado y embalaje','Coordinación de transferencia a Bodega/Patio','Registro de ingresos parciales','Custodia temporal hasta confirmación ERP'],
+      integraciones: ['Aduana','ACME/ERP','Bodega/Patio'],
+      criticos: ['Discrepancias de cantidades vs factura','Daños en tránsito no registrados','Tiempos muertos de custodia'],
+      oportunidad: 'App de recepción con QR/código de barras para confirmación instantánea de bultos. Notificación automática al equipo de bodega.'
+    }
+  },
+  {
+    id: 'fabrica', label: 'FÁBRICA', sub: 'CAT / Morton', icon: '🏗️',
+    x: 580, y: 70, theme: 'white',
+    detail: {
+      subtitle: 'Proveedores de Fábrica — CAT / Morton',
+      procesos: ['Generación de órdenes de compra internacionales','Comunicación de especificaciones técnicas','Confirmación de disponibilidad y plazo','Envío de facturas proforma','Coordinación de embarques CIF/FOB'],
+      integraciones: ['COMEX','ACME/ERP','FINANZAS INTL'],
+      criticos: ['Lead times largos','Cambios de especificación tardíos','Mínimos de pedido'],
+      oportunidad: 'Portal de proveedores con visibilidad de OC, confirmación de despacho y tracking de embarque integrado.'
+    }
+  },
+  {
+    id: 'erp', label: 'ACME / ERP', sub: 'Sistema Central', icon: '⚙️',
+    x: 400, y: 350, theme: 'hub',
+    detail: {
+      subtitle: 'Sistema ERP Central — Hub de todas las operaciones',
+      procesos: ['Gestión de órdenes de compra y venta','Control de inventario en tiempo real','Facturación y cuentas por cobrar/pagar','Gestión de costos (standard, landed, franquicia)','Integración con módulos de aduana, bodega, contabilidad'],
+      integraciones: ['Todos los módulos del negocio'],
+      criticos: ['Datos desactualizados por carga manual','Falta de automatización en flujos inter-módulo','Reportería limitada o tardía'],
+      oportunidad: 'Implementar BI sobre el ERP para reportes ejecutivos en tiempo real. Automatizar flujos de datos entre módulos para eliminar re-digitación.'
+    }
+  },
+  {
+    id: 'bodega', label: 'BODEGA / PATIO', sub: 'Almacenaje Físico', icon: '📦',
+    x: 720, y: 310, theme: 'purple',
+    detail: {
+      subtitle: 'Bodega Principal y Patio de Equipos',
+      procesos: ['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas','Gestión de devoluciones','Despacho de equipos grandes (patio)'],
+      integraciones: ['ACME/ERP','Sistema de Inventario','Almacén Particular','Técnico'],
+      criticos: ['Diferencias de inventario físico vs sistema','Quiebres de stock no anticipados','Trazabilidad de números de serie'],
+      oportunidad: 'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo.'
+    }
+  },
+  {
+    id: 'inventario_sys', label: 'SISTEMA INVENT.', sub: 'Control de Stock', icon: '🗃️',
+    x: 930, y: 240, theme: 'purple',
+    detail: {
+      subtitle: 'Sistema de Control de Inventario',
+      procesos: ['Actualización de stocks en tiempo real','Control de lotes y series','Generación de reportes de rotación','Alertas de stock mínimo y máximo','Conciliación periódica físico-sistema'],
+      integraciones: ['ACME/ERP','Bodega/Patio','INU','Técnico'],
+      criticos: ['Diferencias post-inventario físico','Movimientos manuales no registrados','Clasificación incorrecta de ítems'],
+      oportunidad: 'Dashboard de inventario con alertas inteligentes de reposición y predicción de demanda basada en historial.'
+    }
+  },
+  {
+    id: 'inu', label: 'INU', sub: 'Ítem No Usado', icon: '🔄',
+    x: 930, y: 430, theme: 'purple',
+    detail: {
+      subtitle: 'Gestión de Ítems No Usados / Obsoletos',
+      procesos: ['Identificación de stock sin rotación','Clasificación de ítems obsoletos','Proceso de devolución a fábrica','Disposición final (venta, descarte, remate)','Ajuste contable de valor'],
+      integraciones: ['Sistema de Inventario','Inventario (Repuestos)','Contabilidad','ACME/ERP'],
+      criticos: ['Capital inmovilizado sin identificar','Falta de política de obsolescencia','Costo de almacenaje de ítems sin movimiento'],
+      oportunidad: 'Módulo de análisis de obsolescencia con propuesta automática de acciones: devolver, rematar, dar de baja.'
+    }
+  },
+  {
+    id: 'inventario', label: 'INVENTARIO', sub: 'Repuestos · Equipos · Costos', icon: '🔩',
+    x: 1130, y: 350, theme: 'purple',
+    detail: {
+      subtitle: 'Inventario Detallado por Categoría',
+      procesos: ['Inventario de repuestos críticos','Inventario de equipos (activos fijos)','Valorización a costo standard','Actualización de costo landed','Cargo de franquicia por ítem'],
+      integraciones: ['Sistema de Inventario','INU','Control Contable','Técnico','ACME/ERP'],
+      criticos: ['Valorización incorrecta por landed cost variable','Falta de control de repuestos críticos','Discrepancia entre activos físicos y contables'],
+      oportunidad: 'Catálogo unificado con valorización automática multi-método (standard, landed, franquicia). Alertas de repuestos críticos bajo mínimo.'
+    }
+  },
+  {
+    id: 'venta', label: 'VENTA', sub: 'Proceso Comercial', icon: '💼',
+    x: 400, y: 620, theme: 'green',
+    detail: {
+      subtitle: 'Gestión Comercial y Proceso de Venta',
+      procesos: ['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
+      integraciones: ['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
+      criticos: ['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
+      oportunidad: 'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.'
+    }
+  },
+  {
+    id: 'clientes', label: 'CLIENTES', sub: 'Cuenta & Relación', icon: '🤝',
+    x: 200, y: 760, theme: 'green',
+    detail: {
+      subtitle: 'Gestión de Clientes y Cuenta Corriente',
+      procesos: ['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
+      integraciones: ['ACME/ERP','Venta','Settlement','Contabilidad'],
+      criticos: ['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
+      oportunidad: 'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.'
+    }
+  },
+  {
+    id: 'settlement', label: 'SETTLEMENT', sub: 'Liquidación & Cierre', icon: '🧾',
+    x: 600, y: 760, theme: 'green',
+    detail: {
+      subtitle: 'Settlement — Cierre y Liquidación de Operaciones',
+      procesos: ['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
+      integraciones: ['Clientes','ACME/ERP','Contabilidad','Control Contable'],
+      criticos: ['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
+      oportunidad: 'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.'
+    }
+  },
+  {
+    id: 'tecnico', label: 'TÉCNICO', sub: 'Servicio & Mantención', icon: '🔧',
+    x: 930, y: 620, theme: 'red',
+    detail: {
+      subtitle: 'Área Técnica — Servicio y Mantención',
+      procesos: ['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
+      integraciones: ['Inventario (Repuestos)','Bodega/Patio','ACME/ERP','Clientes','Sistema de Inventario'],
+      criticos: ['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
+      oportunidad: 'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.'
+    }
+  },
+  {
+    id: 'contabilidad', label: 'CONTABILIDAD', sub: 'Registro Contable', icon: '📊',
+    x: 720, y: 510, theme: 'yellow',
+    detail: {
+      subtitle: 'Contabilidad General y Registro Tributario',
+      procesos: ['Registro de asientos contables','Gestión de cuentas por pagar y cobrar','Declaraciones tributarias (IVA, renta)','Cierre mensual y anual','Conciliación bancaria'],
+      integraciones: ['ACME/ERP','Settlement','Control Contable','Finanzas Internacional','Venta'],
+      criticos: ['Asientos manuales propensos a error','Desfase entre operación y registro contable','Falta de automatización en cierre de período'],
+      oportunidad: 'Automatización de asientos contables gatillados por eventos del ERP. Cierre de período asistido con checklist automático.'
+    }
+  },
+  {
+    id: 'control_contable', label: 'CTRL CONTABLE', sub: 'Franquicia · Std · Landed', icon: '⚖️',
+    x: 920, y: 70, theme: 'yellow',
+    detail: {
+      subtitle: 'Control Contable de Costos — 3 Dimensiones',
+      procesos: [
+        'CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem',
+        'COSTO STANDARD: costo interno de referencia para valorización de inventario',
+        'LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'
+      ],
+      integraciones: ['Finanzas Internacional','Inventario','Contabilidad','ACME/ERP','Settlement'],
+      criticos: ['Variaciones entre standard y landed no analizadas','Cargo de franquicia desactualizado','Landed cost calculado al cierre, no en tiempo real'],
+      oportunidad: 'Motor de cálculo de landed cost en tiempo real desde el momento del embarque. Dashboard de variaciones standard vs real con drill-down por ítem.'
+    }
+  }
+];
+
+// ─── EDGES ───────────────────────────────────────────────────────────────────
+const EDGES = [
+  { from: 'comex', to: 'aduana' },
+  { from: 'comex', to: 'finanzas' },
+  { from: 'comex', to: 'fabrica' },
+  { from: 'fabrica', to: 'erp' },
+  { from: 'finanzas', to: 'erp' },
+  { from: 'finanzas', to: 'control_contable' },
+  { from: 'aduana', to: 'almacen' },
+  { from: 'aduana', to: 'erp' },
+  { from: 'almacen', to: 'erp' },
+  { from: 'almacen', to: 'bodega' },
+  { from: 'erp', to: 'bodega' },
+  { from: 'erp', to: 'venta' },
+  { from: 'erp', to: 'contabilidad' },
+  { from: 'bodega', to: 'inventario_sys' },
+  { from: 'bodega', to: 'tecnico' },
+  { from: 'inventario_sys', to: 'inu' },
+  { from: 'inventario_sys', to: 'inventario' },
+  { from: 'inu', to: 'inventario' },
+  { from: 'inventario', to: 'tecnico' },
+  { from: 'inventario', to: 'control_contable' },
+  { from: 'venta', to: 'clientes' },
+  { from: 'venta', to: 'settlement' },
+  { from: 'clientes', to: 'settlement' },
+  { from: 'settlement', to: 'contabilidad' },
+  { from: 'contabilidad', to: 'control_contable' },
+  { from: 'tecnico', to: 'erp' },
+];
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+const diagram = document.getElementById('diagram');
+const svg = document.getElementById('arrows-svg');
+
+// Build node map for center calculations
+const nodeMap = {};
+
+NODES.forEach(n => {
+  const el = document.createElement('div');
+  el.className = `node node-${n.theme}`;
+  el.id = 'node-' + n.id;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  el.innerHTML = `
+    <div class="node-inner">
+      <span class="node-icon">${n.icon}</span>
+      <div class="node-label">${n.label}</div>
+      ${n.sub ? `<div class="node-sub">${n.sub}</div>` : ''}
+    </div>`;
+  el.addEventListener('click', (e) => { e.stopPropagation(); openPanel(n.id); });
+  diagram.appendChild(el);
+  nodeMap[n.id] = { el, n };
+});
+
+// After rendering, draw arrows (need offsetWidth/Height)
+function getCenter(id) {
+  const { el, n } = nodeMap[id];
+  return {
+    x: n.x + (el.offsetWidth || 145) / 2,
+    y: n.y + (el.offsetHeight || 90) / 2
+  };
+}
+
+function drawArrows() {
+  svg.innerHTML = '';
+  // Arrow marker
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML = `
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(0,229,255,0.5)"/>
+    </marker>
+    <marker id="arr-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,255,255,0.15)"/>
+    </marker>`;
+  svg.appendChild(defs);
+
+  EDGES.forEach(e => {
+    const f = getCenter(e.from);
+    const t = getCenter(e.to);
+    const dx = t.x - f.x, dy = t.y - f.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    // Curve control point
+    const mx = (f.x + t.x) / 2;
+    const my = (f.y + t.y) / 2;
+    const perp = { x: -dy/dist * 30, y: dx/dist * 30 };
+    const cx = mx + perp.x, cy = my + perp.y;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${f.x},${f.y} Q${cx},${cy} ${t.x},${t.y}`);
+    path.setAttribute('stroke', 'rgba(0,229,255,0.3)');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', 'url(#arr)');
+    svg.appendChild(path);
+  });
+}
+
+setTimeout(drawArrows, 50);
+
+// ─── PAN & ZOOM ───────────────────────────────────────────────────────────────
+const wrap = document.getElementById('canvas-wrap');
+let scale = 0.75, tx = 80, ty = 40;
+let dragging = false, startX, startY, startTx, startTy;
+
+function applyTransform(smooth) {
+  diagram.style.transition = smooth ? 'transform 0.3s ease' : 'none';
+  diagram.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+}
+applyTransform(false);
+
+wrap.addEventListener('mousedown', e => {
+  if (e.target.closest('.node')) return;
+  dragging = true; wrap.classList.add('dragging');
+  startX = e.clientX; startY = e.clientY; startTx = tx; startTy = ty;
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  tx = startTx + (e.clientX - startX);
+  ty = startTy + (e.clientY - startY);
+  applyTransform(false);
+});
+window.addEventListener('mouseup', () => { dragging = false; wrap.classList.remove('dragging'); });
+
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const rect = wrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  tx = mx - (mx - tx) * delta;
+  ty = my - (my - ty) * delta;
+  scale = Math.min(2, Math.max(0.3, scale * delta));
+  applyTransform(false);
+}, { passive: false });
+
+// Touch support
+let touches = {}, lastDist = 0, lastTx, lastTy;
+wrap.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    startTx = tx; startTy = ty;
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    lastDist = Math.sqrt(dx*dx+dy*dy);
+    lastTx = tx; lastTy = ty;
+  }
+}, { passive: true });
+wrap.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    tx = startTx + (e.touches[0].clientX - startX);
+    ty = startTy + (e.touches[0].clientY - startY);
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    const delta = dist / lastDist;
+    scale = Math.min(2, Math.max(0.3, scale * delta));
+    lastDist = dist;
+  }
+  applyTransform(false);
+}, { passive: false });
+
+function zoom(factor) {
+  const rect = wrap.getBoundingClientRect();
+  const cx = rect.width / 2, cy = rect.height / 2;
+  tx = cx - (cx - tx) * factor;
+  ty = cy - (cy - ty) * factor;
+  scale = Math.min(2, Math.max(0.3, scale * factor));
+  applyTransform(true);
+}
+
+function resetView() {
+  scale = 0.75; tx = 80; ty = 40;
+  applyTransform(true);
+}
+
+// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
+const panel = document.getElementById('detail-panel');
+let activeNode = null;
+
+function openPanel(id) {
+  const n = NODES.find(x => x.id === id);
+  if (!n) return;
+  activeNode = id;
+
+  document.getElementById('p-icon').textContent = n.icon;
+  document.getElementById('p-title').textContent = n.label;
+  document.getElementById('p-subtitle').textContent = n.detail.subtitle;
+
+  const body = document.getElementById('p-body');
+  body.innerHTML = '';
+
+  // Procesos
+  const sec1 = document.createElement('div');
+  sec1.className = 'panel-section';
+  sec1.innerHTML = `<div class="panel-section-title">Procesos Clave</div><ul>${
+    n.detail.procesos.map(p => `<li>${p}</li>`).join('')
+  }</ul>`;
+  body.appendChild(sec1);
+
+  // Integraciones
+  const sec2 = document.createElement('div');
+  sec2.className = 'panel-section';
+  sec2.innerHTML = `<div class="panel-section-title">Integra con</div><div>${
+    n.detail.integraciones.map(i => `<span class="panel-tag tag-cyan">${i}</span>`).join('')
+  }</div>`;
+  body.appendChild(sec2);
+
+  // Puntos críticos
+  const sec3 = document.createElement('div');
+  sec3.className = 'panel-section';
+  sec3.innerHTML = `<div class="panel-section-title">Puntos Críticos</div><ul>${
+    n.detail.criticos.map(c => `<li>${c}</li>`).join('')
+  }</ul>`;
+  body.appendChild(sec3);
+
+  // Oportunidad OpenCore
+  const opp = document.createElement('div');
+  opp.className = 'panel-opportunity';
+  opp.innerHTML = `<div class="opp-label">⚡ Oportunidad OpenCore</div><p>${n.detail.oportunidad}</p>`;
+  body.appendChild(opp);
+
+  panel.classList.add('open');
+
+  // Highlight selected node
+  document.querySelectorAll('.node').forEach(el => el.style.opacity = '0.5');
+  document.getElementById('node-' + id).style.opacity = '1';
+}
+
+function closePanel() {
+  panel.classList.remove('open');
+  activeNode = null;
+  document.querySelectorAll('.node').forEach(el => el.style.opacity = '1');
+}
+
+// Click on canvas background closes panel
+wrap.addEventListener('click', e => {
+  if (!e.target.closest('.node') && !e.target.closest('#detail-panel')) {
+    closePanel();
+  }
+});
+</script>
+</body>
+</html>

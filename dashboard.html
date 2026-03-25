@@ -91,7 +91,7 @@ input, textarea, select {
 .header {
   border-bottom: 1px solid var(--border);
   padding: 1.5rem 2rem;
-  position: sticky; top: 0;
+  position: sticky; top: 36px;
   background: rgba(10,10,10,0.85);
   backdrop-filter: blur(12px);
   z-index: 100;
@@ -122,6 +122,39 @@ input, textarea, select {
   color: var(--accent-cyan);
   border: 1px solid rgba(0,229,255,0.3);
   padding: 4px 12px; border-radius: 8px;
+}
+
+/* TOP NAV TABS */
+.topnav {
+  position: sticky; top: 0; z-index: 101;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center;
+  padding: 0 2rem; height: 36px;
+}
+.topnav-inner {
+  max-width: 1400px; margin: 0 auto; width: 100%;
+  display: flex; align-items: center; gap: 0;
+}
+.topnav a {
+  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase; text-decoration: none;
+  color: rgba(255,255,255,0.32);
+  padding: 0 16px; height: 36px;
+  display: flex; align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.topnav a:hover { color: rgba(255,255,255,0.65); }
+.topnav a.active {
+  color: #ffffff;
+  border-bottom-color: var(--accent-cyan);
+}
+.topnav-sep {
+  width: 1px; height: 14px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 2px;
 }
 
 /* CONTAINER */
@@ -1026,6 +1059,15 @@ window.addEventListener("load", function() {
 });
 </script>
 <div class="particles-bg"></div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a href="dashboard.html" class="active">Stats</a>
+    <div class="topnav-sep"></div>
+    <a href="flujos.html">Flujos</a>
+  </div>
+</nav>
 
 <!-- HEADER -->
 <header class="header">
