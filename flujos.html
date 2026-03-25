@@ -2,292 +2,182 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Flujos de Negocio — OpenCore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0a;
-  --bg-panel: #141414;
-  --border: #222222;
-  --text-main: #ffffff;
-  --text-dim: #c8c8c8;
   --accent-cyan: #00E5FF;
-  --accent-yellow: #E5FF00;
-  --accent-red: #FF2A2A;
-  --accent-purple: #B200FF;
   --accent-green: #00FF85;
   --font-heading: 'Space Grotesk', sans-serif;
   --font-sans: 'Inter', sans-serif;
+  --nav-h: 36px;
+  --tb-h: 44px;
+  --panel-w: 360px;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  width: 100%; height: 100%;
-  background: var(--bg);
-  color: var(--text-main);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:var(--bg); color:#fff; font-family:var(--font-sans); -webkit-font-smoothing:antialiased; overflow:hidden; }
 
-/* ANIMATED GRID */
-.particles-bg {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
-}
+/* GRID BG */
+.particles-bg { position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
 .particles-bg::before {
-  content: "";
-  position: absolute; width: 200%; height: 200%; top: -50%; left: -25%;
-  background-image:
-    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  transform: perspective(400px) rotateX(65deg);
-  animation: gridScroll 15s linear infinite;
+  content:""; position:absolute; width:200%; height:200%; top:-50%; left:-25%;
+  background-image: linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+  transform:perspective(400px) rotateX(65deg);
+  animation:gridScroll 20s linear infinite;
 }
-@keyframes gridScroll {
-  0%   { transform: perspective(400px) rotateX(65deg) translateY(0); }
-  100% { transform: perspective(400px) rotateX(65deg) translateY(60px); }
-}
+@keyframes gridScroll { 0%{transform:perspective(400px) rotateX(65deg) translateY(0)} 100%{transform:perspective(400px) rotateX(65deg) translateY(60px)} }
 
-/* TOP NAV TABS */
-.topnav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 201;
-  background: rgba(10,10,10,0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  display: flex; align-items: center;
-  padding: 0 2rem; height: 36px;
-}
-.topnav-inner {
-  max-width: 1400px; margin: 0 auto; width: 100%;
-  display: flex; align-items: center; gap: 0;
-}
-.topnav a {
-  font-family: var(--font-heading); font-size: 0.62rem; font-weight: 700;
-  letter-spacing: 2.5px; text-transform: uppercase; text-decoration: none;
-  color: rgba(255,255,255,0.32);
-  padding: 0 16px; height: 36px;
-  display: flex; align-items: center;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
-}
-.topnav a:hover { color: rgba(255,255,255,0.65); }
-.topnav a.active { color: #ffffff; border-bottom-color: var(--accent-cyan); }
-.topnav-sep { width: 1px; height: 14px; background: rgba(255,255,255,0.1); margin: 0 2px; }
+/* TOPNAV */
+.topnav { position:fixed; top:0; left:0; right:0; z-index:201; height:var(--nav-h); background:rgba(10,10,10,0.96); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; padding:0 1.5rem; }
+.topnav-inner { display:flex; align-items:center; }
+.topnav a { font-family:var(--font-heading); font-size:0.62rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; text-decoration:none; color:rgba(255,255,255,0.32); padding:0 14px; height:var(--nav-h); display:flex; align-items:center; border-bottom:2px solid transparent; transition:color 0.2s,border-color 0.2s; }
+.topnav a:hover { color:rgba(255,255,255,0.65); }
+.topnav a.active { color:#fff; border-bottom-color:var(--accent-cyan); }
+.topnav-sep { width:1px; height:14px; background:rgba(255,255,255,0.1); margin:0 2px; }
 
-/* HEADER */
-.header {
-  border-bottom: 1px solid var(--border);
-  padding: 1.1rem 2rem;
-  position: fixed; top: 36px; left: 0; right: 0;
-  background: rgba(10,10,10,0.92);
-  backdrop-filter: blur(12px);
-  z-index: 200;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.header-left { display: flex; align-items: center; gap: 1.5rem; }
-.page-title {
-  font-family: var(--font-heading); font-size: 0.7rem;
-  letter-spacing: 3px; color: rgba(0,229,255,0.6);
-  text-transform: uppercase;
-}
-.header-right { display: flex; align-items: center; gap: 1rem; }
-.hint {
-  font-size: 0.68rem; color: rgba(255,255,255,0.3);
-  letter-spacing: 1px; text-transform: uppercase;
-}
-.zoom-controls { display: flex; gap: 6px; }
-.zoom-btn {
-  font-family: var(--font-heading); font-size: 0.8rem; font-weight: 700;
-  color: var(--text-dim); background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  padding: 6px 12px; border-radius: 6px; cursor: pointer;
-  transition: all 0.2s;
-}
-.zoom-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+/* TOOLBAR */
+#toolbar { position:fixed; top:var(--nav-h); left:0; right:0; z-index:200; height:var(--tb-h); background:rgba(12,12,16,0.97); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:3px; padding:0 1rem; }
+.tb-btn { display:flex; align-items:center; gap:5px; font-family:var(--font-heading); font-size:0.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.38); background:transparent; border:1px solid transparent; padding:5px 9px; border-radius:7px; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.tb-btn:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.06); }
+.tb-btn.active { color:var(--accent-cyan); border-color:rgba(0,229,255,0.3); background:rgba(0,229,255,0.08); }
+.tb-btn.mode-connect.active { color:var(--accent-green); border-color:rgba(0,255,133,0.3); background:rgba(0,255,133,0.07); }
+.tb-btn.danger:hover { color:#FF4444; border-color:rgba(255,68,68,0.3); background:rgba(255,68,68,0.06); }
+.tb-sep { width:1px; height:22px; background:rgba(255,255,255,0.1); margin:0 5px; flex-shrink:0; }
+.tb-spacer { flex:1; }
+@media (max-width:768px) { .tb-label { display:none; } }
 
-/* CANVAS AREA */
-#canvas-wrap {
-  position: fixed; top: 101px; left: 0; right: 0; bottom: 0;
-  z-index: 10; cursor: grab; overflow: hidden;
-}
-#canvas-wrap.dragging { cursor: grabbing; }
-#diagram {
-  position: absolute;
-  transform-origin: 0 0;
-  transition: none;
-}
+/* CANVAS */
+#canvas-wrap { position:fixed; top:calc(var(--nav-h) + var(--tb-h)); left:0; right:0; bottom:0; z-index:10; overflow:hidden; cursor:default; }
+#canvas-wrap.mode-pan { cursor:grab; }
+#canvas-wrap.mode-pan.dragging, #canvas-wrap.mode-select.dragging { cursor:grabbing; }
+#canvas-wrap.mode-connect { cursor:crosshair; }
+#diagram { position:absolute; transform-origin:0 0; }
 
-/* NODES */
-.node {
-  position: absolute;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: box-shadow 0.25s, transform 0.25s;
-  user-select: none;
+/* NODE CARDS */
+.node { position:absolute; user-select:none; min-width:155px; }
+.node-card {
+  background:rgba(14,14,20,0.97);
+  border:1px solid rgba(255,255,255,0.08);
+  border-left:4px solid var(--nc, #00E5FF);
+  border-radius:12px;
+  transition:box-shadow 0.22s;
+  cursor:pointer;
 }
-.node:hover { transform: translateY(-2px); }
-.node-inner {
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: 1px solid;
-  min-width: 130px;
-  text-align: center;
+.node:hover .node-card { box-shadow:0 0 18px var(--ng, rgba(0,229,255,0.2)); }
+.node.selected .node-card {
+  border-color:rgba(255,255,255,0.16);
+  border-left-color:var(--nc, #00E5FF);
+  box-shadow:0 0 0 2px var(--nc, #00E5FF), 0 0 22px var(--ng, rgba(0,229,255,0.3));
 }
-.node-icon {
-  font-size: 1.3rem; margin-bottom: 6px; display: block;
-}
-.node-label {
-  font-family: var(--font-heading); font-size: 0.72rem; font-weight: 700;
-  letter-spacing: 1px; text-transform: uppercase; line-height: 1.3;
-}
-.node-sub {
-  font-size: 0.6rem; color: rgba(255,255,255,0.45);
-  margin-top: 4px; letter-spacing: 0.5px;
-}
+.node.is-dragging { z-index:100; }
+.node.is-dragging .node-card { box-shadow:0 10px 36px rgba(0,0,0,0.55); cursor:grabbing !important; }
+.node-header { display:flex; align-items:center; gap:7px; padding:10px 12px 7px 10px; }
+.node-icon { font-size:1rem; flex-shrink:0; line-height:1; }
+.node-label { font-family:var(--font-heading); font-size:0.66rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; flex:1; color:var(--nc, #00E5FF); line-height:1.2; }
+.node-sub { font-size:0.58rem; color:rgba(255,255,255,0.33); padding:0 12px 7px 10px; letter-spacing:0.3px; line-height:1.35; }
+.node-badge { font-size:0.56rem; color:var(--accent-cyan); padding:0 12px 6px 10px; opacity:0.75; }
 
-/* Node color themes */
-.node-cyan .node-inner {
-  background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.4);
-  color: #00E5FF;
+/* CONNECT STATES */
+.node.connecting-source .node-card { animation:pGlow 1s ease-in-out infinite; }
+@keyframes pGlow {
+  0%,100% { box-shadow:0 0 0 2px #00FF85, 0 0 28px rgba(0,255,133,0.45); }
+  50%      { box-shadow:0 0 0 2px #00FF85, 0 0 48px rgba(0,255,133,0.65); }
 }
-.node-cyan:hover { box-shadow: 0 0 20px rgba(0,229,255,0.35); }
-.node-yellow .node-inner {
-  background: rgba(229,255,0,0.07); border-color: rgba(229,255,0,0.4);
-  color: #E5FF00;
-}
-.node-yellow:hover { box-shadow: 0 0 20px rgba(229,255,0,0.3); }
-.node-purple .node-inner {
-  background: rgba(178,0,255,0.08); border-color: rgba(178,0,255,0.4);
-  color: #B200FF;
-}
-.node-purple:hover { box-shadow: 0 0 20px rgba(178,0,255,0.3); }
-.node-green .node-inner {
-  background: rgba(0,255,133,0.07); border-color: rgba(0,255,133,0.35);
-  color: #00FF85;
-}
-.node-green:hover { box-shadow: 0 0 20px rgba(0,255,133,0.28); }
-.node-red .node-inner {
-  background: rgba(255,42,42,0.07); border-color: rgba(255,42,42,0.35);
-  color: #FF2A2A;
-}
-.node-red:hover { box-shadow: 0 0 20px rgba(255,42,42,0.28); }
-.node-white .node-inner {
-  background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2);
-  color: #fff;
-}
-.node-white:hover { box-shadow: 0 0 20px rgba(255,255,255,0.15); }
+#canvas-wrap.mode-connect .node:hover .node-card { box-shadow:0 0 0 2px #00FF85, 0 0 18px rgba(0,255,133,0.28) !important; }
 
-/* HUB node (ACME/ERP) */
-.node-hub .node-inner {
-  background: rgba(0,229,255,0.12); border-color: rgba(0,229,255,0.7);
-  color: #00E5FF; padding: 18px 24px; min-width: 160px;
-  box-shadow: 0 0 30px rgba(0,229,255,0.2), inset 0 0 20px rgba(0,229,255,0.05);
-}
-.node-hub:hover { box-shadow: 0 0 40px rgba(0,229,255,0.5); }
-.node-hub .node-label { font-size: 0.85rem; letter-spacing: 2px; }
+/* CONNECTION HANDLES */
+.handle { position:absolute; width:10px; height:10px; border-radius:50%; background:var(--nc, #00E5FF); border:2px solid rgba(8,8,12,0.85); opacity:0; pointer-events:none; transition:opacity 0.15s; z-index:20; }
+.node:hover .handle, #canvas-wrap.mode-connect .handle { opacity:1; pointer-events:auto; cursor:crosshair; }
+.handle-top    { top:-5px;  left:calc(50% - 5px); }
+.handle-right  { right:-5px; top:calc(50% - 5px); }
+.handle-bottom { bottom:-5px; left:calc(50% - 5px); }
+.handle-left   { left:-5px;  top:calc(50% - 5px); }
 
-/* SVG arrows */
-#arrows-svg {
-  position: absolute; top: 0; left: 0;
-  pointer-events: none; overflow: visible;
-}
+/* SVG ARROWS */
+#arrows-svg { position:absolute; top:0; left:0; pointer-events:none; overflow:visible; width:1px; height:1px; }
 
-/* DETAIL PANEL */
-#detail-panel {
-  position: fixed; top: 101px; right: 0; bottom: 0;
-  width: 360px; z-index: 300;
-  background: rgba(12,12,16,0.97);
-  border-left: 1px solid rgba(0,229,255,0.2);
-  backdrop-filter: blur(16px);
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
-  overflow-y: auto;
-  padding: 2rem;
-}
-#detail-panel.open { transform: translateX(0); }
-.panel-close {
-  position: absolute; top: 1.2rem; right: 1.2rem;
-  font-size: 1.2rem; color: var(--text-dim); cursor: pointer;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.panel-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
-.panel-icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
-.panel-title {
-  font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  margin-bottom: 0.3rem;
-}
-.panel-subtitle {
-  font-size: 0.75rem; color: var(--text-dim);
-  letter-spacing: 1px; text-transform: uppercase;
-  margin-bottom: 1.5rem; padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.panel-section {
-  margin-bottom: 1.4rem;
-}
-.panel-section-title {
-  font-family: var(--font-heading); font-size: 0.65rem; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--accent-cyan); margin-bottom: 0.6rem;
-}
-.panel-section ul {
-  list-style: none;
-  display: flex; flex-direction: column; gap: 0.4rem;
-}
-.panel-section ul li {
-  font-size: 0.82rem; color: rgba(255,255,255,0.78);
-  padding-left: 1rem; position: relative; line-height: 1.45;
-}
-.panel-section ul li::before {
-  content: "→"; position: absolute; left: 0;
-  color: var(--accent-cyan); font-size: 0.7rem;
-}
-.panel-tag {
-  display: inline-block; font-size: 0.62rem; font-weight: 700;
-  font-family: var(--font-heading); letter-spacing: 1.5px; text-transform: uppercase;
-  padding: 3px 10px; border-radius: 20px; margin: 2px;
-}
-.tag-cyan { background: rgba(0,229,255,0.12); color: #00E5FF; border: 1px solid rgba(0,229,255,0.3); }
-.tag-yellow { background: rgba(229,255,0,0.1); color: #E5FF00; border: 1px solid rgba(229,255,0,0.3); }
-.tag-green { background: rgba(0,255,133,0.1); color: #00FF85; border: 1px solid rgba(0,255,133,0.25); }
-.panel-opportunity {
-  background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.2);
-  border-radius: 10px; padding: 1rem; margin-top: 1rem;
-}
-.panel-opportunity .opp-label {
-  font-family: var(--font-heading); font-size: 0.6rem; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--accent-cyan);
-  margin-bottom: 0.5rem;
-}
-.panel-opportunity p {
-  font-size: 0.8rem; color: rgba(255,255,255,0.75); line-height: 1.5;
-}
+/* RIGHT PANEL */
+#panel { position:fixed; top:calc(var(--nav-h) + var(--tb-h)); right:0; bottom:0; width:var(--panel-w); z-index:300; background:rgba(10,10,16,0.98); border-left:1px solid rgba(0,229,255,0.12); backdrop-filter:blur(20px); transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.16,1,0.3,1); display:flex; flex-direction:column; }
+#panel.open { transform:translateX(0); }
+#panel-hdr { padding:1.2rem 1.2rem 0.8rem; border-bottom:1px solid rgba(255,255,255,0.07); position:relative; flex-shrink:0; }
+#p-close { position:absolute; top:1rem; right:1rem; width:26px; height:26px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(200,200,200,0.8); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.78rem; transition:all 0.18s; }
+#p-close:hover { background:rgba(255,255,255,0.12); color:#fff; }
+#p-icon { font-size:1.7rem; margin-bottom:0.3rem; line-height:1; }
+#p-title { font-family:var(--font-heading); font-size:0.88rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:0.18rem; }
+#p-sub { font-size:0.68rem; color:rgba(255,255,255,0.38); letter-spacing:0.5px; }
 
-/* LEGEND */
-#legend {
-  position: fixed; bottom: 1.5rem; left: 1.5rem;
-  z-index: 200; display: flex; gap: 1rem; flex-wrap: wrap;
-}
-.legend-item {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.62rem; font-family: var(--font-heading);
-  letter-spacing: 1px; text-transform: uppercase;
-}
-.legend-dot {
-  width: 8px; height: 8px; border-radius: 50%;
+/* PANEL TABS */
+#p-tabs { display:flex; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
+.p-tab { flex:1; padding:10px 0; font-family:var(--font-heading); font-size:0.58rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.3); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:all 0.18s; }
+.p-tab:hover { color:rgba(255,255,255,0.6); }
+.p-tab.active { color:var(--accent-cyan); border-bottom-color:var(--accent-cyan); }
+
+/* PANEL BODY */
+#p-body { flex:1; overflow-y:auto; padding:1rem; scrollbar-width:thin; scrollbar-color:rgba(0,229,255,0.14) transparent; }
+#p-body::-webkit-scrollbar { width:4px; }
+#p-body::-webkit-scrollbar-thumb { background:rgba(0,229,255,0.14); border-radius:2px; }
+.ps { margin-bottom:1rem; }
+.ps-t { font-family:var(--font-heading); font-size:0.58rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-cyan); margin-bottom:0.4rem; }
+.ps-ul { list-style:none; display:flex; flex-direction:column; gap:0.28rem; }
+.ps-ul li { font-size:0.74rem; color:rgba(255,255,255,0.68); padding-left:1rem; position:relative; line-height:1.38; }
+.ps-ul li::before { content:"→"; position:absolute; left:0; color:var(--accent-cyan); font-size:0.6rem; }
+.ptag { display:inline-block; font-size:0.57rem; font-weight:700; font-family:var(--font-heading); letter-spacing:1px; text-transform:uppercase; padding:2px 7px; border-radius:20px; margin:2px; background:rgba(0,229,255,0.07); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.2); }
+.popp { background:rgba(0,229,255,0.04); border:1px solid rgba(0,229,255,0.14); border-radius:10px; padding:0.8rem; margin-top:0.6rem; }
+.popp-l { font-family:var(--font-heading); font-size:0.56rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-cyan); margin-bottom:0.35rem; }
+.popp p { font-size:0.72rem; color:rgba(255,255,255,0.68); line-height:1.48; }
+
+/* EDIT FIELDS */
+.ef { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:var(--font-sans); font-size:0.78rem; padding:7px 10px; margin-bottom:6px; outline:none; transition:border-color 0.18s; }
+.ef:focus { border-color:rgba(0,229,255,0.4); }
+.btn-save { font-family:var(--font-heading); font-size:0.57rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; background:rgba(0,229,255,0.1); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.26); border-radius:7px; padding:6px 13px; cursor:pointer; transition:all 0.18s; margin-bottom:1rem; }
+.btn-save:hover { background:rgba(0,229,255,0.17); }
+
+/* COMMENTS */
+.c-textarea { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:var(--font-sans); font-size:0.76rem; padding:8px 10px; margin-bottom:7px; outline:none; resize:vertical; min-height:60px; transition:border-color 0.18s; }
+.c-textarea:focus { border-color:rgba(0,229,255,0.4); }
+.btn-add-c { font-family:var(--font-heading); font-size:0.57rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; background:rgba(0,229,255,0.1); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.26); border-radius:7px; padding:6px 13px; cursor:pointer; transition:all 0.18s; margin-bottom:1rem; display:block; }
+.btn-add-c:hover { background:rgba(0,229,255,0.17); }
+.c-list { display:flex; flex-direction:column; gap:6px; }
+.c-item { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:9px 30px 9px 11px; position:relative; }
+.c-ts { font-size:0.54rem; color:rgba(255,255,255,0.26); letter-spacing:0.5px; margin-bottom:3px; }
+.c-txt { font-size:0.74rem; color:rgba(255,255,255,0.7); line-height:1.38; white-space:pre-wrap; }
+.c-del { position:absolute; top:7px; right:7px; font-size:0.62rem; color:rgba(255,255,255,0.18); cursor:pointer; background:none; border:none; padding:2px 4px; border-radius:4px; transition:color 0.18s; }
+.c-del:hover { color:#FF4444; }
+
+/* MINIMAP */
+#minimap { position:fixed; bottom:14px; right:14px; z-index:200; width:140px; height:80px; background:rgba(10,10,16,0.92); border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden; }
+#mm-canvas { width:140px; height:80px; display:block; }
+
+/* ADD NODE MODAL */
+#modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.72); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; }
+#modal-overlay.open { display:flex; }
+.m-box { background:rgba(14,14,20,0.99); border:1px solid rgba(0,229,255,0.17); border-radius:16px; padding:1.7rem; width:340px; max-width:calc(100vw - 2rem); }
+.m-title { font-family:var(--font-heading); font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent-cyan); margin-bottom:1rem; }
+.m-label { font-size:0.6rem; color:rgba(255,255,255,0.38); letter-spacing:1px; margin-bottom:3px; display:block; }
+.m-field { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; font-family:var(--font-sans); font-size:0.8rem; padding:8px 10px; margin-bottom:9px; outline:none; transition:border-color 0.18s; }
+.m-field:focus { border-color:rgba(0,229,255,0.4); }
+select.m-field { cursor:pointer; }
+select.m-field option { background:#141418; }
+.m-row { display:flex; gap:8px; margin-top:4px; }
+.m-ok { flex:1; background:rgba(0,229,255,0.12); color:var(--accent-cyan); border:1px solid rgba(0,229,255,0.28); border-radius:9px; font-family:var(--font-heading); font-size:0.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:9px; cursor:pointer; transition:all 0.18s; }
+.m-ok:hover { background:rgba(0,229,255,0.2); }
+.m-cancel { flex:1; background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.38); border:1px solid rgba(255,255,255,0.1); border-radius:9px; font-family:var(--font-heading); font-size:0.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:9px; cursor:pointer; transition:all 0.18s; }
+.m-cancel:hover { background:rgba(255,255,255,0.08); color:#fff; }
+
+/* RESPONSIVE */
+@media (max-width:768px) {
+  :root { --panel-w: 100%; }
+  #minimap { display:none; }
 }
 </style>
 </head>
 <body>
 <div class="particles-bg"></div>
 
-<!-- TOP NAV -->
 <nav class="topnav">
   <div class="topnav-inner">
     <a href="dashboard.html">Stats</a>
@@ -296,476 +186,799 @@ html, body {
   </div>
 </nav>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="header-left">
-    <div class="page-title">Flujos de Negocio</div>
-  </div>
-  <div class="header-right">
-    <span class="hint">Click nodo · Drag · Scroll</span>
-    <div class="zoom-controls">
-      <button class="zoom-btn" onclick="zoom(1.2)">+</button>
-      <button class="zoom-btn" onclick="zoom(0.8)">−</button>
-      <button class="zoom-btn" onclick="resetView()">⌖</button>
-    </div>
-  </div>
-</header>
+<div id="toolbar">
+  <button class="tb-btn active" id="btn-select" onclick="setMode('select')" title="Select / Drag (S)">
+    <span>↖</span><span class="tb-label">Select</span>
+  </button>
+  <button class="tb-btn mode-connect" id="btn-connect" onclick="setMode('connect')" title="Connect nodes (C)">
+    <span>⤢</span><span class="tb-label">Connect</span>
+  </button>
+  <button class="tb-btn" id="btn-pan" onclick="setMode('pan')" title="Pan canvas (P)">
+    <span>✋</span><span class="tb-label">Pan</span>
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="showModal()" title="Add node">
+    <span>＋</span><span class="tb-label">Nodo</span>
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn danger" id="btn-del" onclick="deleteSelected()" title="Delete selected (Del)">
+    <span>⌫</span><span class="tb-label">Delete</span>
+  </button>
+  <div class="tb-spacer"></div>
+  <button class="tb-btn" onclick="zoom(0.84)" title="Zoom out">−</button>
+  <button class="tb-btn" onclick="zoom(1.19)" title="Zoom in">＋</button>
+  <button class="tb-btn" onclick="fitView()" title="Fit to view (F)">⌖</button>
+</div>
 
-<!-- CANVAS -->
-<div id="canvas-wrap">
+<div id="canvas-wrap" class="mode-select">
   <div id="diagram">
-    <svg id="arrows-svg" width="2400" height="1600"></svg>
-    <!-- Nodes injected by JS -->
+    <svg id="arrows-svg"></svg>
   </div>
 </div>
 
-<!-- LEGEND -->
-<div id="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:#00E5FF"></div>Importación</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#E5FF00"></div>Finanzas</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#B200FF"></div>Inventario</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#00FF85"></div>Ventas</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#FF2A2A"></div>Técnico</div>
-</div>
+<div id="minimap"><canvas id="mm-canvas" width="140" height="80"></canvas></div>
 
-<!-- DETAIL PANEL -->
-<div id="detail-panel">
-  <div class="panel-close" onclick="closePanel()">✕</div>
-  <div class="panel-icon" id="p-icon"></div>
-  <div class="panel-title" id="p-title"></div>
-  <div class="panel-subtitle" id="p-subtitle"></div>
+<div id="panel">
+  <div id="panel-hdr">
+    <button id="p-close" onclick="closePanel()">✕</button>
+    <div id="p-icon"></div>
+    <div id="p-title"></div>
+    <div id="p-sub"></div>
+  </div>
+  <div id="p-tabs">
+    <button class="p-tab active" onclick="switchTab('info')">Info</button>
+    <button class="p-tab" onclick="switchTab('comments')">Comentarios <span id="c-badge"></span></button>
+  </div>
   <div id="p-body"></div>
 </div>
 
+<div id="modal-overlay">
+  <div class="m-box">
+    <div class="m-title">＋ Nuevo Nodo</div>
+    <form id="m-form">
+      <label class="m-label">Label</label>
+      <input class="m-field" id="m-label" placeholder="ej. LOGÍSTICA" autocomplete="off">
+      <label class="m-label">Subtítulo</label>
+      <input class="m-field" id="m-sub" placeholder="ej. Distribución interna" autocomplete="off">
+      <label class="m-label">Icono (emoji)</label>
+      <input class="m-field" id="m-icon" value="⬡" autocomplete="off">
+      <label class="m-label">Color</label>
+      <select class="m-field" id="m-theme">
+        <option value="cyan">Cyan</option>
+        <option value="yellow">Yellow</option>
+        <option value="purple">Purple</option>
+        <option value="green">Green</option>
+        <option value="red">Red</option>
+        <option value="white">White</option>
+      </select>
+      <div class="m-row">
+        <button type="submit" class="m-ok">Agregar</button>
+        <button type="button" class="m-cancel" onclick="hideModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
-// ─── NODE DATA ───────────────────────────────────────────────────────────────
-const NODES = [
-  {
-    id: 'comex', label: 'COMEX', sub: 'Comercio Exterior', icon: '🌐',
-    x: 80, y: 120, theme: 'cyan',
-    detail: {
-      subtitle: 'Gestión de Importaciones / Exportaciones',
-      procesos: ['Coordinación de embarques internacionales','Documentación aduanera','Negociación con proveedores (CAT, Morton)','Gestión de fletes y seguros','Control de tiempos de tránsito'],
-      integraciones: ['Aduana / Informes de Importación','Finanzas Internacional','Fábrica CAT / Morton'],
-      criticos: ['Errores en clasificación arancelaria','Demoras en liberación aduanera','Fluctuación tipo de cambio'],
-      tags: ['cyan','cyan','cyan'],
-      oportunidad: 'Automatizar seguimiento de embarques y alertas de retrasos. Dashboard de tránsito en tiempo real integrado al ERP.'
-    }
-  },
-  {
-    id: 'finanzas', label: 'FINANZAS INTL', sub: 'Pagos & FX', icon: '💱',
-    x: 310, y: 70, theme: 'yellow',
-    detail: {
-      subtitle: 'Finanzas Internacionales y Control de Pagos',
-      procesos: ['Pagos a proveedores internacionales (USD/EUR)','Gestión de cartas de crédito','Control de tipo de cambio','Conciliación de facturas de importación','Provisión de landed cost'],
-      integraciones: ['COMEX','Contabilidad','Control Contable','ACME/ERP'],
-      criticos: ['Diferencias de cambio no provisionadas','Retrasos en aprobación de pagos','Falta de trazabilidad de facturas'],
-      oportunidad: 'Módulo de FX tracking automático con alerta de exposición cambiaria. Integración directa con banco para confirmación de pagos.'
-    }
-  },
-  {
-    id: 'aduana', label: 'ADUANA', sub: 'Inf. Importación', icon: '📋',
-    x: 80, y: 310, theme: 'cyan',
-    detail: {
-      subtitle: 'Despacho Aduanero e Informes de Importación',
-      procesos: ['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
-      integraciones: ['COMEX','ACME/ERP','Almacén Particular','Contabilidad'],
-      criticos: ['Corrección de glosas aduaneras','Tiempos de liberación','Aplicación correcta de aranceles'],
-      oportunidad: 'Digitalización de informes de importación con OCR. Carga automática al ERP al momento de liberación aduanera.'
-    }
-  },
-  {
-    id: 'almacen', label: 'ALMACÉN PART.', sub: 'Custodia Temporal', icon: '🏭',
-    x: 80, y: 500, theme: 'cyan',
-    detail: {
-      subtitle: 'Almacén Particular / Zona de Tránsito',
-      procesos: ['Recepción de mercancía liberada de aduana','Control de estado y embalaje','Coordinación de transferencia a Bodega/Patio','Registro de ingresos parciales','Custodia temporal hasta confirmación ERP'],
-      integraciones: ['Aduana','ACME/ERP','Bodega/Patio'],
-      criticos: ['Discrepancias de cantidades vs factura','Daños en tránsito no registrados','Tiempos muertos de custodia'],
-      oportunidad: 'App de recepción con QR/código de barras para confirmación instantánea de bultos. Notificación automática al equipo de bodega.'
-    }
-  },
-  {
-    id: 'fabrica', label: 'FÁBRICA', sub: 'CAT / Morton', icon: '🏗️',
-    x: 580, y: 70, theme: 'white',
-    detail: {
-      subtitle: 'Proveedores de Fábrica — CAT / Morton',
-      procesos: ['Generación de órdenes de compra internacionales','Comunicación de especificaciones técnicas','Confirmación de disponibilidad y plazo','Envío de facturas proforma','Coordinación de embarques CIF/FOB'],
-      integraciones: ['COMEX','ACME/ERP','FINANZAS INTL'],
-      criticos: ['Lead times largos','Cambios de especificación tardíos','Mínimos de pedido'],
-      oportunidad: 'Portal de proveedores con visibilidad de OC, confirmación de despacho y tracking de embarque integrado.'
-    }
-  },
-  {
-    id: 'erp', label: 'ACME / ERP', sub: 'Sistema Central', icon: '⚙️',
-    x: 400, y: 350, theme: 'hub',
-    detail: {
-      subtitle: 'Sistema ERP Central — Hub de todas las operaciones',
-      procesos: ['Gestión de órdenes de compra y venta','Control de inventario en tiempo real','Facturación y cuentas por cobrar/pagar','Gestión de costos (standard, landed, franquicia)','Integración con módulos de aduana, bodega, contabilidad'],
-      integraciones: ['Todos los módulos del negocio'],
-      criticos: ['Datos desactualizados por carga manual','Falta de automatización en flujos inter-módulo','Reportería limitada o tardía'],
-      oportunidad: 'Implementar BI sobre el ERP para reportes ejecutivos en tiempo real. Automatizar flujos de datos entre módulos para eliminar re-digitación.'
-    }
-  },
-  {
-    id: 'bodega', label: 'BODEGA / PATIO', sub: 'Almacenaje Físico', icon: '📦',
-    x: 720, y: 310, theme: 'purple',
-    detail: {
-      subtitle: 'Bodega Principal y Patio de Equipos',
-      procesos: ['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas','Gestión de devoluciones','Despacho de equipos grandes (patio)'],
-      integraciones: ['ACME/ERP','Sistema de Inventario','Almacén Particular','Técnico'],
-      criticos: ['Diferencias de inventario físico vs sistema','Quiebres de stock no anticipados','Trazabilidad de números de serie'],
-      oportunidad: 'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo.'
-    }
-  },
-  {
-    id: 'inventario_sys', label: 'SISTEMA INVENT.', sub: 'Control de Stock', icon: '🗃️',
-    x: 930, y: 240, theme: 'purple',
-    detail: {
-      subtitle: 'Sistema de Control de Inventario',
-      procesos: ['Actualización de stocks en tiempo real','Control de lotes y series','Generación de reportes de rotación','Alertas de stock mínimo y máximo','Conciliación periódica físico-sistema'],
-      integraciones: ['ACME/ERP','Bodega/Patio','INU','Técnico'],
-      criticos: ['Diferencias post-inventario físico','Movimientos manuales no registrados','Clasificación incorrecta de ítems'],
-      oportunidad: 'Dashboard de inventario con alertas inteligentes de reposición y predicción de demanda basada en historial.'
-    }
-  },
-  {
-    id: 'inu', label: 'INU', sub: 'Ítem No Usado', icon: '🔄',
-    x: 930, y: 430, theme: 'purple',
-    detail: {
-      subtitle: 'Gestión de Ítems No Usados / Obsoletos',
-      procesos: ['Identificación de stock sin rotación','Clasificación de ítems obsoletos','Proceso de devolución a fábrica','Disposición final (venta, descarte, remate)','Ajuste contable de valor'],
-      integraciones: ['Sistema de Inventario','Inventario (Repuestos)','Contabilidad','ACME/ERP'],
-      criticos: ['Capital inmovilizado sin identificar','Falta de política de obsolescencia','Costo de almacenaje de ítems sin movimiento'],
-      oportunidad: 'Módulo de análisis de obsolescencia con propuesta automática de acciones: devolver, rematar, dar de baja.'
-    }
-  },
-  {
-    id: 'inventario', label: 'INVENTARIO', sub: 'Repuestos · Equipos · Costos', icon: '🔩',
-    x: 1130, y: 350, theme: 'purple',
-    detail: {
-      subtitle: 'Inventario Detallado por Categoría',
-      procesos: ['Inventario de repuestos críticos','Inventario de equipos (activos fijos)','Valorización a costo standard','Actualización de costo landed','Cargo de franquicia por ítem'],
-      integraciones: ['Sistema de Inventario','INU','Control Contable','Técnico','ACME/ERP'],
-      criticos: ['Valorización incorrecta por landed cost variable','Falta de control de repuestos críticos','Discrepancia entre activos físicos y contables'],
-      oportunidad: 'Catálogo unificado con valorización automática multi-método (standard, landed, franquicia). Alertas de repuestos críticos bajo mínimo.'
-    }
-  },
-  {
-    id: 'venta', label: 'VENTA', sub: 'Proceso Comercial', icon: '💼',
-    x: 400, y: 620, theme: 'green',
-    detail: {
-      subtitle: 'Gestión Comercial y Proceso de Venta',
-      procesos: ['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
-      integraciones: ['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
-      criticos: ['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
-      oportunidad: 'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.'
-    }
-  },
-  {
-    id: 'clientes', label: 'CLIENTES', sub: 'Cuenta & Relación', icon: '🤝',
-    x: 200, y: 760, theme: 'green',
-    detail: {
-      subtitle: 'Gestión de Clientes y Cuenta Corriente',
-      procesos: ['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
-      integraciones: ['ACME/ERP','Venta','Settlement','Contabilidad'],
-      criticos: ['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
-      oportunidad: 'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.'
-    }
-  },
-  {
-    id: 'settlement', label: 'SETTLEMENT', sub: 'Liquidación & Cierre', icon: '🧾',
-    x: 600, y: 760, theme: 'green',
-    detail: {
-      subtitle: 'Settlement — Cierre y Liquidación de Operaciones',
-      procesos: ['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
-      integraciones: ['Clientes','ACME/ERP','Contabilidad','Control Contable'],
-      criticos: ['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
-      oportunidad: 'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.'
-    }
-  },
-  {
-    id: 'tecnico', label: 'TÉCNICO', sub: 'Servicio & Mantención', icon: '🔧',
-    x: 930, y: 620, theme: 'red',
-    detail: {
-      subtitle: 'Área Técnica — Servicio y Mantención',
-      procesos: ['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
-      integraciones: ['Inventario (Repuestos)','Bodega/Patio','ACME/ERP','Clientes','Sistema de Inventario'],
-      criticos: ['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
-      oportunidad: 'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.'
-    }
-  },
-  {
-    id: 'contabilidad', label: 'CONTABILIDAD', sub: 'Registro Contable', icon: '📊',
-    x: 720, y: 510, theme: 'yellow',
-    detail: {
-      subtitle: 'Contabilidad General y Registro Tributario',
-      procesos: ['Registro de asientos contables','Gestión de cuentas por pagar y cobrar','Declaraciones tributarias (IVA, renta)','Cierre mensual y anual','Conciliación bancaria'],
-      integraciones: ['ACME/ERP','Settlement','Control Contable','Finanzas Internacional','Venta'],
-      criticos: ['Asientos manuales propensos a error','Desfase entre operación y registro contable','Falta de automatización en cierre de período'],
-      oportunidad: 'Automatización de asientos contables gatillados por eventos del ERP. Cierre de período asistido con checklist automático.'
-    }
-  },
-  {
-    id: 'control_contable', label: 'CTRL CONTABLE', sub: 'Franquicia · Std · Landed', icon: '⚖️',
-    x: 920, y: 70, theme: 'yellow',
-    detail: {
-      subtitle: 'Control Contable de Costos — 3 Dimensiones',
-      procesos: [
-        'CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem',
-        'COSTO STANDARD: costo interno de referencia para valorización de inventario',
-        'LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'
-      ],
-      integraciones: ['Finanzas Internacional','Inventario','Contabilidad','ACME/ERP','Settlement'],
-      criticos: ['Variaciones entre standard y landed no analizadas','Cargo de franquicia desactualizado','Landed cost calculado al cierre, no en tiempo real'],
-      oportunidad: 'Motor de cálculo de landed cost en tiempo real desde el momento del embarque. Dashboard de variaciones standard vs real con drill-down por ítem.'
-    }
-  }
+// ─── THEME MAPS ───────────────────────────────────────────────────────────────
+const TC = { cyan:'#00E5FF', yellow:'#E5FF00', purple:'#B200FF', green:'#00FF85', red:'#FF2A2A', white:'#e0e0e0', hub:'#00E5FF' };
+const TG = { cyan:'rgba(0,229,255,0.22)', yellow:'rgba(229,255,0,0.17)', purple:'rgba(178,0,255,0.22)', green:'rgba(0,255,133,0.18)', red:'rgba(255,42,42,0.18)', white:'rgba(220,220,220,0.1)', hub:'rgba(0,229,255,0.3)' };
+
+// ─── NODE DATA ────────────────────────────────────────────────────────────────
+const NODES_BASE = [
+  { id:'comex', label:'COMEX', sub:'Comercio Exterior', icon:'🌐', x:80, y:120, theme:'cyan',
+    detail:{ subtitle:'Gestión de Importaciones / Exportaciones',
+      procesos:['Coordinación de embarques internacionales','Documentación aduanera','Negociación con proveedores (CAT, Morton)','Gestión de fletes y seguros','Control de tiempos de tránsito'],
+      integraciones:['Aduana / Informes de Importación','Finanzas Internacional','Fábrica CAT / Morton'],
+      criticos:['Errores en clasificación arancelaria','Demoras en liberación aduanera','Fluctuación tipo de cambio'],
+      oportunidad:'Automatizar seguimiento de embarques y alertas de retrasos. Dashboard de tránsito en tiempo real integrado al ERP.' }},
+  { id:'finanzas', label:'FINANZAS INTL', sub:'Pagos & FX', icon:'💱', x:310, y:70, theme:'yellow',
+    detail:{ subtitle:'Finanzas Internacionales y Control de Pagos',
+      procesos:['Pagos a proveedores internacionales (USD/EUR)','Gestión de cartas de crédito','Control de tipo de cambio','Conciliación de facturas de importación','Provisión de landed cost'],
+      integraciones:['COMEX','Contabilidad','Control Contable','ACME/ERP'],
+      criticos:['Diferencias de cambio no provisionadas','Retrasos en aprobación de pagos','Falta de trazabilidad de facturas'],
+      oportunidad:'Módulo de FX tracking automático con alerta de exposición cambiaria. Integración directa con banco para confirmación de pagos.' }},
+  { id:'aduana', label:'ADUANA', sub:'Inf. Importación', icon:'📋', x:80, y:310, theme:'cyan',
+    detail:{ subtitle:'Despacho Aduanero e Informes de Importación',
+      procesos:['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
+      integraciones:['COMEX','ACME/ERP','Almacén Particular','Contabilidad'],
+      criticos:['Corrección de glosas aduaneras','Tiempos de liberación','Aplicación correcta de aranceles'],
+      oportunidad:'Digitalización de informes de importación con OCR. Carga automática al ERP al momento de liberación aduanera.' }},
+  { id:'almacen', label:'ALMACÉN PART.', sub:'Custodia Temporal', icon:'🏭', x:80, y:500, theme:'cyan',
+    detail:{ subtitle:'Almacén Particular / Zona de Tránsito',
+      procesos:['Recepción de mercancía liberada de aduana','Control de estado y embalaje','Coordinación de transferencia a Bodega/Patio','Registro de ingresos parciales','Custodia temporal hasta confirmación ERP'],
+      integraciones:['Aduana','ACME/ERP','Bodega/Patio'],
+      criticos:['Discrepancias de cantidades vs factura','Daños en tránsito no registrados','Tiempos muertos de custodia'],
+      oportunidad:'App de recepción con QR/código de barras para confirmación instantánea de bultos. Notificación automática al equipo de bodega.' }},
+  { id:'fabrica', label:'FÁBRICA', sub:'CAT / Morton', icon:'🏗️', x:580, y:70, theme:'white',
+    detail:{ subtitle:'Proveedores de Fábrica — CAT / Morton',
+      procesos:['Generación de órdenes de compra internacionales','Comunicación de especificaciones técnicas','Confirmación de disponibilidad y plazo','Envío de facturas proforma','Coordinación de embarques CIF/FOB'],
+      integraciones:['COMEX','ACME/ERP','FINANZAS INTL'],
+      criticos:['Lead times largos','Cambios de especificación tardíos','Mínimos de pedido'],
+      oportunidad:'Portal de proveedores con visibilidad de OC, confirmación de despacho y tracking de embarque integrado.' }},
+  { id:'erp', label:'ACME / ERP', sub:'Sistema Central', icon:'⚙️', x:400, y:350, theme:'hub',
+    detail:{ subtitle:'Sistema ERP Central — Hub de todas las operaciones',
+      procesos:['Gestión de órdenes de compra y venta','Control de inventario en tiempo real','Facturación y cuentas por cobrar/pagar','Gestión de costos (standard, landed, franquicia)','Integración con módulos de aduana, bodega, contabilidad'],
+      integraciones:['Todos los módulos del negocio'],
+      criticos:['Datos desactualizados por carga manual','Falta de automatización en flujos inter-módulo','Reportería limitada o tardía'],
+      oportunidad:'Implementar BI sobre el ERP para reportes ejecutivos en tiempo real. Automatizar flujos de datos entre módulos para eliminar re-digitación.' }},
+  { id:'bodega', label:'BODEGA / PATIO', sub:'Almacenaje Físico', icon:'📦', x:720, y:310, theme:'purple',
+    detail:{ subtitle:'Bodega Principal y Patio de Equipos',
+      procesos:['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas','Gestión de devoluciones','Despacho de equipos grandes (patio)'],
+      integraciones:['ACME/ERP','Sistema de Inventario','Almacén Particular','Técnico'],
+      criticos:['Diferencias de inventario físico vs sistema','Quiebres de stock no anticipados','Trazabilidad de números de serie'],
+      oportunidad:'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo.' }},
+  { id:'inventario_sys', label:'SISTEMA INVENT.', sub:'Control de Stock', icon:'🗃️', x:930, y:240, theme:'purple',
+    detail:{ subtitle:'Sistema de Control de Inventario',
+      procesos:['Actualización de stocks en tiempo real','Control de lotes y series','Generación de reportes de rotación','Alertas de stock mínimo y máximo','Conciliación periódica físico-sistema'],
+      integraciones:['ACME/ERP','Bodega/Patio','INU','Técnico'],
+      criticos:['Diferencias post-inventario físico','Movimientos manuales no registrados','Clasificación incorrecta de ítems'],
+      oportunidad:'Dashboard de inventario con alertas inteligentes de reposición y predicción de demanda basada en historial.' }},
+  { id:'inu', label:'INU', sub:'Ítem No Usado', icon:'🔄', x:930, y:430, theme:'purple',
+    detail:{ subtitle:'Gestión de Ítems No Usados / Obsoletos',
+      procesos:['Identificación de stock sin rotación','Clasificación de ítems obsoletos','Proceso de devolución a fábrica','Disposición final (venta, descarte, remate)','Ajuste contable de valor'],
+      integraciones:['Sistema de Inventario','Inventario (Repuestos)','Contabilidad','ACME/ERP'],
+      criticos:['Capital inmovilizado sin identificar','Falta de política de obsolescencia','Costo de almacenaje de ítems sin movimiento'],
+      oportunidad:'Módulo de análisis de obsolescencia con propuesta automática de acciones: devolver, rematar, dar de baja.' }},
+  { id:'inventario', label:'INVENTARIO', sub:'Repuestos · Equipos · Costos', icon:'🔩', x:1130, y:350, theme:'purple',
+    detail:{ subtitle:'Inventario Detallado por Categoría',
+      procesos:['Inventario de repuestos críticos','Inventario de equipos (activos fijos)','Valorización a costo standard','Actualización de costo landed','Cargo de franquicia por ítem'],
+      integraciones:['Sistema de Inventario','INU','Control Contable','Técnico','ACME/ERP'],
+      criticos:['Valorización incorrecta por landed cost variable','Falta de control de repuestos críticos','Discrepancia entre activos físicos y contables'],
+      oportunidad:'Catálogo unificado con valorización automática multi-método (standard, landed, franquicia). Alertas de repuestos críticos bajo mínimo.' }},
+  { id:'venta', label:'VENTA', sub:'Proceso Comercial', icon:'💼', x:400, y:620, theme:'green',
+    detail:{ subtitle:'Gestión Comercial y Proceso de Venta',
+      procesos:['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
+      integraciones:['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
+      criticos:['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
+      oportunidad:'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.' }},
+  { id:'clientes', label:'CLIENTES', sub:'Cuenta & Relación', icon:'🤝', x:200, y:760, theme:'green',
+    detail:{ subtitle:'Gestión de Clientes y Cuenta Corriente',
+      procesos:['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
+      integraciones:['ACME/ERP','Venta','Settlement','Contabilidad'],
+      criticos:['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
+      oportunidad:'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.' }},
+  { id:'settlement', label:'SETTLEMENT', sub:'Liquidación & Cierre', icon:'🧾', x:600, y:760, theme:'green',
+    detail:{ subtitle:'Settlement — Cierre y Liquidación de Operaciones',
+      procesos:['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
+      integraciones:['Clientes','ACME/ERP','Contabilidad','Control Contable'],
+      criticos:['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
+      oportunidad:'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.' }},
+  { id:'tecnico', label:'TÉCNICO', sub:'Servicio & Mantención', icon:'🔧', x:930, y:620, theme:'red',
+    detail:{ subtitle:'Área Técnica — Servicio y Mantención',
+      procesos:['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
+      integraciones:['Inventario (Repuestos)','Bodega/Patio','ACME/ERP','Clientes','Sistema de Inventario'],
+      criticos:['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
+      oportunidad:'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.' }},
+  { id:'contabilidad', label:'CONTABILIDAD', sub:'Registro Contable', icon:'📊', x:720, y:510, theme:'yellow',
+    detail:{ subtitle:'Contabilidad General y Registro Tributario',
+      procesos:['Registro de asientos contables','Gestión de cuentas por pagar y cobrar','Declaraciones tributarias (IVA, renta)','Cierre mensual y anual','Conciliación bancaria'],
+      integraciones:['ACME/ERP','Settlement','Control Contable','Finanzas Internacional','Venta'],
+      criticos:['Asientos manuales propensos a error','Desfase entre operación y registro contable','Falta de automatización en cierre de período'],
+      oportunidad:'Automatización de asientos contables gatillados por eventos del ERP. Cierre de período asistido con checklist automático.' }},
+  { id:'control_contable', label:'CTRL CONTABLE', sub:'Franquicia · Std · Landed', icon:'⚖️', x:920, y:70, theme:'yellow',
+    detail:{ subtitle:'Control Contable de Costos — 3 Dimensiones',
+      procesos:['CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem','COSTO STANDARD: costo interno de referencia para valorización de inventario','LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'],
+      integraciones:['Finanzas Internacional','Inventario','Contabilidad','ACME/ERP','Settlement'],
+      criticos:['Variaciones entre standard y landed no analizadas','Cargo de franquicia desactualizado','Landed cost calculado al cierre, no en tiempo real'],
+      oportunidad:'Motor de cálculo de landed cost en tiempo real desde el momento del embarque. Dashboard de variaciones standard vs real con drill-down por ítem.' }}
 ];
 
-// ─── EDGES ───────────────────────────────────────────────────────────────────
-const EDGES = [
-  { from: 'comex', to: 'aduana' },
-  { from: 'comex', to: 'finanzas' },
-  { from: 'comex', to: 'fabrica' },
-  { from: 'fabrica', to: 'erp' },
-  { from: 'finanzas', to: 'erp' },
-  { from: 'finanzas', to: 'control_contable' },
-  { from: 'aduana', to: 'almacen' },
-  { from: 'aduana', to: 'erp' },
-  { from: 'almacen', to: 'erp' },
-  { from: 'almacen', to: 'bodega' },
-  { from: 'erp', to: 'bodega' },
-  { from: 'erp', to: 'venta' },
-  { from: 'erp', to: 'contabilidad' },
-  { from: 'bodega', to: 'inventario_sys' },
-  { from: 'bodega', to: 'tecnico' },
-  { from: 'inventario_sys', to: 'inu' },
-  { from: 'inventario_sys', to: 'inventario' },
-  { from: 'inu', to: 'inventario' },
-  { from: 'inventario', to: 'tecnico' },
-  { from: 'inventario', to: 'control_contable' },
-  { from: 'venta', to: 'clientes' },
-  { from: 'venta', to: 'settlement' },
-  { from: 'clientes', to: 'settlement' },
-  { from: 'settlement', to: 'contabilidad' },
-  { from: 'contabilidad', to: 'control_contable' },
-  { from: 'tecnico', to: 'erp' },
+const EDGES_BASE = [
+  {from:'comex',to:'aduana'},{from:'comex',to:'finanzas'},{from:'comex',to:'fabrica'},
+  {from:'fabrica',to:'erp'},{from:'finanzas',to:'erp'},{from:'finanzas',to:'control_contable'},
+  {from:'aduana',to:'almacen'},{from:'aduana',to:'erp'},{from:'almacen',to:'erp'},
+  {from:'almacen',to:'bodega'},{from:'erp',to:'bodega'},{from:'erp',to:'venta'},
+  {from:'erp',to:'contabilidad'},{from:'bodega',to:'inventario_sys'},{from:'bodega',to:'tecnico'},
+  {from:'inventario_sys',to:'inu'},{from:'inventario_sys',to:'inventario'},{from:'inu',to:'inventario'},
+  {from:'inventario',to:'tecnico'},{from:'inventario',to:'control_contable'},
+  {from:'venta',to:'clientes'},{from:'venta',to:'settlement'},{from:'clientes',to:'settlement'},
+  {from:'settlement',to:'contabilidad'},{from:'contabilidad',to:'control_contable'},{from:'tecnico',to:'erp'}
 ];
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-const diagram = document.getElementById('diagram');
-const svg = document.getElementById('arrows-svg');
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const S = {
+  nodes:[], edges:[], comments:{},
+  scale:0.72, tx:100, ty:50,
+  selected:null,
+  mode:'select',
+  connecting:null,
+  draggingNode:null, dragOffset:{x:0,y:0},
+  panDragging:false, panStart:{x:0,y:0,tx:0,ty:0},
+  activeTab:'info',
+  nodeDragMoved:false
+};
+let panMoved = false;
+const sizeCache = {};
 
-// Build node map for center calculations
-const nodeMap = {};
-
-NODES.forEach(n => {
-  const el = document.createElement('div');
-  el.className = `node node-${n.theme}`;
-  el.id = 'node-' + n.id;
-  el.style.left = n.x + 'px';
-  el.style.top = n.y + 'px';
-  el.innerHTML = `
-    <div class="node-inner">
-      <span class="node-icon">${n.icon}</span>
-      <div class="node-label">${n.label}</div>
-      ${n.sub ? `<div class="node-sub">${n.sub}</div>` : ''}
-    </div>`;
-  el.addEventListener('click', (e) => { e.stopPropagation(); openPanel(n.id); });
-  diagram.appendChild(el);
-  nodeMap[n.id] = { el, n };
-});
-
-// After rendering, draw arrows (need offsetWidth/Height)
-function getCenter(id) {
-  const { el, n } = nodeMap[id];
-  return {
-    x: n.x + (el.offsetWidth || 145) / 2,
-    y: n.y + (el.offsetHeight || 90) / 2
-  };
+// ─── LOCALSTORAGE ─────────────────────────────────────────────────────────────
+function loadState() {
+  S.nodes = NODES_BASE.map(n => ({...n}));
+  S.edges = EDGES_BASE.map(e => ({...e}));
+  try {
+    const saved = JSON.parse(localStorage.getItem('oc-flujos') || '{}');
+    if (saved.positions) saved.positions.forEach(p => { const n = S.nodes.find(n=>n.id===p.id); if(n){n.x=p.x;n.y=p.y;} });
+    if (saved.customNodes) S.nodes.push(...saved.customNodes);
+    if (saved.customEdges) S.edges.push(...saved.customEdges);
+    S.comments = JSON.parse(localStorage.getItem('oc-flujos-comments') || '{}');
+  } catch(e) { console.warn('LS load error', e); }
 }
 
-function drawArrows() {
-  svg.innerHTML = '';
-  // Arrow marker
-  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-  defs.innerHTML = `
-    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(0,229,255,0.5)"/>
-    </marker>
-    <marker id="arr-dim" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="rgba(255,255,255,0.15)"/>
-    </marker>`;
-  svg.appendChild(defs);
+function saveState() {
+  try {
+    const positions = S.nodes.map(n => ({id:n.id,x:n.x,y:n.y}));
+    localStorage.setItem('oc-flujos', JSON.stringify({positions, customNodes:S.nodes.filter(n=>n.custom), customEdges:S.edges.filter(e=>e.custom)}));
+    localStorage.setItem('oc-flujos-comments', JSON.stringify(S.comments));
+  } catch(e) {}
+}
 
-  EDGES.forEach(e => {
-    const f = getCenter(e.from);
-    const t = getCenter(e.to);
-    const dx = t.x - f.x, dy = t.y - f.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    // Curve control point
-    const mx = (f.x + t.x) / 2;
-    const my = (f.y + t.y) / 2;
-    const perp = { x: -dy/dist * 30, y: dx/dist * 30 };
-    const cx = mx + perp.x, cy = my + perp.y;
+// ─── DOM REFS ─────────────────────────────────────────────────────────────────
+const diagram    = document.getElementById('diagram');
+const svgEl      = document.getElementById('arrows-svg');
+const canvasWrap = document.getElementById('canvas-wrap');
+const panel      = document.getElementById('panel');
+let panelNodeId  = null;
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d', `M${f.x},${f.y} Q${cx},${cy} ${t.x},${t.y}`);
-    path.setAttribute('stroke', 'rgba(0,229,255,0.3)');
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('marker-end', 'url(#arr)');
-    svg.appendChild(path);
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  renderNodes();
+  setTimeout(() => { cacheNodeSizes(); updateEdges(); updateMinimap(); }, 60);
+}
+
+function renderNodes() {
+  document.querySelectorAll('#diagram .node').forEach(el => el.remove());
+  S.nodes.forEach(n => {
+    const color = TC[n.theme] || TC.cyan;
+    const glow  = TG[n.theme] || TG.cyan;
+    const cc    = (S.comments[n.id] || []).length;
+    const el = document.createElement('div');
+    el.className = 'node' + (S.selected===n.id ? ' selected' : '') + (S.connecting===n.id ? ' connecting-source' : '');
+    el.id = 'node-' + n.id;
+    el.dataset.id = n.id;
+    el.style.left = n.x + 'px';
+    el.style.top  = n.y + 'px';
+    el.style.setProperty('--nc', color);
+    el.style.setProperty('--ng', glow);
+    el.innerHTML = `
+      <div class="node-card">
+        <div class="node-header">
+          <span class="node-icon">${n.icon}</span>
+          <span class="node-label">${n.label}</span>
+        </div>
+        ${n.sub ? `<div class="node-sub">${n.sub}</div>` : ''}
+        ${cc > 0 ? `<div class="node-badge">○ ${cc} nota${cc>1?'s':''}</div>` : ''}
+      </div>
+      <div class="handle handle-top"></div>
+      <div class="handle handle-right"></div>
+      <div class="handle handle-bottom"></div>
+      <div class="handle handle-left"></div>`;
+    el.addEventListener('mousedown', e => onNodeMouseDown(e, n.id));
+    el.addEventListener('click',     e => onNodeClick(e, n.id));
+    el.addEventListener('dblclick',  e => { e.stopPropagation(); selectNode(n.id); openPanel(n.id); });
+    diagram.appendChild(el);
   });
 }
 
-setTimeout(drawArrows, 50);
+function cacheNodeSizes() {
+  S.nodes.forEach(n => { const el = document.getElementById('node-'+n.id); if(el) sizeCache[n.id]={w:el.offsetWidth,h:el.offsetHeight}; });
+}
 
-// ─── PAN & ZOOM ───────────────────────────────────────────────────────────────
-const wrap = document.getElementById('canvas-wrap');
-let scale = 0.75, tx = 80, ty = 40;
-let dragging = false, startX, startY, startTx, startTy;
+// ─── EDGE ROUTING ─────────────────────────────────────────────────────────────
+function getNodeBounds(id) {
+  const n = S.nodes.find(n=>n.id===id);
+  if (!n) return null;
+  const sz = sizeCache[id] || {w:162,h:74};
+  return {x:n.x, y:n.y, w:sz.w, h:sz.h, cx:n.x+sz.w/2, cy:n.y+sz.h/2};
+}
 
+function getAnchors(fromId, toId) {
+  const A = getNodeBounds(fromId), B = getNodeBounds(toId);
+  if (!A || !B) return null;
+  const dx = B.cx-A.cx, dy = B.cy-A.cy;
+  const ang = Math.atan2(dy,dx) * 180/Math.PI;
+  const C = 110;
+  let sx,sy,ex,ey,c1x,c1y,c2x,c2y;
+  if (ang > -45 && ang <= 45) {
+    sx=A.x+A.w; sy=A.cy; c1x=sx+C; c1y=sy;
+    ex=B.x;     ey=B.cy; c2x=ex-C; c2y=ey;
+  } else if (ang > 45 && ang <= 135) {
+    sx=A.cx; sy=A.y+A.h; c1x=sx;   c1y=sy+C;
+    ex=B.cx; ey=B.y;     c2x=ex;   c2y=ey-C;
+  } else if (ang > 135 || ang <= -135) {
+    sx=A.x;     sy=A.cy; c1x=sx-C; c1y=sy;
+    ex=B.x+B.w; ey=B.cy; c2x=ex+C; c2y=ey;
+  } else {
+    sx=A.cx; sy=A.y;     c1x=sx;   c1y=sy-C;
+    ex=B.cx; ey=B.y+B.h; c2x=ex;   c2y=ey+C;
+  }
+  return {sx,sy,ex,ey,c1x,c1y,c2x,c2y};
+}
+
+function updateEdges() {
+  svgEl.innerHTML = '';
+  const usedThemes = new Set();
+  S.edges.forEach(e => { const n=S.nodes.find(n=>n.id===e.from); if(n) usedThemes.add(n.theme); });
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  usedThemes.forEach(theme => {
+    const col = TC[theme]||TC.cyan;
+    defs.innerHTML += `<marker id="arr-${theme}" markerWidth="7" markerHeight="7" refX="6.5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="${col}" opacity="0.65"/></marker>`;
+  });
+  svgEl.appendChild(defs);
+  S.edges.forEach(e => {
+    const a = getAnchors(e.from, e.to);
+    if (!a) return;
+    const fn = S.nodes.find(n=>n.id===e.from);
+    const theme = fn ? (fn.theme||'cyan') : 'cyan';
+    const col   = TC[theme]||TC.cyan;
+    const path  = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${a.sx},${a.sy} C${a.c1x},${a.c1y} ${a.c2x},${a.c2y} ${a.ex},${a.ey}`);
+    path.setAttribute('stroke', col);
+    path.setAttribute('stroke-width','1.5');
+    path.setAttribute('fill','none');
+    path.setAttribute('opacity','0.42');
+    path.setAttribute('marker-end',`url(#arr-${theme})`);
+    svgEl.appendChild(path);
+  });
+}
+
+// ─── MINIMAP ──────────────────────────────────────────────────────────────────
+function updateMinimap() {
+  const canvas = document.getElementById('mm-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=140, H=80;
+  ctx.clearRect(0,0,W,H);
+  if (!S.nodes.length) return;
+  const xs=S.nodes.map(n=>n.x), ys=S.nodes.map(n=>n.y);
+  const minX=Math.min(...xs)-20, minY=Math.min(...ys)-20;
+  const maxX=Math.max(...xs)+200, maxY=Math.max(...ys)+100;
+  const mmS=Math.min(W/(maxX-minX), H/(maxY-minY))*0.88;
+  const offX=(W-(maxX-minX)*mmS)/2, offY=(H-(maxY-minY)*mmS)/2;
+  function toMM(x,y){ return [(x-minX)*mmS+offX, (y-minY)*mmS+offY]; }
+  ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=0.6;
+  S.edges.forEach(e => {
+    const A=getNodeBounds(e.from), B=getNodeBounds(e.to);
+    if(!A||!B) return;
+    const [ax,ay]=toMM(A.cx,A.cy), [bx,by]=toMM(B.cx,B.cy);
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  });
+  S.nodes.forEach(n => {
+    const sz=sizeCache[n.id]||{w:162,h:74};
+    const [nx,ny]=toMM(n.x,n.y);
+    const nw=Math.max(sz.w*mmS,4), nh=Math.max(sz.h*mmS,3);
+    ctx.fillStyle=(TC[n.theme]||TC.cyan)+'44';
+    ctx.strokeStyle=(TC[n.theme]||TC.cyan)+'99';
+    ctx.lineWidth=0.5;
+    ctx.fillRect(nx,ny,nw,nh); ctx.strokeRect(nx,ny,nw,nh);
+  });
+  const [rvx,rvy]=toMM(-S.tx/S.scale, -S.ty/S.scale);
+  const rvw=canvasWrap.clientWidth/S.scale*mmS, rvh=canvasWrap.clientHeight/S.scale*mmS;
+  ctx.strokeStyle='rgba(0,229,255,0.5)'; ctx.lineWidth=1;
+  ctx.strokeRect(rvx,rvy,rvw,rvh);
+}
+
+// ─── TRANSFORM ────────────────────────────────────────────────────────────────
 function applyTransform(smooth) {
   diagram.style.transition = smooth ? 'transform 0.3s ease' : 'none';
-  diagram.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  diagram.style.transform  = `translate(${S.tx}px,${S.ty}px) scale(${S.scale})`;
 }
-applyTransform(false);
-
-wrap.addEventListener('mousedown', e => {
-  if (e.target.closest('.node')) return;
-  dragging = true; wrap.classList.add('dragging');
-  startX = e.clientX; startY = e.clientY; startTx = tx; startTy = ty;
-});
-window.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  tx = startTx + (e.clientX - startX);
-  ty = startTy + (e.clientY - startY);
-  applyTransform(false);
-});
-window.addEventListener('mouseup', () => { dragging = false; wrap.classList.remove('dragging'); });
-
-wrap.addEventListener('wheel', e => {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  const rect = wrap.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  tx = mx - (mx - tx) * delta;
-  ty = my - (my - ty) * delta;
-  scale = Math.min(2, Math.max(0.3, scale * delta));
-  applyTransform(false);
-}, { passive: false });
-
-// Touch support
-let touches = {}, lastDist = 0, lastTx, lastTy;
-wrap.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-    startTx = tx; startTy = ty;
-  } else if (e.touches.length === 2) {
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    lastDist = Math.sqrt(dx*dx+dy*dy);
-    lastTx = tx; lastTy = ty;
-  }
-}, { passive: true });
-wrap.addEventListener('touchmove', e => {
-  e.preventDefault();
-  if (e.touches.length === 1) {
-    tx = startTx + (e.touches[0].clientX - startX);
-    ty = startTy + (e.touches[0].clientY - startY);
-  } else if (e.touches.length === 2) {
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    const dist = Math.sqrt(dx*dx+dy*dy);
-    const delta = dist / lastDist;
-    scale = Math.min(2, Math.max(0.3, scale * delta));
-    lastDist = dist;
-  }
-  applyTransform(false);
-}, { passive: false });
 
 function zoom(factor) {
-  const rect = wrap.getBoundingClientRect();
-  const cx = rect.width / 2, cy = rect.height / 2;
-  tx = cx - (cx - tx) * factor;
-  ty = cy - (cy - ty) * factor;
-  scale = Math.min(2, Math.max(0.3, scale * factor));
-  applyTransform(true);
+  const rect=canvasWrap.getBoundingClientRect();
+  const cx=rect.width/2, cy=rect.height/2;
+  S.tx=cx-(cx-S.tx)*factor; S.ty=cy-(cy-S.ty)*factor;
+  S.scale=Math.min(2.5,Math.max(0.2,S.scale*factor));
+  applyTransform(true); updateMinimap();
 }
 
-function resetView() {
-  scale = 0.75; tx = 80; ty = 40;
-  applyTransform(true);
+function fitView() {
+  if (!S.nodes.length) return;
+  const vpW=canvasWrap.clientWidth-40, vpH=canvasWrap.clientHeight-40;
+  const xs=S.nodes.map(n=>n.x), ys=S.nodes.map(n=>n.y);
+  const minX=Math.min(...xs)-20, minY=Math.min(...ys)-20;
+  const maxX=Math.max(...xs)+200, maxY=Math.max(...ys)+100;
+  const cW=maxX-minX, cH=maxY-minY;
+  S.scale=Math.min(vpW/cW, vpH/cH, 1.5);
+  S.tx=(vpW-cW*S.scale)/2+20-minX*S.scale;
+  S.ty=(vpH-cH*S.scale)/2+20-minY*S.scale;
+  applyTransform(true); updateMinimap();
 }
 
-// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
-const panel = document.getElementById('detail-panel');
-let activeNode = null;
+// ─── MODES ────────────────────────────────────────────────────────────────────
+function setMode(mode) {
+  if (S.connecting) cancelConnect();
+  S.mode = mode;
+  canvasWrap.className = 'mode-' + mode;
+  document.getElementById('btn-select').classList.toggle('active', mode==='select');
+  document.getElementById('btn-connect').classList.toggle('active', mode==='connect');
+  document.getElementById('btn-pan').classList.toggle('active', mode==='pan');
+}
 
-function openPanel(id) {
-  const n = NODES.find(x => x.id === id);
+// ─── NODE DRAG ────────────────────────────────────────────────────────────────
+function onNodeMouseDown(e, id) {
+  if (e.button !== 0) return;
+  e.stopPropagation();
+  S.nodeDragMoved = false;
+  if (S.mode === 'select') {
+    const n = S.nodes.find(n=>n.id===id);
+    if (!n) return;
+    const wr = canvasWrap.getBoundingClientRect();
+    const mx = (e.clientX-wr.left-S.tx)/S.scale;
+    const my = (e.clientY-wr.top -S.ty)/S.scale;
+    S.draggingNode = id;
+    S.dragOffset = {x:mx-n.x, y:my-n.y};
+    document.getElementById('node-'+id)?.classList.add('is-dragging');
+    e.preventDefault();
+  }
+}
+
+function onMouseMove(e) {
+  if (S.draggingNode) {
+    S.nodeDragMoved = true;
+    const n = S.nodes.find(n=>n.id===S.draggingNode);
+    if (!n) return;
+    const wr = canvasWrap.getBoundingClientRect();
+    n.x = (e.clientX-wr.left-S.tx)/S.scale - S.dragOffset.x;
+    n.y = (e.clientY-wr.top -S.ty)/S.scale - S.dragOffset.y;
+    const el = document.getElementById('node-'+S.draggingNode);
+    if (el) { el.style.left=n.x+'px'; el.style.top=n.y+'px'; }
+    updateEdges(); updateMinimap();
+  } else if (S.panDragging) {
+    const dx=e.clientX-S.panStart.x, dy=e.clientY-S.panStart.y;
+    if (Math.abs(dx)>2||Math.abs(dy)>2) panMoved=true;
+    S.tx=S.panStart.tx+dx; S.ty=S.panStart.ty+dy;
+    applyTransform(false); updateMinimap();
+  } else if (S.mode==='connect' && S.connecting) {
+    updateConnectPreview(e);
+  }
+}
+
+function onMouseUp() {
+  if (S.draggingNode) {
+    document.getElementById('node-'+S.draggingNode)?.classList.remove('is-dragging');
+    if (S.nodeDragMoved) saveState();
+    S.draggingNode = null;
+  }
+  if (S.panDragging) {
+    S.panDragging = false;
+    canvasWrap.classList.remove('dragging');
+  }
+}
+
+function onCanvasMouseDown(e) {
+  if (e.target.closest('.node')) return;
+  if (e.button !== 0) return;
+  panMoved = false;
+  if (S.mode !== 'connect') {
+    S.panDragging = true;
+    S.panStart = {x:e.clientX, y:e.clientY, tx:S.tx, ty:S.ty};
+    canvasWrap.classList.add('dragging');
+    e.preventDefault();
+  }
+  if (S.mode === 'connect' && S.connecting) cancelConnect();
+}
+
+// ─── SELECT / DELETE ──────────────────────────────────────────────────────────
+function onNodeClick(e, id) {
+  e.stopPropagation();
+  if (S.nodeDragMoved) return;
+  if (S.mode === 'select') {
+    selectNode(id);
+    openPanel(id);
+  } else if (S.mode === 'connect') {
+    if (!S.connecting) startConnect(id);
+    else if (S.connecting !== id) finishConnect(id);
+    else cancelConnect();
+  }
+}
+
+function selectNode(id) {
+  const prev = S.selected;
+  if (prev && prev !== id) document.getElementById('node-'+prev)?.classList.remove('selected');
+  S.selected = id;
+  document.getElementById('node-'+id)?.classList.add('selected');
+}
+
+function deselectAll() {
+  if (S.selected) { document.getElementById('node-'+S.selected)?.classList.remove('selected'); S.selected=null; }
+  closePanel();
+}
+
+function deleteSelected() {
+  if (!S.selected) return;
+  const id = S.selected;
+  S.edges = S.edges.filter(e=>e.from!==id && e.to!==id);
+  S.nodes = S.nodes.filter(n=>n.id!==id);
+  delete S.comments[id];
+  S.selected = null;
+  closePanel();
+  render();
+  saveState();
+}
+
+// ─── CONNECT MODE ─────────────────────────────────────────────────────────────
+let prevLine = null;
+
+function startConnect(id) {
+  S.connecting = id;
+  document.getElementById('node-'+id)?.classList.add('connecting-source');
+}
+
+function finishConnect(targetId) {
+  if (!S.edges.some(e=>e.from===S.connecting && e.to===targetId)) {
+    S.edges.push({from:S.connecting, to:targetId, custom:true});
+  }
+  const src = S.connecting;
+  cancelConnect();
+  updateEdges();
+  saveState();
+  // brief flash on source
+  document.getElementById('node-'+src)?.classList.add('selected');
+  setTimeout(() => document.getElementById('node-'+src)?.classList.remove('selected'), 600);
+}
+
+function cancelConnect() {
+  if (S.connecting) { document.getElementById('node-'+S.connecting)?.classList.remove('connecting-source'); S.connecting=null; }
+  if (prevLine) { prevLine.remove(); prevLine=null; }
+}
+
+function updateConnectPreview(e) {
+  const A = getNodeBounds(S.connecting);
+  if (!A) return;
+  const wr = canvasWrap.getBoundingClientRect();
+  const mx=(e.clientX-wr.left-S.tx)/S.scale;
+  const my=(e.clientY-wr.top -S.ty)/S.scale;
+  if (!prevLine || !prevLine.parentNode) {
+    prevLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    prevLine.setAttribute('stroke','#00FF85');
+    prevLine.setAttribute('stroke-width','2');
+    prevLine.setAttribute('stroke-dasharray','8,5');
+    prevLine.setAttribute('opacity','0.6');
+    svgEl.appendChild(prevLine);
+  }
+  prevLine.setAttribute('x1',A.cx); prevLine.setAttribute('y1',A.cy);
+  prevLine.setAttribute('x2',mx);   prevLine.setAttribute('y2',my);
+}
+
+// ─── PANEL ────────────────────────────────────────────────────────────────────
+function openPanel(id, tab) {
+  const n = S.nodes.find(n=>n.id===id);
   if (!n) return;
-  activeNode = id;
-
-  document.getElementById('p-icon').textContent = n.icon;
+  panelNodeId = id;
+  document.getElementById('p-icon').textContent  = n.icon;
   document.getElementById('p-title').textContent = n.label;
-  document.getElementById('p-subtitle').textContent = n.detail.subtitle;
-
-  const body = document.getElementById('p-body');
-  body.innerHTML = '';
-
-  // Procesos
-  const sec1 = document.createElement('div');
-  sec1.className = 'panel-section';
-  sec1.innerHTML = `<div class="panel-section-title">Procesos Clave</div><ul>${
-    n.detail.procesos.map(p => `<li>${p}</li>`).join('')
-  }</ul>`;
-  body.appendChild(sec1);
-
-  // Integraciones
-  const sec2 = document.createElement('div');
-  sec2.className = 'panel-section';
-  sec2.innerHTML = `<div class="panel-section-title">Integra con</div><div>${
-    n.detail.integraciones.map(i => `<span class="panel-tag tag-cyan">${i}</span>`).join('')
-  }</div>`;
-  body.appendChild(sec2);
-
-  // Puntos críticos
-  const sec3 = document.createElement('div');
-  sec3.className = 'panel-section';
-  sec3.innerHTML = `<div class="panel-section-title">Puntos Críticos</div><ul>${
-    n.detail.criticos.map(c => `<li>${c}</li>`).join('')
-  }</ul>`;
-  body.appendChild(sec3);
-
-  // Oportunidad OpenCore
-  const opp = document.createElement('div');
-  opp.className = 'panel-opportunity';
-  opp.innerHTML = `<div class="opp-label">⚡ Oportunidad OpenCore</div><p>${n.detail.oportunidad}</p>`;
-  body.appendChild(opp);
-
+  document.getElementById('p-sub').textContent   = n.detail?.subtitle || n.sub || '';
+  switchTab(tab || S.activeTab || 'info');
   panel.classList.add('open');
-
-  // Highlight selected node
-  document.querySelectorAll('.node').forEach(el => el.style.opacity = '0.5');
-  document.getElementById('node-' + id).style.opacity = '1';
 }
 
 function closePanel() {
   panel.classList.remove('open');
-  activeNode = null;
-  document.querySelectorAll('.node').forEach(el => el.style.opacity = '1');
+  panelNodeId = null;
 }
 
-// Click on canvas background closes panel
-wrap.addEventListener('click', e => {
-  if (!e.target.closest('.node') && !e.target.closest('#detail-panel')) {
-    closePanel();
+function switchTab(tab) {
+  S.activeTab = tab;
+  document.querySelectorAll('.p-tab').forEach((el,i) => {
+    el.classList.toggle('active', (i===0&&tab==='info')||(i===1&&tab==='comments'));
+  });
+  renderPanelBody(panelNodeId || S.selected, tab);
+}
+
+function renderPanelBody(id, tab) {
+  if (!id) return;
+  const n = S.nodes.find(n=>n.id===id);
+  if (!n) return;
+  const body = document.getElementById('p-body');
+  const cc   = (S.comments[id] || []).length;
+  document.getElementById('c-badge').textContent = cc > 0 ? `(${cc})` : '';
+
+  if (tab === 'info') {
+    let html = `<div class="ps">
+      <div class="ps-t">Editar nodo</div>
+      <input class="ef" id="ef-label" value="${esc(n.label)}" placeholder="Label">
+      <input class="ef" id="ef-sub" value="${esc(n.sub||'')}" placeholder="Subtítulo">
+      <button class="btn-save" onclick="saveNodeEdit('${id}')">Guardar cambios</button>
+    </div>`;
+    if (n.detail) {
+      html += `<div class="ps"><div class="ps-t">Procesos Clave</div><ul class="ps-ul">${n.detail.procesos.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
+      html += `<div class="ps"><div class="ps-t">Integra con</div><div>${n.detail.integraciones.map(i=>`<span class="ptag">${i}</span>`).join('')}</div></div>`;
+      html += `<div class="ps"><div class="ps-t">Puntos Críticos</div><ul class="ps-ul">${n.detail.criticos.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
+      html += `<div class="popp"><div class="popp-l">⚡ Oportunidad OpenCore</div><p>${n.detail.oportunidad}</p></div>`;
+    }
+    body.innerHTML = html;
+  } else {
+    let html = `<div style="margin-bottom:1rem">
+      <textarea class="c-textarea" id="c-input" placeholder="Agregar nota..."></textarea>
+      <button class="btn-add-c" onclick="addComment('${id}')">Agregar nota</button>
+    </div><div class="c-list">`;
+    const comments = S.comments[id] || [];
+    if (!comments.length) {
+      html += `<div style="font-size:0.7rem;color:rgba(255,255,255,0.22);padding:0.3rem 0">Sin notas aún.</div>`;
+    } else {
+      comments.forEach((c,idx) => {
+        html += `<div class="c-item">
+          <div class="c-ts">${c.ts}</div>
+          <div class="c-txt">${esc(c.text)}</div>
+          <button class="c-del" onclick="deleteComment('${id}',${idx})">✕</button>
+        </div>`;
+      });
+    }
+    html += '</div>';
+    body.innerHTML = html;
   }
+}
+
+function saveNodeEdit(id) {
+  const n = S.nodes.find(n=>n.id===id);
+  if (!n) return;
+  const label = document.getElementById('ef-label')?.value.trim();
+  const sub   = document.getElementById('ef-sub')?.value.trim();
+  if (label) n.label = label;
+  n.sub = sub !== undefined ? sub : n.sub;
+  if (n.detail) n.detail.subtitle = sub || n.detail.subtitle;
+  // Update node in DOM without full re-render
+  const el = document.getElementById('node-'+id);
+  if (el) {
+    el.querySelector('.node-label').textContent = n.label;
+    const subEl = el.querySelector('.node-sub');
+    if (subEl) subEl.textContent = n.sub;
+    else if (n.sub) {
+      const card = el.querySelector('.node-card');
+      const hdr  = el.querySelector('.node-header');
+      const d = document.createElement('div');
+      d.className='node-sub'; d.textContent=n.sub;
+      card.insertBefore(d, hdr.nextSibling);
+    }
+  }
+  document.getElementById('p-title').textContent = n.label;
+  document.getElementById('p-sub').textContent   = n.detail?.subtitle || n.sub || '';
+  saveState();
+}
+
+// ─── COMMENTS ─────────────────────────────────────────────────────────────────
+function addComment(id) {
+  const ta = document.getElementById('c-input');
+  if (!ta || !ta.value.trim()) return;
+  if (!S.comments[id]) S.comments[id] = [];
+  const now = new Date();
+  const ts  = now.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+              now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+  S.comments[id].push({text:ta.value.trim(), ts});
+  saveState();
+  renderPanelBody(id, 'comments');
+  // Update badge on node card
+  refreshNodeBadge(id);
+}
+
+function deleteComment(id, idx) {
+  if (!S.comments[id]) return;
+  S.comments[id].splice(idx,1);
+  if (!S.comments[id].length) delete S.comments[id];
+  saveState();
+  renderPanelBody(id, 'comments');
+  refreshNodeBadge(id);
+}
+
+function refreshNodeBadge(id) {
+  const cc  = (S.comments[id]||[]).length;
+  const el  = document.getElementById('node-'+id);
+  if (!el) return;
+  let badge = el.querySelector('.node-badge');
+  if (cc > 0) {
+    if (!badge) { badge=document.createElement('div'); badge.className='node-badge'; el.querySelector('.node-card').appendChild(badge); }
+    badge.textContent = `○ ${cc} nota${cc>1?'s':''}`;
+  } else if (badge) { badge.remove(); }
+}
+
+// ─── ADD NODE MODAL ───────────────────────────────────────────────────────────
+function showModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('m-label').focus(), 50);
+}
+
+function hideModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  ['m-label','m-sub'].forEach(id => { const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('m-icon').value = '⬡';
+}
+
+function submitModal() {
+  const label = document.getElementById('m-label').value.trim();
+  const sub   = document.getElementById('m-sub').value.trim();
+  const icon  = document.getElementById('m-icon').value.trim() || '⬡';
+  const theme = document.getElementById('m-theme').value;
+  if (!label) { document.getElementById('m-label').focus(); return; }
+  const vpCX=(canvasWrap.clientWidth /2-S.tx)/S.scale;
+  const vpCY=(canvasWrap.clientHeight/2-S.ty)/S.scale;
+  const newNode = {id:'c_'+Date.now(), label:label.toUpperCase(), sub, icon, theme, x:vpCX-80, y:vpCY-40, custom:true, detail:null};
+  S.nodes.push(newNode);
+  hideModal();
+  render();
+  saveState();
+  setTimeout(() => { selectNode(newNode.id); openPanel(newNode.id); }, 80);
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── KEYBOARD ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement?.tagName;
+  if (tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if ((e.key==='Delete'||e.key==='Backspace') && S.selected) { e.preventDefault(); deleteSelected(); }
+  if (e.key==='Escape') {
+    if (S.connecting) cancelConnect();
+    else if (document.getElementById('modal-overlay').classList.contains('open')) hideModal();
+    else deselectAll();
+  }
+  if (e.key==='s'&&!e.ctrlKey&&!e.metaKey) setMode('select');
+  if (e.key==='c'&&!e.ctrlKey&&!e.metaKey) setMode('connect');
+  if (e.key==='p'&&!e.ctrlKey&&!e.metaKey) setMode('pan');
+  if (e.key==='f') fitView();
 });
+
+// ─── TOUCH (MOBILE) ───────────────────────────────────────────────────────────
+let ts = {pan:false,pinch:false,sx:0,sy:0,stx:0,sty:0,ld:0};
+
+canvasWrap.addEventListener('touchstart', e => {
+  if (e.target.closest('.node') && e.touches.length===1) return;
+  e.preventDefault();
+  if (e.touches.length===1) {
+    ts={pan:true,pinch:false,sx:e.touches[0].clientX,sy:e.touches[0].clientY,stx:S.tx,sty:S.ty};
+  } else if (e.touches.length===2) {
+    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    ts={pan:false,pinch:true,ld:Math.sqrt(dx*dx+dy*dy)};
+  }
+},{passive:false});
+
+canvasWrap.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length===1 && ts.pan) {
+    S.tx=ts.stx+(e.touches[0].clientX-ts.sx); S.ty=ts.sty+(e.touches[0].clientY-ts.sy);
+    applyTransform(false); updateMinimap();
+  } else if (e.touches.length===2 && ts.pinch) {
+    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.sqrt(dx*dx+dy*dy), factor=dist/ts.ld;
+    const wr=canvasWrap.getBoundingClientRect();
+    const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-wr.left;
+    const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-wr.top;
+    S.tx=cx-(cx-S.tx)*factor; S.ty=cy-(cy-S.ty)*factor;
+    S.scale=Math.min(2.5,Math.max(0.2,S.scale*factor));
+    ts.ld=dist;
+    applyTransform(false); updateMinimap();
+  }
+},{passive:false});
+
+canvasWrap.addEventListener('touchend', () => { ts={pan:false,pinch:false}; });
+
+// ─── WHEEL + GLOBAL MOUSE ─────────────────────────────────────────────────────
+canvasWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect=canvasWrap.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const f=e.deltaY<0?1.1:0.9;
+  S.tx=mx-(mx-S.tx)*f; S.ty=my-(my-S.ty)*f;
+  S.scale=Math.min(2.5,Math.max(0.2,S.scale*f));
+  applyTransform(false); updateMinimap();
+},{passive:false});
+
+canvasWrap.addEventListener('mousedown', onCanvasMouseDown);
+window.addEventListener('mousemove', onMouseMove);
+window.addEventListener('mouseup',   onMouseUp);
+
+canvasWrap.addEventListener('click', e => {
+  if (e.target.closest('.node')) return;
+  if (panMoved) { panMoved=false; return; }
+  if (S.mode==='select') deselectAll();
+});
+
+document.getElementById('m-form').addEventListener('submit', e => { e.preventDefault(); submitModal(); });
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadState();
+applyTransform(false);
+render();
 </script>
 </body>
 </html>
