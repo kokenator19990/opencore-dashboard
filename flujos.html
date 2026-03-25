@@ -1088,7 +1088,12 @@ function fitView(){
   applyTransform(true);updateMinimap();
 }
 
-// ─── AUTO LAYOUT ──────────────────────────────────────────────────────────────
+// ─── AUTO LAYOUT — top-to-bottom + barycenter ordering ────────────────────────
+// Lógica:
+//   Nivel 0 = nodos raíz (sin dependencias) → fila superior
+//   Nivel N = nodos que dependen de nivel N-1 → filas siguientes
+//   Dentro de cada fila los nodos se ordenan por posición promedio de sus
+//   padres (barycenter heuristic) para minimizar cruces de flechas.
 function organizeLayout(){
   if(!S.nodes.length)return;
   snapshot();
@@ -1096,70 +1101,85 @@ function organizeLayout(){
   const ids=S.nodes.map(n=>n.id);
   const idSet=new Set(ids);
 
-  // Build adjacency (ignore self-loops, only edges between known nodes)
+  // Construir adyacencia (ignorar self-loops)
   const inCount={};
   const outAdj={};
-  ids.forEach(id=>{inCount[id]=0;outAdj[id]=[];});
+  const inAdj={}; // padres de cada nodo (para barycenter)
+  ids.forEach(id=>{inCount[id]=0;outAdj[id]=[];inAdj[id]=[];});
   S.edges.forEach(e=>{
     if(idSet.has(e.from)&&idSet.has(e.to)&&e.from!==e.to){
       inCount[e.to]++;
       outAdj[e.from].push(e.to);
+      inAdj[e.to].push(e.from);
     }
   });
 
-  // BFS level assignment (longest path to each node = its column)
+  // ── Paso 1: BFS — asignar nivel topológico (longest path)
+  // Un nodo queda en el nivel más profundo según todos sus predecesores.
+  // Esto respeta: "no puedes estar en nivel 3 sin haber pasado por 1 y 2".
   const lvl={};
   const visited=new Set();
   const q=[];
   ids.forEach(id=>{
     if(inCount[id]===0){lvl[id]=0;q.push(id);visited.add(id);}
   });
-  // If graph is fully cyclic, seed everything at level 0
-  if(!q.length)ids.forEach(id=>{lvl[id]=0;q.push(id);visited.add(id);});
-
+  if(!q.length)ids.forEach(id=>{lvl[id]=0;q.push(id);visited.add(id);}); // grafo cíclico
   for(let qi=0;qi<q.length;qi++){
     const cur=q[qi];
     (outAdj[cur]||[]).forEach(nxt=>{
       const nl=(lvl[cur]||0)+1;
-      if(lvl[nxt]===undefined||lvl[nxt]<nl)lvl[nxt]=nl;
+      if(lvl[nxt]===undefined||lvl[nxt]<nl)lvl[nxt]=nl; // siempre el más profundo
       if(!visited.has(nxt)){visited.add(nxt);q.push(nxt);}
     });
   }
-  // Catch any nodes not reached (isolated or extra cycles)
   ids.forEach(id=>{if(lvl[id]===undefined)lvl[id]=0;});
 
-  // Group by level
   const maxLvl=Math.max(...ids.map(id=>lvl[id]));
   const byLvl=[];
   for(let l=0;l<=maxLvl;l++)byLvl[l]=ids.filter(id=>lvl[id]===l);
 
-  // Node size estimate (use real cache when available)
+  // ── Paso 2: Barycenter ordering dentro de cada fila
+  // Cada nodo se ordena según la posición X promedio de sus padres.
+  // Reduce cruces de flechas entre niveles consecutivos.
+  const xOrd={}; // posición relativa temporal para calcular barycenter
+  byLvl[0].forEach((id,i)=>xOrd[id]=i);
+  for(let l=1;l<=maxLvl;l++){
+    byLvl[l].sort((a,b)=>{
+      const pa=inAdj[a].map(p=>xOrd[p]??0);
+      const pb=inAdj[b].map(p=>xOrd[p]??0);
+      const avgA=pa.length?pa.reduce((s,v)=>s+v,0)/pa.length:0;
+      const avgB=pb.length?pb.reduce((s,v)=>s+v,0)/pb.length:0;
+      return avgA-avgB;
+    });
+    byLvl[l].forEach((id,i)=>xOrd[id]=i);
+  }
+
+  // ── Paso 3: Espaciado dinámico según viewport
   const NW=300,NH=95;
-
-  // Compute spacing to fill screen gracefully
-  // Goal: use cwrap dimensions as reference so fitView centres everything
-  const vpW=Math.max(cwrap.clientWidth,800);
+  const vpW=Math.max(cwrap.clientWidth,900);
   const vpH=Math.max(cwrap.clientHeight,600);
-  const numCols=maxLvl+1;
-  const maxNodesInCol=Math.max(...byLvl.map(l=>l.length));
+  const numLvls=maxLvl+1;
+  const maxInRow=Math.max(...byLvl.map(r=>r.length));
 
-  // Spacing: enough so nodes don't overlap, but fill the available space
-  const gapX=Math.max(80,Math.min(180,(vpW-NW*numCols)/(numCols+1)));
-  const gapY=Math.max(50,Math.min(120,(vpH-NH*maxNodesInCol)/(maxNodesInCol+1)));
+  // Gap X: reparte el ancho sobrante entre los nodos de la fila más poblada
+  const gapX=Math.max(50,Math.min(200,Math.floor((vpW-NW*maxInRow)/(maxInRow+1))));
+  // Gap Y: reparte la altura sobrante entre los niveles
+  const gapY=Math.max(80,Math.min(200,Math.floor((vpH-NH*numLvls)/(numLvls+1))));
   const colW=NW+gapX;
   const rowH=NH+gapY;
 
+  // ── Paso 4: Posicionar — nivel = fila (Y), posición = columna (X), centrado
   byLvl.forEach((levelNodes,l)=>{
-    const totalColH=levelNodes.length*rowH-gapY;
+    const totalRowW=levelNodes.length*colW-gapX;
     levelNodes.forEach((id,i)=>{
       const n=S.nodes.find(n=>n.id===id);
       if(!n)return;
-      n.x=l*colW;
-      n.y=i*rowH-totalColH/2;
+      n.x=i*colW-totalRowW/2;  // centrado horizontal dentro de la fila
+      n.y=l*rowH;               // nivel = posición vertical (arriba→abajo)
     });
   });
 
-  // Normalize: shift so top-left corner is (40, 40)
+  // Normalizar: mover todo para que empiece en (40, 40)
   const minX=Math.min(...S.nodes.map(n=>n.x));
   const minY=Math.min(...S.nodes.map(n=>n.y));
   S.nodes.forEach(n=>{n.x=n.x-minX+40;n.y=n.y-minY+40;});
