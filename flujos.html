@@ -192,8 +192,15 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 .ec-lbl-input:focus{border-color:rgba(0,229,255,.4)}
 
 /* ── RIGHT PANEL ─────────────────────────────────── */
-#panel{position:fixed;top:calc(var(--nav-h) + var(--tb-h));right:0;bottom:0;width:var(--panel-w);z-index:300;background:rgba(10,10,16,.98);border-left:1px solid rgba(0,229,255,.1);backdrop-filter:blur(20px);transform:translateX(100%);transition:transform .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
+#panel{position:fixed;top:calc(var(--nav-h) + var(--tb-h));right:0;bottom:0;width:var(--panel-w);z-index:300;background:rgba(10,10,16,.98);border-left:1px solid rgba(0,229,255,.1);backdrop-filter:blur(20px);transform:translateX(100%);transition:transform .35s cubic-bezier(.16,1,.3,1), width .3s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column}
 #panel.open{transform:translateX(0)}
+#p-resizer{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:310;transition:background .2s}
+#p-resizer:hover{background:rgba(0,229,255,.15)}
+#p-resizer:active{background:rgba(0,229,255,.35)}
+#p-resize-btns{position:absolute;top:.9rem;right:3.1rem;display:flex;gap:3px}
+.pr-btn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-family:var(--font-h);font-size:8px;font-weight:700;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
+.pr-btn:hover{background:rgba(0,229,255,.12);color:var(--c-cyan);border-color:rgba(0,229,255,.3)}
+#panel.resizing{transition:transform .35s cubic-bezier(.16,1,.3,1)} /* disable width transition while dragging */
 #p-hdr{padding:1rem 1rem .7rem;border-bottom:1px solid rgba(255,255,255,.07);position:relative;flex-shrink:0}
 #p-close{position:absolute;top:.9rem;right:.9rem;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(200,200,200,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;transition:all .18s}
 #p-close:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -583,7 +590,14 @@ body.pmode #float-ctrl { display: none; }
 
 <!-- PANEL LATERAL -->
 <div id="panel">
+  <div id="p-resizer"></div>
   <div id="p-hdr">
+    <div id="p-resize-btns">
+      <button class="pr-btn" onclick="setPanelWidth(380)" title="Normal (S)">S</button>
+      <button class="pr-btn" onclick="setPanelWidth(600)" title="Expandido (M)">M</button>
+      <button class="pr-btn" onclick="setPanelWidth(950)" title="Ancho (L)">L</button>
+      <button class="pr-btn" onclick="setPanelWidth(window.innerWidth-40)" title="Pantalla Completa (MAX)">MAX</button>
+    </div>
     <button id="p-close" onclick="closePanel()">✕</button>
     <div id="p-icon"></div>
     <div id="p-title"></div>
@@ -2508,8 +2522,42 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
   });
 })();
 
+function initPanelResize() {
+  const resizer = document.getElementById('p-resizer');
+  const panel = document.getElementById('panel');
+  if (!resizer || !panel) return;
+  let startX, startW;
+  resizer.onmousedown = (e) => {
+    startX = e.clientX;
+    const currentW = getComputedStyle(document.documentElement).getPropertyValue('--panel-w').trim();
+    startW = parseInt(currentW) || 380;
+    panel.classList.add('resizing');
+    document.body.style.cursor = 'ew-resize';
+    document.onmousemove = (e) => {
+      const delta = startX - e.clientX;
+      const newW = Math.max(300, Math.min(window.innerWidth - 40, startW + delta));
+      document.documentElement.style.setProperty('--panel-w', newW + 'px');
+    };
+    document.onmouseup = () => {
+      document.onmousemove = document.onmouseup = null;
+      panel.classList.remove('resizing');
+      document.body.style.cursor = '';
+      localStorage.setItem('ocf-panel-w', document.documentElement.style.getPropertyValue('--panel-w'));
+    };
+  };
+}
+function setPanelWidth(w) {
+  const finalW = (typeof w === 'number') ? w : (window.innerWidth - 45);
+  document.documentElement.style.setProperty('--panel-w', finalW + 'px');
+  localStorage.setItem('ocf-panel-w', finalW + 'px');
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
+const savedW = localStorage.getItem('ocf-panel-w');
+if (savedW) document.documentElement.style.setProperty('--panel-w', savedW);
+
 loadState();
+initPanelResize();
 snapshot(); // Initial snapshot for undo baseline
 applyTransform(false);
 render();
