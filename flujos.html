@@ -400,7 +400,7 @@ body.pmode #panel{top:0!important}
   background:rgba(0,229,255,.025);
   border-left:1px solid rgba(0,229,255,.09);
   cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 0;
   transition:right .35s cubic-bezier(.16,1,.3,1),background .2s,border-color .2s;
 }
 #panel-strip:hover{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.25)}
@@ -409,6 +409,18 @@ body.pmode #panel{top:0!important}
 #panel-strip:hover .ps-arr,#panel-strip:hover .ps-lbl{color:rgba(0,229,255,.72)}
 #panel-strip.strip-open{right:var(--panel-w)}
 #panel-strip.strip-open .ps-arr{transform:rotate(180deg)}
+
+.ps-extra-btn {
+  background: transparent; border: none;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 100%; transition: all .2s; padding: 10px 0;
+}
+.ps-extra-btn:hover { background: rgba(0,229,255,.1); }
+.ps-extra-btn.active { background: rgba(0,229,255,.15); }
+.ps-extra-ico { font-size: 11px; filter: grayscale(1); transition: filter .2s; }
+.ps-extra-btn:hover .ps-extra-ico, .ps-extra-btn.active .ps-extra-ico { filter: none; }
+.ps-extra-lbl { writing-mode: vertical-rl; font-family: var(--font-h); font-size: .42rem; font-weight: 700; letter-spacing: 2px; color: rgba(0,229,255, .25); user-select: none; transition: color .2s; }
+.ps-extra-btn:hover .ps-extra-lbl, .ps-extra-btn.active .ps-extra-lbl { color: var(--c-cyan); }
 body.pmode #panel-strip{top:0!important}
 
 /* ── NAV COLLAPSE ─────────────────────────────────── */
@@ -588,8 +600,14 @@ body.pmode #float-ctrl { display: none; }
 
 <!-- PANEL STRIP (barra lateral toggle derecha) -->
 <div id="panel-strip" onclick="togglePanelStrip()">
-  <span class="ps-arr">◀</span>
-  <span class="ps-lbl">INFO</span>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <span class="ps-arr">◀</span>
+    <span class="ps-lbl">INFO</span>
+  </div>
+  <button id="btn-show-flow" class="ps-extra-btn" onclick="event.stopPropagation();toggleShowAllFlows()" title="Ver todos los flujos (iluminar todo)">
+    <span class="ps-extra-ico">✨</span>
+    <span class="ps-extra-lbl" style="margin-bottom:8px">SHOW FLOW</span>
+  </button>
 </div>
 
 <!-- EDGE CONTEXT TOOLBAR (flotante) -->
@@ -809,6 +827,7 @@ const S = {
   activeTab:'info',
   nodeDragMoved:false,
   snapGrid:false,
+  showAllFlows:false,
 };
 let panMoved=false;
 let expandedNoteId=null;
@@ -943,7 +962,8 @@ function renderNodes(){
     const isUp=hasSel2&&S.upstream&&S.upstream.has(n.id);
     const isDown=hasSel2&&S.downstream&&S.downstream.has(n.id);
     const isDimN=hasSel2&&!isUp&&!isDown&&n.id!==S.selected;
-    el.className='node'+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'')+(isUp?' upstream':'')+(isDown?' downstream':'')+(isDimN?' dim-ud':'');
+    const finalDim=S.showAllFlows?false:isDimN;
+    el.className='node'+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'')+(isUp?' upstream':'')+(isDown?' downstream':'')+(finalDim?' dim-ud':'');
     el.id='node-'+n.id;
     el.dataset.id=n.id;
     el.style.left=n.x+'px';
@@ -1149,15 +1169,16 @@ function updateEdges(){
     const isEdgeSel=S.selectedEdge===idx;
 
     const isLinked=hasSel&&(e.from===selNode||e.to===selNode);
-    const isDimmed=hasSel&&!isLinked;
+    const isDimmed=hasSel&&!isLinked&&!S.showAllFlows;
+    const activeFlow=isEdgeSel||isLinked||S.showAllFlows;
 
     // Unified subtle-cyan coloring for all connections
-    const drawCol=(isLinked||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
-    const markerSfx=(isLinked||isEdgeSel)?'eact':'edim';
-    const opacity=isEdgeSel?1:isLinked?0.92:(hasSel?0.07:0.32);
-    const strokeW=isEdgeSel?4.5:isLinked?2.8:1.6;
-    const useGlow=isEdgeSel||isLinked;
-    const showFlow=isEdgeSel||isLinked;
+    const drawCol=(activeFlow||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
+    const markerSfx=(activeFlow||isEdgeSel)?'eact':'edim';
+    const opacity=isEdgeSel?1:activeFlow?0.92:(hasSel?0.07:0.32);
+    const strokeW=isEdgeSel?4.5:activeFlow?2.8:1.6;
+    const useGlow=isEdgeSel||activeFlow;
+    const showFlow=isEdgeSel||activeFlow;
 
     const d=`M${a.sx},${a.sy} C${a.c1x},${a.c1y} ${a.c2x},${a.c2y} ${a.ex},${a.ey}`;
 
@@ -1679,6 +1700,14 @@ function toggleSnap(){
   document.getElementById('btn-snap')?.classList.toggle('active-toggle',S.snapGrid);
   document.getElementById('grid-bg').classList.toggle('snap-on',S.snapGrid);
   toast(S.snapGrid?'Snap a grid ON':'Snap a grid OFF','info');
+}
+
+function toggleShowAllFlows(){
+  S.showAllFlows=!S.showAllFlows;
+  const btn=document.getElementById('btn-show-flow');
+  if(btn)btn.classList.toggle('active',S.showAllFlows);
+  render();
+  toast(S.showAllFlows?'Flujo completo resaltado':'Modo de foco restaurado','info');
 }
 
 function toggleNav(){
