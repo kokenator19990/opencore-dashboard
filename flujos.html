@@ -52,48 +52,53 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 #toolbar::-webkit-scrollbar{display:none}
 .tb-btn{
   display:flex;align-items:center;gap:6px;
-  font-family:var(--font-h);font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  color:rgba(255,255,255,.42);
-  background:rgba(255,255,255,.028);
-  border:1px solid rgba(255,255,255,.07);
-  padding:7px 13px;border-radius:9px;
+  font-family:var(--font-h);font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.68);
+  background:transparent;
+  border:1px solid rgba(255,255,255,.1);
+  padding:7px 14px;border-radius:8px;
   cursor:pointer;
-  transition:color .18s ease, background .18s ease, border-color .18s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .18s ease;
+  transition:color .2s ease, background .2s ease, border-color .2s ease, transform .15s cubic-bezier(.16,1,.3,1), box-shadow .2s ease, text-shadow .2s ease;
   white-space:nowrap;flex-shrink:0;line-height:1;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 1px 3px rgba(0,0,0,.25);
+  box-shadow:none;
   position:relative;overflow:hidden;
+  text-shadow:0 1px 3px rgba(0,0,0,.8);
 }
-.tb-btn::after{
+.tb-btn::before{
   content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(135deg,rgba(255,255,255,.05) 0%,transparent 60%);
-  pointer-events:none;opacity:0;transition:opacity .18s;
+  background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,transparent 100%);
+  pointer-events:none;
 }
 .tb-btn:hover{
-  color:rgba(255,255,255,.9);
+  color:#ffffff;
   background:rgba(255,255,255,.07);
-  border-color:rgba(255,255,255,.16);
-  transform:translateY(-1px) scale(1.015);
-  box-shadow:0 4px 18px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.28);
+  transform:translateY(-1px) scale(1.012);
+  box-shadow:0 4px 22px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.08);
+  text-shadow:0 0 18px rgba(255,255,255,.85),0 0 36px rgba(255,255,255,.35),0 1px 0 rgba(0,0,0,.5);
 }
-.tb-btn:hover::after{opacity:1}
-.tb-btn:active{transform:translateY(0) scale(.985);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+.tb-btn:active{transform:translateY(0) scale(.985);box-shadow:none;text-shadow:none}
 .tb-btn.active{
   color:var(--c-cyan);
-  border-color:rgba(0,229,255,.45);
-  background:rgba(0,229,255,.09);
-  box-shadow:0 0 18px rgba(0,229,255,.2), 0 0 0 1px rgba(0,229,255,.08) inset, inset 0 1px 0 rgba(0,229,255,.15);
+  border-color:rgba(0,229,255,.5);
+  background:rgba(0,229,255,.08);
+  box-shadow:0 0 20px rgba(0,229,255,.22),inset 0 1px 0 rgba(0,229,255,.18);
+  text-shadow:0 0 14px rgba(0,229,255,.9),0 0 28px rgba(0,229,255,.45);
 }
 .tb-btn.m-connect.active{
   color:var(--c-green);
-  border-color:rgba(0,255,133,.45);
-  background:rgba(0,255,133,.08);
-  box-shadow:0 0 18px rgba(0,255,133,.18), inset 0 1px 0 rgba(0,255,133,.12);
+  border-color:rgba(0,255,133,.5);
+  background:rgba(0,255,133,.07);
+  box-shadow:0 0 20px rgba(0,255,133,.2),inset 0 1px 0 rgba(0,255,133,.15);
+  text-shadow:0 0 14px rgba(0,255,133,.9),0 0 28px rgba(0,255,133,.4);
 }
 .tb-btn.m-pan.active{
   color:#B200FF;
-  border-color:rgba(178,0,255,.45);
-  background:rgba(178,0,255,.08);
-  box-shadow:0 0 18px rgba(178,0,255,.18), inset 0 1px 0 rgba(178,0,255,.12);
+  border-color:rgba(178,0,255,.5);
+  background:rgba(178,0,255,.07);
+  box-shadow:0 0 20px rgba(178,0,255,.22),inset 0 1px 0 rgba(178,0,255,.15);
+  text-shadow:0 0 14px rgba(178,0,255,.9),0 0 28px rgba(178,0,255,.4);
 }
 .tb-btn.danger:hover{
   color:#FF5555;
@@ -898,12 +903,19 @@ function updateEdges(){
   defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   needed.forEach(th=>{
     const col=TC[th]||TC.cyan;
-    defs.innerHTML+=`<marker id="ae-${th}" markerWidth="12" markerHeight="12" refX="10" refY="4.5" orient="auto"><path d="M0,0 L0,9 L12,4.5 z" fill="${col}" opacity=".85"/></marker>`;
-    defs.innerHTML+=`<marker id="as-${th}" markerWidth="12" markerHeight="12" refX="2" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L0,9 L12,4.5 z" fill="${col}" opacity=".85"/></marker>`;
+    defs.innerHTML+=`<marker id="ae-${th}" markerWidth="18" markerHeight="14" refX="16" refY="7" orient="auto"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${col}" opacity=".97"/></marker>`;
+    defs.innerHTML+=`<marker id="as-${th}" markerWidth="18" markerHeight="14" refX="2" refY="7" orient="auto-start-reverse"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${col}" opacity=".97"/></marker>`;
   });
-  // Active (cyan) markers for node-selection highlight
-  defs.innerHTML+=`<marker id="ae-active" markerWidth="14" markerHeight="14" refX="12" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#00E5FF"/></marker>`;
-  defs.innerHTML+=`<marker id="as-active" markerWidth="14" markerHeight="14" refX="2" refY="5" orient="auto-start-reverse"><path d="M0,0 L0,10 L14,5 z" fill="#00E5FF"/></marker>`;
+  // Per-color active markers - larger, glowing chevron
+  needed.forEach(th=>{
+    const col=TC[th]||TC.cyan;
+    defs.innerHTML+=`<marker id="ae-active-${th}" markerWidth="22" markerHeight="16" refX="20" refY="8" orient="auto"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${col}" opacity="1"/></marker>`;
+    defs.innerHTML+=`<marker id="as-active-${th}" markerWidth="22" markerHeight="16" refX="2" refY="8" orient="auto-start-reverse"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${col}" opacity="1"/></marker>`;
+  });
+  // Legacy active markers (kept for safety)
+
+  defs.innerHTML+=`<marker id="ae-active" markerWidth="22" markerHeight="16" refX="20" refY="8" orient="auto"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="#00E5FF" opacity="1"/></marker>`;
+  defs.innerHTML+=`<marker id="as-active" markerWidth="22" markerHeight="16" refX="2" refY="8" orient="auto-start-reverse"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="#00E5FF" opacity="1"/></marker>`;
   svgEl.appendChild(defs);
 
   // Determine node-selection context
@@ -940,16 +952,12 @@ function updateEdges(){
     const isUpChain=hasSel&&!isUpEdge&&!isDownEdge&&S.upstream.has(e.from)&&S.upstream.has(e.to);
     const isDownChain=hasSel&&!isUpEdge&&!isDownEdge&&S.downstream.has(e.from)&&S.downstream.has(e.to);
 
-    // Visual params derived from state
-    let drawCol=baseCol;
-    if(isUpEdge)drawCol='#00FF85';
-    else if(isDownEdge)drawCol='#E5FF00';
-    else if(isUpChain)drawCol='#00CC6A';
-    else if(isDownChain)drawCol='#B8CC00';
-    else if(isLinked)drawCol='#00E5FF';
-    const markerKey=isLinked?'active':th;
-    const opacity=isEdgeSel?1:isLinked?0.95:(hasSel?0.08:0.22);
-    const strokeW=isEdgeSel?4:isLinked?3:1.8;
+    // drawCol stays as edge natural theme color - selection via opacity+width
+    const drawCol=baseCol;
+    // Use per-color active marker so arrowhead matches line color
+    const markerKey=(isLinked||isEdgeSel)?'active-'+th:th;
+    const opacity=isEdgeSel?1:isLinked?0.98:(hasSel?0.06:0.24);
+    const strokeW=isEdgeSel?4.5:isLinked?3.2:1.8;
     const useGlow=isEdgeSel||isLinked;
     const showFlow=isEdgeSel||isLinked;
 
