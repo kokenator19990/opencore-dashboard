@@ -147,11 +147,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 .nh{display:flex;align-items:center;gap:12px;padding:14px 14px 10px 14px}
 .n-icon{font-size:1.7rem;flex-shrink:0;line-height:1}
 .n-lbl{font-family:var(--font-h);font-size:1.25rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;flex:1;color:var(--ntc,var(--nc,#00E5FF));line-height:1.2}
-.n-status{width:13px;height:13px;border-radius:50%;flex-shrink:0}
-.ns-active{background:#00FF85}
+.n-status{width:13px;height:13px;border-radius:50%;flex-shrink:0;position:absolute;top:36px;right:12px;z-index:5;border:1px solid rgba(0,0,0,.3)}
+.ns-active{background:#00FF85;box-shadow:0 0 8px rgba(0,255,133,.4)}
 .ns-paused{background:#888}
-.ns-critical{background:#FF4444;animation:crit .7s ease-in-out infinite}
-.ns-planning{background:#E5FF00}
+.ns-critical{background:#FF4444;animation:crit .7s ease-in-out infinite;box-shadow:0 0 10px rgba(255,68,68,.5)}
+.ns-planning{background:#E5FF00;box-shadow:0 0 8px rgba(229,255,0,.4)}
 @keyframes crit{0%,100%{opacity:1}50%{opacity:.35}}
 .n-sub{font-size:1.05rem;color:rgba(255,255,255,.55);padding:0 18px 12px 16px;letter-spacing:.2px;line-height:1.4}
 .n-meta{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}
@@ -370,16 +370,16 @@ body.pmode #panel{top:0!important}
   position:absolute;top:7px;right:7px;z-index:5;
   font-family:var(--font-h);font-size:.52rem;font-weight:700;letter-spacing:.6px;
   padding:2px 8px;border-radius:20px;
-  background:rgba(0,0,0,.55);
+  background:rgba(255,255,255,.12);
   border:1px solid var(--nc,#00E5FF);
   color:var(--nc,#00E5FF);
   cursor:pointer;user-select:none;
   transition:all .18s;white-space:nowrap;
-  box-shadow:0 0 8px rgba(0,0,0,.4);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
 }
-.n-lvl:hover{background:rgba(0,0,0,.8);transform:scale(1.1);box-shadow:0 0 14px var(--nc,#00E5FF)}
-.n-lvl-unset{opacity:.2;border-style:dashed;color:rgba(255,255,255,.4)!important;border-color:rgba(255,255,255,.2)!important}
-.n-lvl-unset:hover{opacity:.6!important}
+.n-lvl:hover{background:rgba(255,255,255,.2);transform:scale(1.1);box-shadow:0 0 14px var(--nc,#00E5FF)}
+.n-lvl-unset{opacity:.75;border-style:dashed;color:rgba(255,255,255,.8)!important;border-color:rgba(255,255,255,.3)!important;background:rgba(0,229,255,.1)}
+.n-lvl-unset:hover{opacity:1!important;background:rgba(0,229,255,.2)}
 .node.upstream .nc{border-left-color:#00FF85!important;box-shadow:0 0 16px rgba(0,255,133,.2),inset 0 1px 0 rgba(0,255,133,.08)!important}
 .node.downstream .nc{border-left-color:#E5FF00!important;box-shadow:0 0 16px rgba(229,255,0,.18),inset 0 1px 0 rgba(229,255,0,.07)!important}
 .node.dim-ud .nc{opacity:.22;filter:grayscale(.5)}
@@ -1001,7 +1001,7 @@ function renderNodes(){
 
     const lvlVal=S.nodeProps[n.id]?.level;
     const lvlHasVal=lvlVal!==undefined&&lvlVal!==null&&lvlVal!=='';
-    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="cycleLvl(event,'${n.id}')" title="${lvlHasVal?'Nivel '+lvlVal+' — clic para cambiar':'Sin nivel — clic para asignar'}">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
+    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="cycleLvl(event,'${n.id}')" title="Ajustar Nivel del Nodo">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
     el.innerHTML=`
       <div class="nc">
         ${lvlBadge}
@@ -1126,22 +1126,27 @@ function getAnchors(fid,tid){
   const A=nodeBounds(fid),B=nodeBounds(tid);
   if(!A||!B)return null;
   const dx=B.cx-A.cx,dy=B.cy-A.cy;
+  const dist=Math.sqrt(dx*dx+dy*dy);
   const ang=Math.atan2(dy,dx)*180/Math.PI;
-  const C=120; // base control point distance
+  
+  // Dynamic control point distance and forced curvature offset
+  const C=Math.min(120, dist*0.4);
+  const off=Math.min(40, dist*0.18);
+  
   let sx,sy,ex,ey,c1x,c1y,c2x,c2y;
 
   if(ang>-45&&ang<=45){ // Sector RIGHT
     sx=A.x+A.w;sy=A.cy;c1x=sx+C;ex=B.x;ey=B.cy;c2x=ex-C;
-    if(Math.abs(sy-ey)<2){ c1y=sy-40; c2y=ey-40; } else { c1y=sy; c2y=ey; }
+    if(Math.abs(sy-ey)<2){ c1y=sy-off; c2y=ey-off; } else { c1y=sy; c2y=ey; }
   }else if(ang>45&&ang<=135){ // Sector BOTTOM
     sx=A.cx;sy=A.y+A.h;c1y=sy+C;ex=B.cx;ey=B.y;c2y=ey-C;
-    if(Math.abs(sx-ex)<2){ c1x=sx+40; c2x=ex+40; } else { c1x=sx; c2x=ex; }
+    if(Math.abs(sx-ex)<2){ c1x=sx+off; c2x=ex+off; } else { c1x=sx; c2x=ex; }
   }else if(ang>135||ang<=-135){ // Sector LEFT
     sx=A.x;sy=A.cy;c1x=sx-C;ex=B.x+B.w;ey=B.cy;c2x=ex+C;
-    if(Math.abs(sy-ey)<2){ c1y=sy-40; c2y=ey-40; } else { c1y=sy; c2y=ey; }
+    if(Math.abs(sy-ey)<2){ c1y=sy-off; c2y=ey-off; } else { c1y=sy; c2y=ey; }
   }else{ // Sector TOP
     sx=A.cx;sy=A.y;c1y=sy-C;ex=B.cx;ey=B.y+B.h;c2y=ey+C;
-    if(Math.abs(sx-ex)<2){ c1x=sx-40; c2x=ex-40; } else { c1x=sx; c2x=ex; }
+    if(Math.abs(sx-ex)<2){ c1x=sx-off; c2x=ex-off; } else { c1x=sx; c2x=ex; }
   }
   return{sx,sy,ex,ey,c1x,c1y,c2x,c2y};
 }
