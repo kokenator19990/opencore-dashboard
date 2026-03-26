@@ -1127,16 +1127,21 @@ function getAnchors(fid,tid){
   if(!A||!B)return null;
   const dx=B.cx-A.cx,dy=B.cy-A.cy;
   const ang=Math.atan2(dy,dx)*180/Math.PI;
-  const C=120;
+  const C=120; // base control point distance
   let sx,sy,ex,ey,c1x,c1y,c2x,c2y;
-  if(ang>-45&&ang<=45){
-    sx=A.x+A.w;sy=A.cy;c1x=sx+C;c1y=sy;ex=B.x;ey=B.cy;c2x=ex-C;c2y=ey;
-  }else if(ang>45&&ang<=135){
-    sx=A.cx;sy=A.y+A.h;c1x=sx;c1y=sy+C;ex=B.cx;ey=B.y;c2x=ex;c2y=ey-C;
-  }else if(ang>135||ang<=-135){
-    sx=A.x;sy=A.cy;c1x=sx-C;c1y=sy;ex=B.x+B.w;ey=B.cy;c2x=ex+C;c2y=ey;
-  }else{
-    sx=A.cx;sy=A.y;c1x=sx;c1y=sy-C;ex=B.cx;ey=B.y+B.h;c2x=ex;c2y=ey+C;
+
+  if(ang>-45&&ang<=45){ // Sector RIGHT
+    sx=A.x+A.w;sy=A.cy;c1x=sx+C;ex=B.x;ey=B.cy;c2x=ex-C;
+    if(Math.abs(sy-ey)<2){ c1y=sy-40; c2y=ey-40; } else { c1y=sy; c2y=ey; }
+  }else if(ang>45&&ang<=135){ // Sector BOTTOM
+    sx=A.cx;sy=A.y+A.h;c1y=sy+C;ex=B.cx;ey=B.y;c2y=ey-C;
+    if(Math.abs(sx-ex)<2){ c1x=sx+40; c2x=ex+40; } else { c1x=sx; c2x=ex; }
+  }else if(ang>135||ang<=-135){ // Sector LEFT
+    sx=A.x;sy=A.cy;c1x=sx-C;ex=B.x+B.w;ey=B.cy;c2x=ex+C;
+    if(Math.abs(sy-ey)<2){ c1y=sy-40; c2y=ey-40; } else { c1y=sy; c2y=ey; }
+  }else{ // Sector TOP
+    sx=A.cx;sy=A.y;c1y=sy-C;ex=B.cx;ey=B.y+B.h;c2y=ey+C;
+    if(Math.abs(sx-ex)<2){ c1x=sx-40; c2x=ex-40; } else { c1x=sx; c2x=ex; }
   }
   return{sx,sy,ex,ey,c1x,c1y,c2x,c2y};
 }
