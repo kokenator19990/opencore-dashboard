@@ -581,8 +581,8 @@ body.pmode #float-ctrl { display: none; }
     <span class="tb-ico">⬇</span><span class="tb-lbl">PDF</span>
   </button>
   <div class="tb-sp"></div>
-  <button class="tb-btn" id="btn-show-flow" onclick="toggleShowAllFlows()" data-tooltip="VER TODO — Ilumina todos los nodos y conexiones del diagrama, ignorando la atenuación por selección.">
-    <span class="tb-ico">✨</span><span class="tb-lbl">Filtros</span>
+  <button class="tb-btn" id="btn-show-flow" onclick="toggleShowAllFlows()" data-tooltip="VIEW FLOW — Ilumina todos los nodos y conexiones del diagrama, ignorando la atenuación por selección.">
+    <span class="tb-ico">✨</span><span class="tb-lbl">Flow</span>
   </button>
   <button class="tb-btn" id="btn-panel-toggle" onclick="togglePanelStrip()" data-tooltip="PANEL INFO — Abre o cierra el panel lateral con la información del nodo seleccionado. (tecla I)">
     <span class="tb-ico">⊟</span><span class="tb-lbl">Panel</span>
@@ -1249,8 +1249,16 @@ function updateEdges(){
       flow.setAttribute('stroke',drawCol);
       flow.setAttribute('stroke-width','2');
       flow.setAttribute('fill','none');
-      flow.setAttribute('stroke-dasharray','10 16');
-      flow.setAttribute('opacity',isEdgeSel?'0.8':'0.6');
+      // In global 'showAllFlows' mode, we want a solid highlight, not a thin dash
+      if(S.showAllFlows) {
+        flow.setAttribute('stroke-dasharray','200 0'); // effectively solid
+        flow.setAttribute('stroke-width','3.2');
+        flow.setAttribute('opacity','0.4');
+      } else {
+        flow.setAttribute('stroke-dasharray','10 16');
+        flow.setAttribute('stroke-width','2');
+        flow.setAttribute('opacity',isEdgeSel?'0.8':'0.6');
+      }
       flow.style.pointerEvents='none';
       flow.style.animation='edgeFlow '+(isEdgeSel?'1.2':'1.8')+'s linear infinite';
       if(dir==='back')flow.style.animationDirection='reverse';
