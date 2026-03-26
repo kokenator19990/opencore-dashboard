@@ -9,7 +9,7 @@
 <style>
 :root {
   --bg:#050505; --nav-h:44px; --tb-h:60px; --panel-w:380px;
-  --c-cyan:#3af2ff; --c-green:#00ff9d; --c-yellow:#fbff00;
+  --c-cyan:#60a5fa; --c-green:#34d399; --c-yellow:#fbbf24;
   --font-h:'Space Grotesk',sans-serif; --font-s:'Inter',sans-serif;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -130,34 +130,34 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 /* ── NODE CARDS ──────────────────────────────────── */
 .node{position:absolute;user-select:none;min-width:290px;transition:filter .12s}
 .nc{
-  background:rgba(15,15,25,.75);
-  backdrop-filter:blur(24px) saturate(1.2);
-  -webkit-backdrop-filter:blur(24px) saturate(1.2);
-  border:1px solid rgba(255,255,255,.08);
-  border-left:5px solid var(--nc,#3af2ff);
-  border-radius:14px;
+  background:rgba(20,25,35,.88);
+  backdrop-filter:blur(20px) saturate(1.1);
+  -webkit-backdrop-filter:blur(20px) saturate(1.1);
+  border:1px solid rgba(255,255,255,.07);
+  border-left:4px solid var(--nc,#60a5fa);
+  border-radius:12px;
   box-shadow:
-    0 10px 40px rgba(0,0,0,.6),
-    0 0 0 1px rgba(255,255,255,0.05),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 12px 32px rgba(0,0,0,.65),
+    0 0 0 1px rgba(255,255,255,0.04),
+    inset 0 1px 0 rgba(255,255,255,.06);
   transition:all .28s cubic-bezier(.16,1,.3,1);
   cursor:pointer;overflow:hidden;
 }
 .node:hover .nc{
-  background:rgba(20,20,35,.82);
+  background:rgba(25,30,45,.95);
   box-shadow:
-    0 20px 60px rgba(0,0,0,.7),
-    0 0 25px var(--ng,rgba(58,242,255,.15)),
-    inset 0 1px 0 rgba(255,255,255,.12);
-  transform:translateY(-2px);
-  border-color:rgba(255,255,255,0.15);
+    0 24px 72px rgba(0,0,0,.75),
+    0 0 15px var(--ng,rgba(96,165,250,.12)),
+    inset 0 1px 0 rgba(255,255,255,.1);
+  transform:translateY(-1.5px);
+  border-color:rgba(255,255,255,0.12);
 }
 .node.selected .nc{
-  border-color:rgba(255,255,255,.25);
+  border-color:rgba(255,255,255,.2);
   box-shadow:
-    0 0 0 2px var(--nc,#3af2ff),
-    0 12px 48px rgba(0,0,0,.8),
-    0 0 40px var(--ng,rgba(58,242,255,.3));
+    0 0 0 1.5px var(--nc,#60a5fa),
+    0 16px 56px rgba(0,0,0,.8),
+    0 0 30px var(--ng,rgba(96,165,250,.25));
 }
 .node.is-drag .nc{box-shadow:0 22px 52px rgba(0,0,0,.75);cursor:grabbing!important;transform:translateY(-4px) scale(1.018)}
 .node.is-drag{z-index:1000}
@@ -1180,16 +1180,16 @@ function updateEdges(){
   svgEl.innerHTML='';
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
 
-  // Unified subtle-cyan edge palette
-  const EDGE_COL='#2c637a';      // celeste cian sutil mate
-  const EDGE_COL_ACT='#00d2ff';  // cian brillante activo
+  // Corporate sober-slate edge palette
+  const EDGE_COL='#475569';      // slate grey/blue corporativo sutil
+  const EDGE_COL_ACT='#60a5fa';  // azul slate brillante corporativo
   // Glow filter for edges
   defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  // Two unified markers: dim (default) and active (selected/linked)
-  defs.innerHTML+=`<marker id="ae-edim" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 L3,5 Z" fill="${EDGE_COL}" opacity=".85"/></marker>`;
-  defs.innerHTML+=`<marker id="as-edim" markerWidth="14" markerHeight="10" refX="1" refY="5" orient="auto-start-reverse"><path d="M0,0 L12,5 L0,10 L3,5 Z" fill="${EDGE_COL}" opacity=".85"/></marker>`;
-  defs.innerHTML+=`<marker id="ae-eact" markerWidth="16" markerHeight="12" refX="15" refY="6" orient="auto"><path d="M0,0 L14,6 L0,12 L3,6 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
-  defs.innerHTML+=`<marker id="as-eact" markerWidth="16" markerHeight="12" refX="1" refY="6" orient="auto-start-reverse"><path d="M0,0 L14,6 L0,12 L3,6 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
+  // Minimalist markers: smaller and sharper for professional look
+  defs.innerHTML+=`<marker id="ae-edim" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 L2,3.5 Z" fill="${EDGE_COL}" opacity=".7"/></marker>`;
+  defs.innerHTML+=`<marker id="as-edim" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L9,3.5 L0,7 L2,3.5 Z" fill="${EDGE_COL}" opacity=".7"/></marker>`;
+  defs.innerHTML+=`<marker id="ae-eact" markerWidth="11" markerHeight="8" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 L2.5,4 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
+  defs.innerHTML+=`<marker id="as-eact" markerWidth="11" markerHeight="8" refX="1" refY="4" orient="auto-start-reverse"><path d="M0,0 L10,4 L0,8 L2.5,4 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
   svgEl.appendChild(defs);
 
   // Determine node-selection context
@@ -1218,11 +1218,11 @@ function updateEdges(){
     const isDimmed=hasSel&&!isLinked&&!S.showAllFlows;
     const activeFlow=isEdgeSel||isLinked||S.showAllFlows;
 
-    // Unified subtle-cyan coloring for all connections
+    // Corporate weights: thinner and cleaner
     const drawCol=(activeFlow||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
     const markerSfx=(activeFlow||isEdgeSel)?'eact':'edim';
-    const opacity=isEdgeSel?1:activeFlow?0.92:(hasSel?0.07:0.32);
-    const strokeW=isEdgeSel?4.5:activeFlow?2.8:1.6;
+    const opacity=isEdgeSel?1:activeFlow?0.95:(hasSel?0.06:0.28);
+    const strokeW=isEdgeSel?3.5:activeFlow?2.2:1.4;
     const useGlow=isEdgeSel||activeFlow;
     const showFlow=isEdgeSel||activeFlow;
 
