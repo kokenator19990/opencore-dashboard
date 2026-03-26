@@ -314,7 +314,7 @@ select.m-field option{background:#1a1a2e;color:#fff}
 body.pmode .topnav,body.pmode #toolbar{display:none!important}
 body.pmode #cwrap{top:0!important}
 body.pmode #minimap{display:none}
-body.pmode #panel{display:none}
+body.pmode #panel{top:0!important}
 
 /* ── RESPONSIVE ──────────────────────────────────── */
 @media(max-width:768px){
@@ -407,7 +407,29 @@ body.pmode #panel{display:none}
 #panel-strip:hover .ps-arr,#panel-strip:hover .ps-lbl{color:rgba(0,229,255,.72)}
 #panel-strip.strip-open{right:var(--panel-w)}
 #panel-strip.strip-open .ps-arr{transform:rotate(180deg)}
-body.pmode #panel-strip{display:none}
+body.pmode #panel-strip{top:0!important}
+
+/* ── NAV COLLAPSE ─────────────────────────────────── */
+#nav-toggle{
+  position:fixed;right:10px;top:0;z-index:202;
+  width:28px;height:var(--nav-h);
+  background:transparent;border:none;
+  color:rgba(255,255,255,.2);cursor:pointer;
+  font-size:.58rem;display:flex;align-items:center;justify-content:center;
+  transition:color .2s,background .2s;
+}
+#nav-toggle:hover{color:rgba(255,255,255,.6);background:rgba(255,255,255,.04)}
+body.nav-col #nav-toggle{
+  height:22px;background:rgba(6,6,14,.92);
+  color:rgba(0,229,255,.5);border-bottom:1px solid rgba(0,229,255,.12);
+  border-radius:0 0 6px 6px;
+}
+body.nav-col .topnav{display:none!important}
+body.nav-col #toolbar{top:0!important}
+body.nav-col #cwrap{top:var(--tb-h)!important}
+body.nav-col #panel{top:var(--tb-h)!important}
+body.nav-col #panel-strip{top:var(--tb-h)!important}
+body.pmode #nav-toggle{display:none}
 </style>
 </head>
 <body>
@@ -418,6 +440,7 @@ body.pmode #panel-strip{display:none}
   <div class="tn-sep"></div>
   <a href="flujos.html" class="active">Flujos</a>
 </nav>
+<button id="nav-toggle" onclick="toggleNav()" title="Ocultar barra superior">▲</button>
 
 <!-- TOOLBAR -->
 <div id="toolbar">
@@ -936,8 +959,8 @@ function updateEdges(){
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
 
   // Unified subtle-cyan edge palette
-  const EDGE_COL='#4eb8c8';
-  const EDGE_COL_ACT='#6ddde8';
+  const EDGE_COL='#4272ae';      // azul ejecutivo matte
+  const EDGE_COL_ACT='#5a8fd4';  // azul corporativo activo
   // Glow filter for edges
   defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   // Two unified markers: dim (default) and active (selected/linked)
@@ -1500,6 +1523,15 @@ function toggleSnap(){
   document.getElementById('btn-snap').classList.toggle('active-toggle',S.snapGrid);
   document.getElementById('grid-bg').classList.toggle('snap-on',S.snapGrid);
   toast(S.snapGrid?'Snap a grid ON':'Snap a grid OFF','info');
+}
+
+function toggleNav(){
+  const b=document.body;
+  b.classList.toggle('nav-col');
+  const btn=document.getElementById('nav-toggle');
+  const col=b.classList.contains('nav-col');
+  btn.textContent=col?'▼':'▲';
+  btn.title=col?'Mostrar barra superior':'Ocultar barra superior';
 }
 
 function togglePresentation(){
