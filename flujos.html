@@ -388,13 +388,13 @@ body.pmode #panel{top:0!important}
 /* ── NODE PANEL TAB ──────────────────────────────── */
 .n-panel-tab {
   position: absolute; bottom: -1px; right: 0;
-  width: 34px; height: 20px;
+  width: 44px; height: 26px;
   background: var(--nc, #00E5FF);
-  border: none; border-radius: 8px 0 14px 0;
+  border: none; border-radius: 10px 0 14px 0;
   opacity: 0; cursor: pointer; z-index: 25;
   display: flex; align-items: center; justify-content: center;
-  color: rgba(0,0,0,.65); font-size: 10px;
-  transition: opacity .18s, transform .15s;
+  color: rgba(0,0,0,.65); font-size: 14px;
+  transition: opacity .18s, transform .15s, background .2s;
 }
 .node:hover .n-panel-tab { opacity: .75; }
 .node:hover .n-panel-tab:hover { opacity: 1; transform: scale(1.06); }
@@ -1012,7 +1012,7 @@ function renderNodes(){
         ${metaHtml?`<div class="n-meta">${metaHtml}</div>`:''}
         ${badgeHtml?`<div class="n-badge">${badgeHtml}</div>`:''}
       </div>
-      <button class="n-panel-tab" onclick="openPanelFromCorner(event,'${n.id}')" data-tooltip="Abrir panel lateral">⊟</button>
+      <button class="n-panel-tab" onclick="openPanelFromCorner(event,'${n.id}')" title="Abrir panel de Información" data-tooltip="Abrir panel de Información">⊟</button>
       <div class="hd hd-t"></div>
       <div class="hd hd-r"></div>
       <div class="hd hd-b"></div>
