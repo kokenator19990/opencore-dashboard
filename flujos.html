@@ -351,6 +351,27 @@ body.pmode #panel{display:none}
     overflow: visible !important;
   }
 }
+.nc{position:relative}
+.n-lvl{
+  position:absolute;top:7px;right:7px;z-index:5;
+  font-family:var(--font-h);font-size:.52rem;font-weight:700;letter-spacing:.6px;
+  padding:2px 8px;border-radius:20px;
+  background:rgba(0,0,0,.55);
+  border:1px solid var(--nc,#00E5FF);
+  color:var(--nc,#00E5FF);
+  cursor:pointer;user-select:none;
+  transition:all .18s;white-space:nowrap;
+  box-shadow:0 0 8px rgba(0,0,0,.4);
+}
+.n-lvl:hover{background:rgba(0,0,0,.8);transform:scale(1.1);box-shadow:0 0 14px var(--nc,#00E5FF)}
+.n-lvl-unset{opacity:.2;border-style:dashed;color:rgba(255,255,255,.4)!important;border-color:rgba(255,255,255,.2)!important}
+.n-lvl-unset:hover{opacity:.6!important}
+.node.upstream .nc{border-left-color:#00FF85!important;box-shadow:0 0 16px rgba(0,255,133,.2),inset 0 1px 0 rgba(0,255,133,.08)!important}
+.node.downstream .nc{border-left-color:#E5FF00!important;box-shadow:0 0 16px rgba(229,255,0,.18),inset 0 1px 0 rgba(229,255,0,.07)!important}
+.node.dim-ud .nc{opacity:.22;filter:grayscale(.5)}
+.node.dim-ud:hover .nc{opacity:.6;filter:none}
+@keyframes edgeFlowAlways{to{stroke-dashoffset:-60}}
+@keyframes edgeFlowBack{to{stroke-dashoffset:60}}
 </style>
 </head>
 <body>
@@ -777,7 +798,11 @@ function renderNodes(){
     const status=props.status||'active';
 
     const el=document.createElement('div');
-    el.className='node'+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'');
+    const hasSel2=!!S.selected;
+    const isUp=hasSel2&&S.upstream&&S.upstream.has(n.id);
+    const isDown=hasSel2&&S.downstream&&S.downstream.has(n.id);
+    const isDimN=hasSel2&&!isUp&&!isDown&&n.id!==S.selected;
+    el.className='node'+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'')+(isUp?' upstream':'')+(isDown?' downstream':'')+(isDimN?' dim-ud':'');
     el.id='node-'+n.id;
     el.dataset.id=n.id;
     el.style.left=n.x+'px';
@@ -793,8 +818,12 @@ function renderNodes(){
     if(cc>0) badgeHtml+=`<span class="n-badge-item">📝 ${cc}</span>`;
     if(fc>0) badgeHtml+=`<span class="n-badge-item">📎 ${fc}</span>`;
 
+    const lvlVal=S.nodeProps[n.id]?.level;
+    const lvlHasVal=lvlVal!==undefined&&lvlVal!==null&&lvlVal!=='';
+    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="cycleLvl(event,'${n.id}')" title="${lvlHasVal?'Nivel '+lvlVal+' — clic para cambiar':'Sin nivel — clic para asignar'}">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
     el.innerHTML=`
       <div class="nc">
+        ${lvlBadge}
         <div class="nh">
           <span class="n-icon">${n.icon}</span>
           <span class="n-lbl">${n.label}</span>
@@ -811,7 +840,7 @@ function renderNodes(){
 
     el.addEventListener('mousedown',e=>onNodeMD(e,n.id));
     el.addEventListener('click',e=>onNodeClick(e,n.id));
-    el.addEventListener('dblclick',e=>{e.stopPropagation();selectNode(n.id);openPanel(n.id);});
+    el.addEventListener('dblclick',e=>{e.stopPropagation();zoomToNode(n.id);openPanel(n.id);});
     diag.appendChild(el);
   });
 }
@@ -881,6 +910,18 @@ function updateEdges(){
   const selNode=S.selected;
   const hasSel=!!selNode;
 
+  // Compute upstream / downstream sets for selected node
+  if(selNode){
+    const up=new Set();const dn=new Set();
+    const uq=[selNode];const uv=new Set([selNode]);
+    for(let i=0;i<uq.length;i++){const c=uq[i];S.edges.forEach(e=>{if(e.to===c&&!uv.has(e.from)){uv.add(e.from);up.add(e.from);uq.push(e.from);}});}
+    const dq=[selNode];const dv=new Set([selNode]);
+    for(let i=0;i<dq.length;i++){const c=dq[i];S.edges.forEach(e=>{if(e.from===c&&!dv.has(e.to)){dv.add(e.to);dn.add(e.to);dq.push(e.to);}});}
+    S.upstream=up;S.downstream=dn;
+  } else {
+    S.upstream=new Set();S.downstream=new Set();
+  }
+
   S.edges.forEach((e,idx)=>{
     const a=getAnchors(e.from,e.to);
     if(!a)return;
@@ -890,15 +931,25 @@ function updateEdges(){
     const dir=e.dir||'forward';
     const isEdgeSel=S.selectedEdge===idx;
 
-    // Node highlight states
     const isLinked=hasSel&&(e.from===selNode||e.to===selNode);
     const isDimmed=hasSel&&!isLinked;
 
+    // Upstream / downstream edge coloring
+    const isUpEdge=hasSel&&e.to===selNode;
+    const isDownEdge=hasSel&&e.from===selNode;
+    const isUpChain=hasSel&&!isUpEdge&&!isDownEdge&&S.upstream.has(e.from)&&S.upstream.has(e.to);
+    const isDownChain=hasSel&&!isUpEdge&&!isDownEdge&&S.downstream.has(e.from)&&S.downstream.has(e.to);
+
     // Visual params derived from state
-    const drawCol=isLinked?'#00E5FF':baseCol;
+    let drawCol=baseCol;
+    if(isUpEdge)drawCol='#00FF85';
+    else if(isDownEdge)drawCol='#E5FF00';
+    else if(isUpChain)drawCol='#00CC6A';
+    else if(isDownChain)drawCol='#B8CC00';
+    else if(isLinked)drawCol='#00E5FF';
     const markerKey=isLinked?'active':th;
-    const opacity=isEdgeSel?1:isLinked?0.9:0.20;
-    const strokeW=isEdgeSel?4:isLinked?3.5:1.8;
+    const opacity=isEdgeSel?1:isLinked?0.95:(hasSel?0.08:0.22);
+    const strokeW=isEdgeSel?4:isLinked?3:1.8;
     const useGlow=isEdgeSel||isLinked;
     const showFlow=isEdgeSel||isLinked;
 
@@ -915,8 +966,9 @@ function updateEdges(){
     hit.addEventListener('click',(ev)=>{ev.stopPropagation();selectEdge(idx,ev);});
     svgEl.appendChild(hit);
 
-    // Visual path
+    // Visual path (with ID for animateMotion reference)
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('id','ep-'+idx);
     path.setAttribute('d',d);
     path.setAttribute('stroke',drawCol);
     path.setAttribute('stroke-width',String(strokeW));
@@ -928,19 +980,53 @@ function updateEdges(){
     if(dir==='back'||dir==='both')path.setAttribute('marker-start',`url(#as-${markerKey})`);
     svgEl.appendChild(path);
 
-    // Animated flow dash — only for highlighted/selected edges
+    // Idle flow — subtle always-on animation on ALL edges
+    if(!isDimmed){
+      const idle=document.createElementNS('http://www.w3.org/2000/svg','path');
+      idle.setAttribute('d',d);
+      idle.setAttribute('stroke',drawCol);
+      idle.setAttribute('stroke-width','1.2');
+      idle.setAttribute('fill','none');
+      idle.setAttribute('stroke-dasharray','5 40');
+      idle.setAttribute('opacity',showFlow?'0':'0.13');
+      idle.style.pointerEvents='none';
+      const idleDur=(4+idx*0.4)+'s';
+      idle.style.animation=(dir==='back'?'edgeFlowBack ':'edgeFlowAlways ')+idleDur+' linear infinite';
+      svgEl.appendChild(idle);
+    }
+
+    // Active flow dash + traveling orb for selected/linked edges
     if(showFlow){
+      // Fast flow dash
       const flow=document.createElementNS('http://www.w3.org/2000/svg','path');
       flow.setAttribute('d',d);
       flow.setAttribute('stroke',drawCol);
       flow.setAttribute('stroke-width','2');
       flow.setAttribute('fill','none');
-      flow.setAttribute('stroke-dasharray','8 18');
-      flow.setAttribute('opacity',isEdgeSel?'0.75':'0.55');
+      flow.setAttribute('stroke-dasharray','10 16');
+      flow.setAttribute('opacity',isEdgeSel?'0.8':'0.6');
       flow.style.pointerEvents='none';
-      flow.style.animation='edgeFlow 1.8s linear infinite';
+      flow.style.animation='edgeFlow '+(isEdgeSel?'1.2':'1.8')+'s linear infinite';
       if(dir==='back')flow.style.animationDirection='reverse';
       svgEl.appendChild(flow);
+
+      // Traveling orb via animateMotion
+      const orb=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      orb.setAttribute('r',isEdgeSel?'5':'4');
+      orb.setAttribute('fill',drawCol);
+      orb.setAttribute('filter','url(#edge-glow)');
+      orb.setAttribute('opacity',isEdgeSel?'0.95':'0.75');
+      orb.style.pointerEvents='none';
+      const orbAnim=document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+      orbAnim.setAttribute('dur',isEdgeSel?'1.2s':'2s');
+      orbAnim.setAttribute('repeatCount','indefinite');
+      orbAnim.setAttribute('calcMode','linear');
+      if(dir==='back'){orbAnim.setAttribute('keyPoints','1;0');orbAnim.setAttribute('keyTimes','0;1');}
+      const orbMp=document.createElementNS('http://www.w3.org/2000/svg','mpath');
+      orbMp.setAttributeNS('http://www.w3.org/1999/xlink','href','#ep-'+idx);
+      orbAnim.appendChild(orbMp);
+      orb.appendChild(orbAnim);
+      svgEl.appendChild(orb);
     }
 
     // Edge label
@@ -1113,6 +1199,49 @@ function fitView(){
 //   Nivel N = nodos que dependen de nivel N-1 → filas siguientes
 //   Dentro de cada fila los nodos se ordenan por posición promedio de sus
 //   padres (barycenter heuristic) para minimizar cruces de flechas.
+// --- LEVEL BADGE CYCLE ---
+function cycleLvl(e,id){
+  e.stopPropagation();e.preventDefault();
+  snapshot();
+  if(!S.nodeProps[id])S.nodeProps[id]={};
+  const cur=S.nodeProps[id].level;
+  const levels=[null,0,1,2,3,4,5,6,7];
+  let curNorm=(cur===undefined||cur===null||cur==='')?null:Number(cur);
+  let idx=levels.findIndex(v=>v===curNorm);
+  if(idx<0)idx=0;
+  const next=levels[(idx+1)%levels.length];
+  S.nodeProps[id].level=next===null?null:String(next);
+  render();saveState();
+  toast(next===null?'Nivel removido':'Nivel '+next+' asignado','ok');
+}
+
+// --- ZOOM TO NODE ---
+function zoomToNode(id){
+  selectNode(id);
+  const n=S.nodes.find(n=>n.id===id);
+  if(!n)return;
+  const sz=szCache[id]||{w:300,h:95};
+  const vpW=cwrap.clientWidth,vpH=cwrap.clientHeight;
+  const targetScale=Math.min(1.35,Math.max(0.9,S.scale<0.9?1.0:S.scale));
+  const nodeCX=n.x+sz.w/2,nodeCY=n.y+sz.h/2;
+  const targetTx=vpW/2-nodeCX*targetScale;
+  const targetTy=vpH/2-nodeCY*targetScale;
+  const startScale=S.scale,startTx=S.tx,startTy=S.ty;
+  const dur=380;const t0=performance.now();
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur);
+    const ease=1-Math.pow(1-p,3);
+    S.scale=startScale+(targetScale-startScale)*ease;
+    S.tx=startTx+(targetTx-startTx)*ease;
+    S.ty=startTy+(targetTy-startTy)*ease;
+    applyTransform(false);
+    if(p<1)requestAnimationFrame(step);
+    else setTimeout(()=>updateMinimap(),50);
+  }
+  requestAnimationFrame(step);
+}
+
+
 function organizeByLevel(){
   if(!S.nodes.length)return;
   snapshot();
