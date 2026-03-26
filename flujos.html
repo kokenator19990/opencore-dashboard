@@ -146,7 +146,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 .node.is-drag{z-index:1000}
 .nh{display:flex;align-items:center;gap:12px;padding:14px 14px 10px 14px}
 .n-icon{font-size:1.7rem;flex-shrink:0;line-height:1}
-.n-lbl{font-family:var(--font-h);font-size:1.25rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;flex:1;color:var(--nc,#00E5FF);line-height:1.2}
+.n-lbl{font-family:var(--font-h);font-size:1.25rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;flex:1;color:var(--ntc,var(--nc,#00E5FF));line-height:1.2}
 .n-status{width:13px;height:13px;border-radius:50%;flex-shrink:0}
 .ns-active{background:#00FF85}
 .ns-paused{background:#888}
@@ -930,9 +930,10 @@ function render(){
 function renderNodes(){
   document.querySelectorAll('#diagram .node').forEach(el=>el.remove());
   S.nodes.forEach(n=>{
-    const col=TC[n.theme]||TC.cyan;
-    const glow=TG[n.theme]||TG.cyan;
     const props=S.nodeProps[n.id]||{};
+    const col=TC[n.theme]||TC.cyan;
+    const txtCol=props.textColor||col;
+    const glow=TG[n.theme]||TG.cyan;
     const cc=(S.comments[n.id]||[]).length;
     const fc=(S.attachments[n.id]||[]).length;
     const status=props.status||'active';
@@ -948,6 +949,7 @@ function renderNodes(){
     el.style.left=n.x+'px';
     el.style.top=n.y+'px';
     el.style.setProperty('--nc',col);
+    el.style.setProperty('--ntc',txtCol);
     el.style.setProperty('--ng',glow);
 
     let metaHtml='';
@@ -1914,11 +1916,12 @@ function renderPanelBody(id,tab){
 
   if(tab==='info'){
     let h='';
-    if(n.detail){
-      h+=`<div class="ps"><div class="ps-t">Procesos Clave</div><ul class="ps-ul">${n.detail.procesos.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
-      h+=`<div class="ps"><div class="ps-t">Integra con</div><div>${n.detail.integraciones.map(i=>`<span class="ptag">${i}</span>`).join('')}</div></div>`;
-      h+=`<div class="ps"><div class="ps-t">Puntos Críticos</div><ul class="ps-ul">${n.detail.criticos.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
-      h+=`<div class="popp"><div class="popp-l">⚡ Oportunidad OpenCore</div><p>${n.detail.oportunidad}</p></div>`;
+    const d=props.detail||n.detail;
+    if(d){
+      if(d.procesos&&d.procesos.length) h+=`<div class="ps"><div class="ps-t">Procesos Clave</div><ul class="ps-ul">${d.procesos.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
+      if(d.integraciones&&d.integraciones.length) h+=`<div class="ps"><div class="ps-t">Integra con</div><div>${d.integraciones.map(i=>`<span class="ptag">${i}</span>`).join('')}</div></div>`;
+      if(d.criticos&&d.criticos.length) h+=`<div class="ps"><div class="ps-t">Puntos Críticos</div><ul class="ps-ul">${d.criticos.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
+      if(d.oportunidad) h+=`<div class="popp"><div class="popp-l">⚡ Oportunidad OpenCore</div><p>${d.oportunidad}</p></div>`;
     }else{
       h=`<div style="font-size:.72rem;color:rgba(255,255,255,.3);padding:.5rem 0">Sin información detallada. Abre Propiedades para editar.</div>`;
     }
@@ -1951,7 +1954,26 @@ function renderPanelBody(id,tab){
         <label class="ef-label">Icono</label>
         <div class="ic-grid" id="ep-ic"></div>
         <input class="ef" id="ep-icon" value="${esc(n.icon)}" placeholder="Emoji" style="margin-top:4px">
-        <button class="btn-save" onclick="saveNodeProps('${id}')">Guardar cambios</button>
+
+        <div class="ps-t" style="margin:1.4rem 0 .5rem;color:var(--c-yellow)">Información del Negocio</div>
+        <label class="ef-label">Procesos (uno por línea)</label>
+        <textarea class="ef" id="ep-det-proc" style="height:80px" placeholder="ej. Coordinación de embarques...">${(props.detail||n.detail)?.procesos?.join('\n')||''}</textarea>
+        <label class="ef-label">Integraciones (separadas por coma)</label>
+        <input class="ef" id="ep-det-int" value="${(props.detail||n.detail)?.integraciones?.join(', ')||''}" placeholder="ej. Aduana, Contabilidad...">
+        <label class="ef-label">Puntos Críticos (uno por línea)</label>
+        <textarea class="ef" id="ep-det-crit" style="height:60px" placeholder="ej. Errores en clasificación...">${(props.detail||n.detail)?.criticos?.join('\n')||''}</textarea>
+        <label class="ef-label">Oportunidad OpenCore</label>
+        <textarea class="ef" id="ep-det-opp" style="height:60px" placeholder="ej. Automatizar seguimiento...">${(props.detail||n.detail)?.oportunidad||''}</textarea>
+        
+        <div class="ps-t" style="margin:1.4rem 0 .5rem;color:var(--c-cyan)">Apariencia Visual</div>
+        <label class="ef-label">Color del Texto del Nodo</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:15px">
+          <input type="color" id="ep-txt-col" value="${props.textColor||TC[n.theme]||'#00E5FF'}" style="width:40px;height:30px;border:none;background:transparent;cursor:pointer">
+          <span style="font-size:.62rem;color:rgba(255,255,255,.4)">${props.textColor?'Personalizado':'Tema'}</span>
+          <button class="btn-sm" style="font-size:.5rem;padding:2px 6px" onclick="resetTextColor('${id}')">Reset</button>
+        </div>
+
+        <button class="btn-save" style="margin-top:1.2rem" onclick="saveNodeProps('${id}')">Guardar cambios</button>
       </div>`;
     // Color picker
     renderColorPicker(document.getElementById('ep-cp'),n.theme,(th)=>{
@@ -1999,14 +2021,32 @@ function saveNodeProps(id){
   const level=document.getElementById('ep-level')?.value;
   const theme=document.getElementById('ep-cp')?.dataset.val||n.theme;
   const icon=document.getElementById('ep-icon')?.value.trim()||n.icon;
+  const tCol=document.getElementById('ep-txt-col')?.value;
+  
   if(label)n.label=label;
   n.sub=sub!==undefined?sub:n.sub;
   n.theme=theme;n.icon=icon;
-  if(n.detail&&sub)n.detail.subtitle=sub;
+  
   if(!S.nodeProps[id])S.nodeProps[id]={};
   S.nodeProps[id].responsible=resp||'';
   S.nodeProps[id].budget=budget||'';
+  S.nodeProps[id].textColor=tCol;
   if(level!==undefined)S.nodeProps[id].level=level!==''?level:null;
+
+  // Guardar detalles del negocio
+  const detProc=document.getElementById('ep-det-proc')?.value.split('\n').map(s=>s.trim()).filter(s=>s)||(n.detail?.procesos||[]);
+  const detInt=document.getElementById('ep-det-int')?.value.split(',').map(s=>s.trim()).filter(s=>s)||(n.detail?.integraciones||[]);
+  const detCrit=document.getElementById('ep-det-crit')?.value.split('\n').map(s=>s.trim()).filter(s=>s)||(n.detail?.criticos||[]);
+  const detOpp=document.getElementById('ep-det-opp')?.value.trim()||(n.detail?.oportunidad||'');
+  
+  S.nodeProps[id].detail = {
+    subtitle: sub||(n.detail?.subtitle||''),
+    procesos: detProc,
+    integraciones: detInt,
+    criticos: detCrit,
+    oportunidad: detOpp
+  };
+
   snapshot();
   render();
   if(panel.classList.contains('open')){
@@ -2026,6 +2066,15 @@ function setNodeStatus(id,status){
   const el=document.getElementById('node-'+id)?.querySelector('.n-status');
   if(el){el.className='n-status ns-'+status;}
   saveState();
+}
+
+// ─── RESET TEXT COLOR ────────────────────────────────────────────────────────
+function resetTextColor(id){
+  if(S.nodeProps[id]) delete S.nodeProps[id].textColor;
+  saveState();
+  renderPanelBody(id,'props');
+  renderNodes();
+  updateEdges();
 }
 
 // ─── COLOR & ICON PICKERS ─────────────────────────────────────────────────────
