@@ -887,7 +887,7 @@ function renderNodes(){
 
     el.addEventListener('mousedown',e=>onNodeMD(e,n.id));
     el.addEventListener('click',e=>onNodeClick(e,n.id));
-    el.addEventListener('dblclick',e=>{e.stopPropagation();zoomToNode(n.id);openPanel(n.id);});
+    el.addEventListener('dblclick',e=>{e.stopPropagation();zoomToNode(n.id);});
     diag.appendChild(el);
   });
 }
@@ -1591,7 +1591,7 @@ function onNodeClick(e,id){
   e.stopPropagation();
   if(S.nodeDragMoved)return;
   if(edgeCtxIdx!=null)hideEdgeCtx();
-  if(S.mode==='select'){selectNode(id);openPanel(id);}
+  if(S.mode==='select'){selectNode(id);}
   else if(S.mode==='connect'){
     if(!S.connecting)startConnect(id);
     else if(S.connecting!==id)finishConnect(id);
@@ -2239,6 +2239,41 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
       hideTimer=setTimeout(()=>{tip.style.opacity='0';},120);
     });
     btn.addEventListener('mousedown',()=>{tip.style.opacity='0';});
+  });
+})();
+
+// ─── NODE INFO BTN TOOLTIP ───────────────────────────────────────────────────
+(()=>{
+  const tip=document.createElement('div');
+  tip.id='n-info-tip';
+  tip.style.cssText='position:fixed;z-index:600;background:rgba(6,6,16,.97);color:rgba(255,255,255,.88);font-size:.7rem;font-family:var(--font-s);padding:7px 12px;border-radius:9px;border:1px solid rgba(0,229,255,.28);pointer-events:none;opacity:0;transition:opacity .18s;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.55);letter-spacing:.2px';
+  document.body.appendChild(tip);
+
+  // Pequeña flecha abajo del globo
+  const arr=document.createElement('div');
+  arr.style.cssText='position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid rgba(0,229,255,.28)';
+  tip.appendChild(arr);
+
+  document.addEventListener('mouseover',e=>{
+    const btn=e.target.closest('.n-info-btn');if(!btn)return;
+    tip.firstChild.textContent='';
+    tip.childNodes[0]?.nodeType===3&&(tip.childNodes[0].textContent='');
+    tip.innerHTML='Abrir panel de info lateral<div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid rgba(0,229,255,.28)"></div>';
+    tip.style.opacity='1';
+    const r=btn.getBoundingClientRect();
+    requestAnimationFrame(()=>{
+      const tw=tip.offsetWidth;
+      let left=r.left+r.width/2-tw/2;
+      left=Math.max(6,Math.min(left,window.innerWidth-tw-6));
+      tip.style.left=left+'px';
+      tip.style.top=(r.top-tip.offsetHeight-8)+'px';
+    });
+  });
+  document.addEventListener('mouseout',e=>{
+    if(e.target.closest('.n-info-btn'))tip.style.opacity='0';
+  });
+  document.addEventListener('click',e=>{
+    if(e.target.closest('.n-info-btn'))tip.style.opacity='0';
   });
 })();
 
