@@ -346,7 +346,7 @@ body.pmode #panel{display:none}
   @page { size: A3 landscape; margin: 0; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   body { background: #0a0a0a !important; overflow: visible !important; }
-  .topnav, #toolbar, #minimap, #panel, #edge-ctx, #toasts,
+  .topnav, #toolbar, #minimap, #panel, #panel-strip, #edge-ctx, #toasts,
   #m-overlay, #lnk-overlay { display: none !important; }
   .grid-bg { display: none !important; }
   #cwrap {
@@ -378,14 +378,36 @@ body.pmode #panel{display:none}
 @keyframes edgeFlowAlways{to{stroke-dashoffset:-60}}
 @keyframes edgeFlowBack{to{stroke-dashoffset:60}}
 
-/* ── INFO CORNER TAB ─────────────────────────────── */
-.n-info-corner{position:absolute;bottom:0;right:0;width:28px;height:28px;overflow:hidden;cursor:pointer;z-index:6}
-.n-info-corner::before{content:"";position:absolute;bottom:0;right:0;width:0;height:0;border-style:solid;border-width:0 0 28px 28px;border-color:transparent transparent rgba(0,180,210,.42) transparent;transition:border-color .18s}
-.n-info-corner::after{content:"i";position:absolute;bottom:3px;right:5px;font-size:9px;font-weight:900;color:rgba(255,255,255,.6);font-family:Georgia,serif;line-height:1;pointer-events:none;transition:color .18s}
-.n-info-corner:hover::before{border-color:transparent transparent rgba(0,220,255,.72) transparent}
-.n-info-corner:hover::after{color:rgba(255,255,255,.95)}
-.node.selected .n-info-corner::before{border-color:transparent transparent rgba(0,229,255,.6) transparent}
-.node.selected .n-info-corner::after{color:#fff}
+/* ── INFO BTN (nodo top-right) ───────────────────── */
+.n-info-btn{
+  flex-shrink:0;width:17px;height:17px;border-radius:4px;padding:0;
+  background:transparent;border:1px solid rgba(0,200,220,.2);
+  color:rgba(0,200,220,.45);cursor:pointer;
+  font-size:9.5px;font-weight:900;font-family:Georgia,serif;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .17s;line-height:1;opacity:0;
+}
+.node:hover .n-info-btn,.node.selected .n-info-btn{opacity:1}
+.n-info-btn:hover{background:rgba(0,229,255,.13);border-color:rgba(0,229,255,.45);color:var(--c-cyan);transform:scale(1.08)}
+.node.selected .n-info-btn{border-color:rgba(0,229,255,.32);color:rgba(0,229,255,.75);opacity:1}
+
+/* ── PANEL STRIP (barra lateral derecha) ─────────── */
+#panel-strip{
+  position:fixed;top:calc(var(--nav-h) + var(--tb-h));right:0;bottom:0;
+  width:13px;z-index:310;
+  background:rgba(0,229,255,.025);
+  border-left:1px solid rgba(0,229,255,.09);
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  transition:right .35s cubic-bezier(.16,1,.3,1),background .2s,border-color .2s;
+}
+#panel-strip:hover{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.25)}
+#panel-strip .ps-arr{font-size:7px;color:rgba(0,229,255,.4);transition:color .2s,transform .35s cubic-bezier(.16,1,.3,1);line-height:1}
+#panel-strip .ps-lbl{writing-mode:vertical-rl;font-family:var(--font-h);font-size:.4rem;font-weight:700;letter-spacing:2px;color:rgba(0,229,255,.28);user-select:none;transition:color .2s}
+#panel-strip:hover .ps-arr,#panel-strip:hover .ps-lbl{color:rgba(0,229,255,.72)}
+#panel-strip.strip-open{right:var(--panel-w)}
+#panel-strip.strip-open .ps-arr{transform:rotate(180deg)}
+body.pmode #panel-strip{display:none}
 </style>
 </head>
 <body>
@@ -450,6 +472,10 @@ body.pmode #panel{display:none}
   <button class="tb-btn" onclick="zoom(.93)" data-tooltip="ALEJAR — Reduce el zoom del canvas. También puedes usar la rueda del ratón. (tecla −)"><span class="tb-ico">−</span></button>
   <button class="tb-btn" onclick="zoom(1.07)" data-tooltip="ACERCAR — Aumenta el zoom del canvas. También puedes usar la rueda del ratón. (tecla +)"><span class="tb-ico">＋</span></button>
   <button class="tb-btn" onclick="fitView()" data-tooltip="AJUSTAR VISTA — Centra y escala el diagrama para que todos los nodos quepan en pantalla sin reorganizarlos. (tecla F)"><span class="tb-ico">⌖</span></button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btn-panel-toggle" onclick="togglePanelStrip()" data-tooltip="PANEL INFO — Abre o cierra el panel lateral con la información del nodo seleccionado. (tecla I)">
+    <span class="tb-ico">⊟</span><span class="tb-lbl">Panel</span>
+  </button>
 </div>
 
 <!-- CANVAS -->
@@ -477,6 +503,12 @@ body.pmode #panel{display:none}
     <button class="ptab" onclick="switchTab('notes')">Notas <span id="c-badge"></span></button>
   </div>
   <div id="p-body"></div>
+</div>
+
+<!-- PANEL STRIP (barra lateral toggle derecha) -->
+<div id="panel-strip" onclick="togglePanelStrip()">
+  <span class="ps-arr">◀</span>
+  <span class="ps-lbl">INFO</span>
 </div>
 
 <!-- EDGE CONTEXT TOOLBAR (flotante) -->
@@ -841,12 +873,12 @@ function renderNodes(){
         <div class="nh">
           <span class="n-icon">${n.icon}</span>
           <span class="n-lbl">${n.label}</span>
+          <button class="n-info-btn" onclick="openPanelFromCorner(event,'${n.id}')" title="Ver info">i</button>
           <span class="n-status ns-${status}"></span>
         </div>
         ${n.sub?`<div class="n-sub">${n.sub}</div>`:''}
         ${metaHtml?`<div class="n-meta">${metaHtml}</div>`:''}
         ${badgeHtml?`<div class="n-badge">${badgeHtml}</div>`:''}
-        <div class="n-info-corner" onclick="openPanelFromCorner(event,'${n.id}')"></div>
       </div>
       <div class="hd hd-t"></div>
       <div class="hd hd-r"></div>
@@ -1645,11 +1677,35 @@ function openPanel(id,tab){
   document.getElementById('p-sub').textContent=n.detail?.subtitle||n.sub||'';
   switchTab(tab||S.activeTab||'info');
   panel.classList.add('open');
+  updateStrip();
 }
 
-function closePanel(){panel.classList.remove('open');panelNodeId=null;}
+function closePanel(){
+  panel.classList.remove('open');
+  panelNodeId=null;
+  updateStrip();
+}
 
 function openPanelFromCorner(e,id){e.stopPropagation();selectNode(id);openPanel(id,'info');}
+
+function updateStrip(){
+  const s=document.getElementById('panel-strip');if(!s)return;
+  const open=panel.classList.contains('open');
+  s.classList.toggle('strip-open',open);
+  s.querySelector('.ps-arr').textContent=open?'▶':'◀';
+  const btn=document.getElementById('btn-panel-toggle');
+  if(btn)btn.classList.toggle('active',open);
+}
+
+function togglePanelStrip(){
+  if(panel.classList.contains('open')){
+    closePanel();
+  }else{
+    const id=S.selected||panelNodeId;
+    if(id){openPanel(id,'info');}
+    else{toast('Selecciona un nodo primero','info');}
+  }
+}
 
 function switchTab(tab){
   S.activeTab=tab;
@@ -2102,6 +2158,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='p'&&!e.ctrlKey&&!e.metaKey)setMode('pan');
   if(e.key==='f')fitView();
   if(e.key==='n'){e.preventDefault();showModal();}
+  if(e.key==='i'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();togglePanelStrip();}
   if(e.key==='F11'){e.preventDefault();togglePresentation();}
 });
 
