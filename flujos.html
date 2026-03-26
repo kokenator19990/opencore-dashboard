@@ -431,6 +431,59 @@ body.nav-col #cwrap{top:var(--tb-h)!important}
 body.nav-col #panel{top:var(--tb-h)!important}
 body.nav-col #panel-strip{top:var(--tb-h)!important}
 body.pmode #nav-toggle{display:none}
+
+/* ── STICKY NOTES ────────────────────────────────── */
+.sn{
+  position:absolute;width:192px;z-index:8;cursor:default;user-select:none;
+  filter:drop-shadow(2px 6px 14px rgba(0,0,0,.48));
+  transition:filter .18s;
+}
+.sn:hover{z-index:9;filter:drop-shadow(3px 10px 22px rgba(0,0,0,.62))}
+.sn.is-drag-note{z-index:220;filter:drop-shadow(6px 16px 32px rgba(0,0,0,.72));transition:none}
+.sn-body{
+  border-radius:3px 3px 3px 3px;
+  overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
+}
+.sn-hdr{
+  height:26px;cursor:grab;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:0 6px;
+  background:rgba(0,0,0,.1);
+  position:relative;
+}
+.sn-hdr:active{cursor:grabbing}
+/* texture lines en el grip */
+.sn-hdr::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0,rgba(0,0,0,.06) 1px,transparent 1px,transparent 5px);
+}
+.sn-del{
+  width:17px;height:17px;border-radius:50%;border:none;
+  background:rgba(0,0,0,.18);color:rgba(0,0,0,.55);
+  font-size:9px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s,background .15s;
+  position:relative;z-index:1;flex-shrink:0;
+}
+.sn:hover .sn-del{opacity:1}
+.sn-del:hover{background:rgba(180,20,20,.4);color:#fff}
+.sn-content{padding:9px 13px 22px;position:relative}
+/* esquina doblada */
+.sn-content::after{
+  content:'';position:absolute;bottom:0;right:0;
+  width:0;height:0;border-style:solid;
+  border-width:0 0 20px 20px;
+  border-color:transparent transparent rgba(0,0,0,.2) transparent;
+}
+.sn-ta{
+  width:100%;min-height:108px;
+  background:transparent;border:none;outline:none;resize:none;
+  font-family:'Comic Sans MS','Segoe Print',cursive;
+  font-size:.81rem;color:rgba(0,0,0,.74);line-height:1.55;
+  cursor:text;user-select:text;
+}
+.sn-ta::placeholder{color:rgba(0,0,0,.3);font-style:italic;font-size:.76rem}
 </style>
 </head>
 <body>
@@ -475,6 +528,9 @@ body.pmode #nav-toggle{display:none}
   <!-- Herramientas -->
   <button class="tb-btn" id="btn-snap" onclick="toggleSnap()" data-tooltip="CUADRÍCULA MAGNÉTICA — Activa o desactiva el snap a grilla. Con esto activo, los nodos se alinean automáticamente al soltarlos.">
     <span class="tb-ico">⊞</span><span class="tb-lbl">Grid</span>
+  </button>
+  <button class="tb-btn" onclick="addNote()" data-tooltip="NOTA ADHESIVA — Agrega un post-it al canvas para anotar contexto rápido. Arrastra desde la franja superior, edita haciendo clic en el texto.">
+    <span class="tb-ico">🗒</span><span class="tb-lbl">Nota</span>
   </button>
   <button class="tb-btn" id="btn-pres" onclick="togglePresentation()" data-tooltip="MODO PRESENTACIÓN — Oculta la barra de herramientas para mostrar solo el flujo. Ideal para reuniones. (tecla F11)">
     <span class="tb-ico">⛶</span><span class="tb-lbl">Presentar</span>
@@ -742,7 +798,7 @@ const EDGES_BASE = [
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 const S = {
-  nodes:[], edges:[], comments:{}, attachments:{}, nodeProps:{},
+  nodes:[], edges:[], comments:{}, attachments:{}, nodeProps:{}, notes:[],
   scale:.72, tx:100, ty:50,
   selected:null, selectedEdge:null,
   mode:'select',
@@ -754,6 +810,7 @@ const S = {
   snapGrid:false,
 };
 let panMoved=false;
+let noteDrag=null;
 const szCache={};
 
 // ─── HISTORY ──────────────────────────────────────────────────────────────────
@@ -763,7 +820,8 @@ function snapshot(){
   const s=JSON.stringify({
     nodes:S.nodes.map(n=>({...n})),
     edges:S.edges.map(e=>({...e})),
-    nodeProps:JSON.parse(JSON.stringify(S.nodeProps))
+    nodeProps:JSON.parse(JSON.stringify(S.nodeProps)),
+    notes:S.notes.map(n=>({...n}))
   });
   H.stack.splice(H.idx+1);
   H.stack.push(s);
@@ -790,6 +848,7 @@ function restoreSnap(json){
   S.nodes=s.nodes;
   S.edges=s.edges;
   S.nodeProps=s.nodeProps||{};
+  S.notes=s.notes||[];
   S.selected=null; S.selectedEdge=null;
   closePanel(); hideEdgeCtx();
   render(); saveState(); updateHistBtns();
@@ -811,6 +870,7 @@ function loadState(){
     if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
     S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
     S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
+    S.notes=JSON.parse(localStorage.getItem('ocf-notes')||'[]');
   }catch(e){console.warn('LS load',e)}
   // Cargar adjuntos desde el servidor (igual que tareas)
   loadAttachments();
@@ -839,6 +899,7 @@ function saveState(){
     }));
     localStorage.setItem('ocf-props',JSON.stringify(S.nodeProps));
     localStorage.setItem('ocf-comments',JSON.stringify(S.comments));
+    localStorage.setItem('ocf-notes',JSON.stringify(S.notes));
     // Adjuntos se guardan en el servidor — no en localStorage
   }catch(e){console.warn('LS save',e)}
 }
@@ -854,6 +915,7 @@ let edgeCtxIdx=null;
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function render(){
   renderNodes();
+  renderNotes();
   setTimeout(()=>{cacheNodeSizes();updateEdges();updateMinimap();},60);
 }
 
@@ -918,6 +980,67 @@ function renderNodes(){
 
 function cacheNodeSizes(){
   S.nodes.forEach(n=>{const el=document.getElementById('node-'+n.id);if(el)szCache[n.id]={w:el.offsetWidth,h:el.offsetHeight};});
+}
+
+// ─── STICKY NOTES ─────────────────────────────────────────────────────────────
+const NOTE_COLORS=['#FFF176','#FFCC80','#F48FB1','#80DEEA','#A5D6A7','#CE93D8','#FFAB91'];
+
+function renderNotes(){
+  document.querySelectorAll('#diagram .sn').forEach(el=>el.remove());
+  (S.notes||[]).forEach(n=>{
+    const el=document.createElement('div');
+    el.className='sn';el.id='sn-'+n.id;el.dataset.noteId=n.id;
+    el.style.cssText=`left:${n.x}px;top:${n.y}px;transform:rotate(${n.rot||0}deg)`;
+    el.innerHTML=`
+      <div class="sn-body" style="background:${n.color}">
+        <div class="sn-hdr" data-note-drag="${n.id}">
+          <button class="sn-del" title="Eliminar nota">✕</button>
+        </div>
+        <div class="sn-content">
+          <textarea class="sn-ta" placeholder="Añade contexto rápido…" data-note-id="${n.id}">${n.text||''}</textarea>
+        </div>
+      </div>`;
+    el.querySelector('.sn-del').addEventListener('click',e=>{e.stopPropagation();deleteNote(n.id);});
+    el.querySelector('.sn-ta').addEventListener('input',e=>saveNoteText(n.id,e.target.value));
+    el.querySelector('[data-note-drag]').addEventListener('mousedown',e=>onNoteMD(e,n.id));
+    diag.appendChild(el);
+  });
+}
+
+function addNote(){
+  const c=NOTE_COLORS[Math.floor(Math.random()*NOTE_COLORS.length)];
+  const rot=+(Math.random()*6-3).toFixed(1);
+  const wr=cwrap.getBoundingClientRect();
+  const cx=(wr.width/2-S.tx)/S.scale-96;
+  const cy=(wr.height/2-S.ty)/S.scale-80;
+  const n={id:'note-'+Date.now(),x:cx,y:cy,text:'',color:c,rot};
+  if(!S.notes)S.notes=[];
+  S.notes.push(n);
+  snapshot();renderNotes();saveState();
+  setTimeout(()=>document.querySelector(`#sn-${n.id} .sn-ta`)?.focus(),50);
+  toast('Nota agregada','ok');
+}
+
+function deleteNote(id){
+  S.notes=(S.notes||[]).filter(n=>n.id!==id);
+  snapshot();renderNotes();saveState();
+  toast('Nota eliminada','info');
+}
+
+function saveNoteText(id,text){
+  const n=(S.notes||[]).find(n=>n.id===id);
+  if(n){n.text=text;saveState();}
+}
+
+function onNoteMD(e,id){
+  if(e.button!==0)return;
+  e.stopPropagation();e.preventDefault();
+  const n=(S.notes||[]).find(n=>n.id===id);if(!n)return;
+  const wr=cwrap.getBoundingClientRect();
+  const mx=(e.clientX-wr.left-S.tx)/S.scale;
+  const my=(e.clientY-wr.top-S.ty)/S.scale;
+  noteDrag={id,ox:mx-n.x,oy:my-n.y,moved:false};
+  document.getElementById('sn-'+id)?.classList.add('is-drag-note');
 }
 
 // ─── EDGE ROUTING ─────────────────────────────────────────────────────────────
@@ -1569,6 +1692,16 @@ function onNodeMD(e,id){
 }
 
 function onMouseMove(e){
+  if(noteDrag){
+    noteDrag.moved=true;
+    const n=(S.notes||[]).find(n=>n.id===noteDrag.id);if(!n)return;
+    const wr=cwrap.getBoundingClientRect();
+    n.x=(e.clientX-wr.left-S.tx)/S.scale-noteDrag.ox;
+    n.y=(e.clientY-wr.top-S.ty)/S.scale-noteDrag.oy;
+    const el=document.getElementById('sn-'+noteDrag.id);
+    if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';}
+    return;
+  }
   if(S.draggingNode){
     S.nodeDragMoved=true;
     const n=S.nodes.find(n=>n.id===S.draggingNode);if(!n)return;
@@ -1589,6 +1722,12 @@ function onMouseMove(e){
 }
 
 function onMouseUp(){
+  if(noteDrag){
+    document.getElementById('sn-'+noteDrag.id)?.classList.remove('is-drag-note');
+    if(noteDrag.moved){snapshot();saveState();}
+    noteDrag=null;
+    return;
+  }
   if(S.draggingNode){
     const n=S.nodes.find(n=>n.id===S.draggingNode);
     if(n&&S.nodeDragMoved&&S.snapGrid){
@@ -1606,6 +1745,7 @@ function onMouseUp(){
 
 function onCanvasMD(e){
   if(e.target.closest('.node'))return;
+  if(e.target.closest('.sn'))return;
   if(e.button!==0)return;
   panMoved=false;
   if(S.mode!=='connect'){
