@@ -197,9 +197,9 @@ html,body{width:100%;height:100%;background:var(--bg);color:#fff;font-family:var
 #p-resizer{position:absolute;left:-4px;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:310;transition:background .2s}
 #p-resizer:hover{background:rgba(0,229,255,.15)}
 #p-resizer:active{background:rgba(0,229,255,.35)}
-#p-resize-btns{position:absolute;top:.9rem;right:3.1rem;display:flex;gap:3px}
-.pr-btn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-family:var(--font-h);font-size:8px;font-weight:700;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;letter-spacing:.5px}
-.pr-btn:hover{background:rgba(0,229,255,.12);color:var(--c-cyan);border-color:rgba(0,229,255,.3)}
+#p-resize-btns{position:absolute;top:.7rem;right:3.2rem;display:flex;gap:4px}
+.pr-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.9);font-family:var(--font-h);font-size:10px;font-weight:700;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;letter-spacing:.8px;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.pr-btn:hover{background:rgba(0,229,255,.18);color:#fff;border-color:rgba(0,229,255,.5);box-shadow:0 0 15px rgba(0,229,255,.3), inset 0 1px 0 rgba(255,255,255,.1)}
 #panel.resizing{transition:transform .35s cubic-bezier(.16,1,.3,1)} /* disable width transition while dragging */
 #p-hdr{padding:1rem 1rem .7rem;border-bottom:1px solid rgba(255,255,255,.07);position:relative;flex-shrink:0}
 #p-close{position:absolute;top:.9rem;right:.9rem;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(200,200,200,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;transition:all .18s}
@@ -433,13 +433,19 @@ body.pmode #panel-strip{top:0!important}
 /* ── NAV COLLAPSE ─────────────────────────────────── */
 #nav-toggle{
   position:fixed;right:10px;top:0;z-index:202;
-  width:28px;height:var(--nav-h);
+  width:32px;height:var(--nav-h);
   background:transparent;border:none;
-  color:rgba(255,255,255,.2);cursor:pointer;
-  font-size:.58rem;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.9);cursor:pointer;
+  font-size:.65rem;display:flex;align-items:center;justify-content:center;
   transition:color .2s,background .2s;
+  animation: pulseCyan 4s infinite ease-in-out;
 }
-#nav-toggle:hover{color:rgba(255,255,255,.6);background:rgba(255,255,255,.04)}
+#nav-toggle:hover{color:#fff;background:rgba(255,255,255,.07);text-shadow:0 0 12px var(--c-cyan)}
+@keyframes pulseCyan {
+  0% { color:rgba(255,255,255,.3); text-shadow:none; }
+  50% { color:var(--c-cyan); text-shadow:0 0 10px rgba(0,229,255,.6), 0 0 20px rgba(0,229,255,.2); }
+  100% { color:rgba(255,255,255,.3); text-shadow:none; }
+}
 body.nav-col #nav-toggle{
   height:22px;background:rgba(6,6,14,.92);
   color:rgba(0,229,255,.5);border-bottom:1px solid rgba(0,229,255,.12);
