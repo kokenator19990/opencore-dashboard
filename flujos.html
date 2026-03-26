@@ -377,6 +377,15 @@ body.pmode #panel{display:none}
 .node.dim-ud:hover .nc{opacity:.6;filter:none}
 @keyframes edgeFlowAlways{to{stroke-dashoffset:-60}}
 @keyframes edgeFlowBack{to{stroke-dashoffset:60}}
+
+/* ── INFO CORNER TAB ─────────────────────────────── */
+.n-info-corner{position:absolute;bottom:0;right:0;width:28px;height:28px;overflow:hidden;cursor:pointer;z-index:6}
+.n-info-corner::before{content:"";position:absolute;bottom:0;right:0;width:0;height:0;border-style:solid;border-width:0 0 28px 28px;border-color:transparent transparent rgba(0,180,210,.42) transparent;transition:border-color .18s}
+.n-info-corner::after{content:"i";position:absolute;bottom:3px;right:5px;font-size:9px;font-weight:900;color:rgba(255,255,255,.6);font-family:Georgia,serif;line-height:1;pointer-events:none;transition:color .18s}
+.n-info-corner:hover::before{border-color:transparent transparent rgba(0,220,255,.72) transparent}
+.n-info-corner:hover::after{color:rgba(255,255,255,.95)}
+.node.selected .n-info-corner::before{border-color:transparent transparent rgba(0,229,255,.6) transparent}
+.node.selected .n-info-corner::after{color:#fff}
 </style>
 </head>
 <body>
@@ -837,6 +846,7 @@ function renderNodes(){
         ${n.sub?`<div class="n-sub">${n.sub}</div>`:''}
         ${metaHtml?`<div class="n-meta">${metaHtml}</div>`:''}
         ${badgeHtml?`<div class="n-badge">${badgeHtml}</div>`:''}
+        <div class="n-info-corner" onclick="openPanelFromCorner(event,'${n.id}')"></div>
       </div>
       <div class="hd hd-t"></div>
       <div class="hd hd-r"></div>
@@ -893,29 +903,16 @@ function updateEdges(){
   svgEl.innerHTML='';
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
 
-  // Build markers needed
-  const needed=new Set();
-  S.edges.forEach(e=>{
-    const n=S.nodes.find(n=>n.id===e.from);
-    if(n)needed.add(n.theme||'cyan');
-  });
+  // Unified subtle-cyan edge palette
+  const EDGE_COL='#4eb8c8';
+  const EDGE_COL_ACT='#6ddde8';
   // Glow filter for edges
   defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  needed.forEach(th=>{
-    const col=TC[th]||TC.cyan;
-    defs.innerHTML+=`<marker id="ae-${th}" markerWidth="18" markerHeight="14" refX="16" refY="7" orient="auto"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${col}" opacity=".97"/></marker>`;
-    defs.innerHTML+=`<marker id="as-${th}" markerWidth="18" markerHeight="14" refX="2" refY="7" orient="auto-start-reverse"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${col}" opacity=".97"/></marker>`;
-  });
-  // Per-color active markers - larger, glowing chevron
-  needed.forEach(th=>{
-    const col=TC[th]||TC.cyan;
-    defs.innerHTML+=`<marker id="ae-active-${th}" markerWidth="22" markerHeight="16" refX="20" refY="8" orient="auto"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${col}" opacity="1"/></marker>`;
-    defs.innerHTML+=`<marker id="as-active-${th}" markerWidth="22" markerHeight="16" refX="2" refY="8" orient="auto-start-reverse"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${col}" opacity="1"/></marker>`;
-  });
-  // Legacy active markers (kept for safety)
-
-  defs.innerHTML+=`<marker id="ae-active" markerWidth="22" markerHeight="16" refX="20" refY="8" orient="auto"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="#00E5FF" opacity="1"/></marker>`;
-  defs.innerHTML+=`<marker id="as-active" markerWidth="22" markerHeight="16" refX="2" refY="8" orient="auto-start-reverse"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="#00E5FF" opacity="1"/></marker>`;
+  // Two unified markers: dim (default) and active (selected/linked)
+  defs.innerHTML+=`<marker id="ae-edim" markerWidth="18" markerHeight="14" refX="16" refY="7" orient="auto"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${EDGE_COL}" opacity=".88"/></marker>`;
+  defs.innerHTML+=`<marker id="as-edim" markerWidth="18" markerHeight="14" refX="2" refY="7" orient="auto-start-reverse"><path d="M0,0 L16,7 L0,14 L4,7 Z" fill="${EDGE_COL}" opacity=".88"/></marker>`;
+  defs.innerHTML+=`<marker id="ae-eact" markerWidth="22" markerHeight="16" refX="20" refY="8" orient="auto"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
+  defs.innerHTML+=`<marker id="as-eact" markerWidth="22" markerHeight="16" refX="2" refY="8" orient="auto-start-reverse"><path d="M0,0 L20,8 L0,16 L5,8 Z" fill="${EDGE_COL_ACT}" opacity="1"/></marker>`;
   svgEl.appendChild(defs);
 
   // Determine node-selection context
@@ -937,27 +934,17 @@ function updateEdges(){
   S.edges.forEach((e,idx)=>{
     const a=getAnchors(e.from,e.to);
     if(!a)return;
-    const fn=S.nodes.find(n=>n.id===e.from);
-    const th=(fn?.theme)||'cyan';
-    const baseCol=TC[th]||TC.cyan;
     const dir=e.dir||'forward';
     const isEdgeSel=S.selectedEdge===idx;
 
     const isLinked=hasSel&&(e.from===selNode||e.to===selNode);
     const isDimmed=hasSel&&!isLinked;
 
-    // Upstream / downstream edge coloring
-    const isUpEdge=hasSel&&e.to===selNode;
-    const isDownEdge=hasSel&&e.from===selNode;
-    const isUpChain=hasSel&&!isUpEdge&&!isDownEdge&&S.upstream.has(e.from)&&S.upstream.has(e.to);
-    const isDownChain=hasSel&&!isUpEdge&&!isDownEdge&&S.downstream.has(e.from)&&S.downstream.has(e.to);
-
-    // drawCol stays as edge natural theme color - selection via opacity+width
-    const drawCol=baseCol;
-    // Use per-color active marker so arrowhead matches line color
-    const markerKey=(isLinked||isEdgeSel)?'active-'+th:th;
-    const opacity=isEdgeSel?1:isLinked?0.98:(hasSel?0.06:0.24);
-    const strokeW=isEdgeSel?4.5:isLinked?3.2:1.8;
+    // Unified subtle-cyan coloring for all connections
+    const drawCol=(isLinked||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
+    const markerSfx=(isLinked||isEdgeSel)?'eact':'edim';
+    const opacity=isEdgeSel?1:isLinked?0.92:(hasSel?0.07:0.32);
+    const strokeW=isEdgeSel?4.5:isLinked?2.8:1.6;
     const useGlow=isEdgeSel||isLinked;
     const showFlow=isEdgeSel||isLinked;
 
@@ -984,8 +971,8 @@ function updateEdges(){
     path.setAttribute('opacity',String(opacity));
     if(useGlow)path.setAttribute('filter','url(#edge-glow)');
     path.style.pointerEvents='none';
-    if(dir==='forward'||dir==='both')path.setAttribute('marker-end',`url(#ae-${markerKey})`);
-    if(dir==='back'||dir==='both')path.setAttribute('marker-start',`url(#as-${markerKey})`);
+    if(dir==='forward'||dir==='both')path.setAttribute('marker-end',`url(#ae-${markerSfx})`);
+    if(dir==='back'||dir==='both')path.setAttribute('marker-start',`url(#as-${markerSfx})`);
     svgEl.appendChild(path);
 
     // Idle flow — subtle always-on animation on ALL edges
@@ -1046,14 +1033,14 @@ function updateEdges(){
       bg.setAttribute('x',mid.x-tw/2);bg.setAttribute('y',mid.y-10);
       bg.setAttribute('width',tw);bg.setAttribute('height',16);
       bg.setAttribute('rx','5');bg.setAttribute('fill','rgba(10,10,18,.9)');
-      bg.setAttribute('stroke',col);bg.setAttribute('stroke-width','0.6');bg.setAttribute('opacity','0.85');
+      bg.setAttribute('stroke',EDGE_COL_ACT);bg.setAttribute('stroke-width','0.6');bg.setAttribute('opacity','0.85');
       bg.style.pointerEvents='none';
       svgEl.appendChild(bg);
 
       const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
       txt.setAttribute('x',mid.x);txt.setAttribute('y',mid.y+2);
       txt.setAttribute('text-anchor','middle');txt.setAttribute('dominant-baseline','middle');
-      txt.setAttribute('fill',col);txt.setAttribute('font-size','9');
+      txt.setAttribute('fill',EDGE_COL_ACT);txt.setAttribute('font-size','9');
       txt.setAttribute('font-family','Inter,sans-serif');txt.setAttribute('opacity','0.85');
       txt.style.pointerEvents='none';
       txt.textContent=lbl;
@@ -1104,11 +1091,11 @@ function hideEdgeCtx(){
 
 function setEdgeDir(dir){
   if(edgeCtxIdx==null)return;
-  snapshot();
   S.edges[edgeCtxIdx].dir=dir;
   const map={forward:'fwd',back:'bwd',both:'bth',none:'non'};
   ['fwd','bwd','bth','non'].forEach(k=>document.getElementById('ec-'+k)?.classList.remove('active'));
   document.getElementById('ec-'+(map[dir]||'fwd'))?.classList.add('active');
+  snapshot();
   updateEdges(); saveState();
 }
 
@@ -1120,8 +1107,8 @@ function setEdgeLabel(val){
 
 function deleteSelectedEdge(){
   if(edgeCtxIdx==null)return;
-  snapshot();
   S.edges.splice(edgeCtxIdx,1);
+  snapshot();
   hideEdgeCtx();
   render(); saveState();
   toast('Conexión eliminada','info');
@@ -1210,7 +1197,6 @@ function fitView(){
 // --- LEVEL BADGE CYCLE ---
 function cycleLvl(e,id){
   e.stopPropagation();e.preventDefault();
-  snapshot();
   if(!S.nodeProps[id])S.nodeProps[id]={};
   const cur=S.nodeProps[id].level;
   const levels=[null,0,1,2,3,4,5,6,7];
@@ -1219,6 +1205,7 @@ function cycleLvl(e,id){
   if(idx<0)idx=0;
   const next=levels[(idx+1)%levels.length];
   S.nodeProps[id].level=next===null?null:String(next);
+  snapshot();
   render();saveState();
   toast(next===null?'Nivel removido':'Nivel '+next+' asignado','ok');
 }
@@ -1252,7 +1239,6 @@ function zoomToNode(id){
 
 function organizeByLevel(){
   if(!S.nodes.length)return;
-  snapshot();
   const ids=S.nodes.map(n=>n.id);
   const idSet=new Set(ids);
 
@@ -1368,15 +1354,13 @@ function organizeByLevel(){
   const minX=Math.min(...S.nodes.map(n=>n.x));
   const minY=Math.min(...S.nodes.map(n=>n.y));
   S.nodes.forEach(n=>{n.x=n.x-minX+60;n.y=n.y-minY+40;});
-
+  snapshot();
   render();setTimeout(()=>fitView(),80);saveState();
   toast('Organizado por nivel','ok');
 }
 
 function organizeLayout(){
   if(!S.nodes.length)return;
-  snapshot();
-
   const ids=S.nodes.map(n=>n.id);
   const idSet=new Set(ids);
 
@@ -1462,7 +1446,7 @@ function organizeLayout(){
   const minX=Math.min(...S.nodes.map(n=>n.x));
   const minY=Math.min(...S.nodes.map(n=>n.y));
   S.nodes.forEach(n=>{n.x=n.x-minX+40;n.y=n.y-minY+40;});
-
+  snapshot();
   render();
   setTimeout(()=>fitView(),80);
   saveState();
@@ -1605,12 +1589,13 @@ function deselectAll(){
 
 function deleteSelected(){
   if(!S.selected)return;
-  snapshot();
   const id=S.selected;
   S.edges=S.edges.filter(e=>e.from!==id&&e.to!==id);
   S.nodes=S.nodes.filter(n=>n.id!==id);
   delete S.comments[id];delete S.attachments[id];delete S.nodeProps[id];
-  S.selected=null;closePanel();render();saveState();
+  S.selected=null;
+  snapshot();
+  closePanel();render();saveState();
   toast('Nodo eliminado','info');
 }
 
@@ -1621,8 +1606,8 @@ function startConnect(id){S.connecting=id;document.getElementById('node-'+id)?.c
 
 function finishConnect(tid){
   if(!S.edges.some(e=>e.from===S.connecting&&e.to===tid)){
-    snapshot();
     S.edges.push({from:S.connecting,to:tid,custom:true,dir:'forward',label:''});
+    snapshot();
     saveState();
     toast('Conexión creada','ok');
   }
@@ -1663,6 +1648,8 @@ function openPanel(id,tab){
 }
 
 function closePanel(){panel.classList.remove('open');panelNodeId=null;}
+
+function openPanelFromCorner(e,id){e.stopPropagation();selectNode(id);openPanel(id,'info');}
 
 function switchTab(tab){
   S.activeTab=tab;
@@ -1760,7 +1747,6 @@ function renderPanelBody(id,tab){
 
 // ─── NODE PROPS SAVE ──────────────────────────────────────────────────────────
 function saveNodeProps(id){
-  snapshot();
   const n=S.nodes.find(n=>n.id===id);if(!n)return;
   const label=document.getElementById('ep-label')?.value.trim();
   const sub=document.getElementById('ep-sub')?.value.trim();
@@ -1777,6 +1763,7 @@ function saveNodeProps(id){
   S.nodeProps[id].responsible=resp||'';
   S.nodeProps[id].budget=budget||'';
   if(level!==undefined)S.nodeProps[id].level=level!==''?level:null;
+  snapshot();
   render();
   if(panel.classList.contains('open')){
     document.getElementById('p-icon').textContent=n.icon;
@@ -2005,7 +1992,6 @@ function submitModal(){
   const resp=document.getElementById('m-resp').value.trim();
   const lvl=document.getElementById('m-level').value;
   if(!label){document.getElementById('m-label').focus();return;}
-  snapshot();
   const vpCX=(cwrap.clientWidth/2-S.tx)/S.scale;
   const vpCY=(cwrap.clientHeight/2-S.ty)/S.scale;
   const id='c_'+Date.now();
@@ -2014,6 +2000,7 @@ function submitModal(){
   if(!S.nodeProps[id])S.nodeProps[id]={};
   if(resp)S.nodeProps[id].responsible=resp;
   if(lvl!=='')S.nodeProps[id].level=lvl;
+  snapshot();
   hideModal();render();saveState();
   setTimeout(()=>{selectNode(id);openPanel(id,'props');},80);
   toast('Nodo creado','ok');
@@ -2057,13 +2044,13 @@ function importJSON(ev){
     try{
       const d=JSON.parse(e.target.result);
       if(!d.nodes||!d.edges)throw new Error('Formato inválido');
-      snapshot();
       S.nodes=d.nodes.map(n=>({...n}));
       S.edges=d.edges.map(e=>({dir:'forward',label:'',...e}));
       S.nodeProps=d.nodeProps||{};
       S.comments=d.comments||{};
       S.attachments=d.attachments||{};
       S.selected=null;S.selectedEdge=null;
+      snapshot();
       closePanel();hideEdgeCtx();
       render();saveState();fitView();
       toast('Diagrama importado','ok');
