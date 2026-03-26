@@ -381,13 +381,14 @@ body.pmode #panel{top:0!important}
 /* ── INFO BTN (nodo top-right) ───────────────────── */
 .n-info-btn{
   flex-shrink:0;width:17px;height:17px;border-radius:4px;padding:0;
-  background:transparent;border:1px solid rgba(0,200,220,.2);
-  color:rgba(0,200,220,.45);cursor:pointer;
+  background:rgba(0,200,220,.07);border:1px solid rgba(0,200,220,.25);
+  color:rgba(0,200,220,.55);cursor:pointer;
   font-size:9.5px;font-weight:900;font-family:Georgia,serif;
   display:flex;align-items:center;justify-content:center;
-  transition:all .17s;line-height:1;opacity:0;
+  transition:all .17s;line-height:1;opacity:.55;
 }
-.node:hover .n-info-btn,.node.selected .n-info-btn{opacity:1}
+.node:hover .n-info-btn{opacity:1}
+.node.selected .n-info-btn{opacity:1}
 .n-info-btn:hover{background:rgba(0,229,255,.13);border-color:rgba(0,229,255,.45);color:var(--c-cyan);transform:scale(1.08)}
 .node.selected .n-info-btn{border-color:rgba(0,229,255,.32);color:rgba(0,229,255,.75);opacity:1}
 
