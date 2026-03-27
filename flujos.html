@@ -387,9 +387,11 @@ body.light-mode [id*="grid"] {
 .ptab{flex:1;padding:9px 0;font-family:var(--font-h);font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--c-panel-sub);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .18s;white-space:nowrap}
 .ptab:hover{color:var(--c-panel-text)}
 .ptab.active{color:var(--c-cyan);border-bottom-color:var(--c-cyan)}
-#p-body{flex:1;overflow-y:auto;padding:1rem}
-#p-body::-webkit-scrollbar{width:4px}
-#p-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,.14);border-radius:2px}
+#p-body{flex:1;overflow-y:auto;padding:1.2rem 1rem; scrollbar-width: thin; scrollbar-color: rgba(0,229,255,.2) transparent; }
+#p-body::-webkit-scrollbar{width:5px}
+#p-body::-webkit-scrollbar-track{background:transparent}
+#p-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,.15);border-radius:10px}
+#p-body::-webkit-scrollbar-thumb:hover{background:rgba(0,229,255,.3)}
 
 /* ── PANEL SECTIONS ──────────────────────────────── */
 .ps{margin-bottom:.8rem}
@@ -405,15 +407,18 @@ body.light-mode [id*="grid"] {
 /* ── FORM FIELDS ─────────────────────────────────── */
 .ef{
   width:100%;
-  background: linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.05) 100%);
+  background: rgba(255,255,255,0.035);
   border:1px solid rgba(255,255,255,0.1);
-  border-radius:10px;
-  color:var(--c-panel-text);font-family:var(--font-s);font-size:.77rem;
-  padding:8px 12px;margin-bottom:6px;outline:none;
-  transition:all .18s;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  border-radius:8px;
+  color:var(--c-panel-text);font-family:var(--font-s);font-size:.78rem;
+  padding:10px 12px;margin-bottom:8px;outline:none;
+  transition:all .2s cubic-bezier(.16,1,.3,1);
+  box-shadow: none;
 }
-.ef:focus{border-color:rgba(0,229,255,.45); background:rgba(255,255,255,0.08); box-shadow: 0 0 10px rgba(0,229,255,.1), inset 0 1px 2px rgba(0,0,0,0.2); }
+.ef:focus{border-color:rgba(0,229,255,.6); background:rgba(0,229,255,0.03); box-shadow: 0 0 12px rgba(0,229,255,.15); }
+textarea.ef{min-height:60px; resize: none; line-height: 1.5; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;}
+textarea.ef::-webkit-scrollbar{width:4px}
+textarea.ef::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12); border-radius:10px}
 select.ef{appearance:none;-webkit-appearance:none;cursor:pointer}
 select.ef option{background:#0d0f14;color:var(--c-panel-text)}
 .ef-label{font-size:.58rem;color:var(--c-panel-sub);letter-spacing:.8px;margin-bottom:3px;display:block}
@@ -898,10 +903,9 @@ body.pmode #float-ctrl { display: none; }
     <div id="p-sub"></div>
   </div>
   <div id="p-tabs">
-    <button class="ptab active" onclick="switchTab('info')">Info</button>
-    <button class="ptab" onclick="switchTab('props')">Propiedades</button>
-    <button class="ptab" onclick="switchTab('files')">Archivos <span id="f-badge"></span></button>
-    <button class="ptab" onclick="switchTab('notes')">Notas <span id="c-badge"></span></button>
+    <button class="ptab active" onclick="switchTab('info')">Información</button>
+    <button class="ptab" onclick="switchTab('files')">Archivos <span id="f-badge" style="font-size:.5rem;opacity:.5"></span></button>
+    <button class="ptab" onclick="switchTab('notes')">Notas <span id="c-badge" style="font-size:.5rem;opacity:.5"></span></button>
   </div>
   <div id="p-body"></div>
 </div>
@@ -2498,7 +2502,7 @@ function togglePanelStrip(){
 
 function switchTab(tab){
   S.activeTab=tab;
-  const tabs=['info','props','files','notes'];
+  const tabs=['info','files','notes'];
   document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('active',tabs[i]===tab));
   renderPanelBody(panelNodeId||S.selected,tab);
 }
@@ -2514,66 +2518,68 @@ function renderPanelBody(id,tab){
   document.getElementById('f-badge').textContent=fc>0?`(${fc})`:'';
 
   if(tab==='info'){
-    let h='';
-    const d=props.detail||n.detail;
-    if(d){
-      if(d.procesos&&d.procesos.length) h+=`<div class="ps"><div class="ps-t">Procesos Clave</div><ul class="ps-ul">${d.procesos.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
-      if(d.integraciones&&d.integraciones.length) h+=`<div class="ps"><div class="ps-t">Integra con</div><div>${d.integraciones.map(i=>`<span class="ptag">${i}</span>`).join('')}</div></div>`;
-      if(d.criticos&&d.criticos.length) h+=`<div class="ps"><div class="ps-t">Puntos Críticos</div><ul class="ps-ul">${d.criticos.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
-      if(d.oportunidad) h+=`<div class="popp"><div class="popp-l">⚡ Oportunidad OpenCore</div><p>${d.oportunidad}</p></div>`;
-    }else{
-      h=`<div style="font-size:.72rem;color:rgba(255,255,255,.3);padding:.5rem 0">Sin información detallada. Abre Propiedades para editar.</div>`;
-    }
-    body.innerHTML=h;
-
-  }else if(tab==='props'){
     const status=props.status||'active';
     body.innerHTML=`
       <div class="ps">
-        <div class="ps-t">Editar Nodo</div>
-        <label class="ef-label">Nombre</label>
+        <div class="ps-t">Información Principal</div>
+        <label class="ef-label">Nombre del Nodo</label>
         <input class="ef" id="ep-label" value="${esc(n.label)}">
-        <label class="ef-label">Subtítulo</label>
+        <label class="ef-label">Subtítulo / Especialidad</label>
         <input class="ef" id="ep-sub" value="${esc(n.sub||'')}">
-        <label class="ef-label">Responsable</label>
-        <input class="ef" id="ep-resp" value="${esc(props.responsible||'')}" placeholder="Nombre del responsable">
-        <label class="ef-label">Presupuesto</label>
-        <input class="ef" id="ep-budget" value="${esc(props.budget||'')}" placeholder="ej. $12M / mes">
-        <label class="ef-label">Estado</label>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0">
+          <div>
+            <label class="ef-label">Responsable</label>
+            <input class="ef" id="ep-resp" value="${esc(props.responsible||'')}" placeholder="👤 Nombre">
+          </div>
+          <div>
+            <label class="ef-label">Presupuesto</label>
+            <input class="ef" id="ep-budget" value="${esc(props.budget||'')}" placeholder="💰 ej. $12M">
+          </div>
+        </div>
+
+        <label class="ef-label">Estado de Operación</label>
         <div class="st-row">
           ${['active','planning','paused','critical'].map(s=>`<button class="st-btn${status===s?' active':''}" data-s="${s}" onclick="setNodeStatus('${id}','${s}')">${{active:'Activo',planning:'Plan',paused:'Pausado',critical:'Crítico'}[s]}</button>`).join('')}
         </div>
-        <label class="ef-label">Nivel</label>
-        <select class="ef" id="ep-level">
-          <option value="">Sin nivel</option>
-          ${[0,1,2,3,4,5,6,7].map(v=>`<option value="${v}"${(props.level===String(v)||props.level===v)?' selected':''}>${v}</option>`).join('')}
-        </select>
-        <label class="ef-label">Color</label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0">
+           <div>
+             <label class="ef-label">Nivel Jerárquico</label>
+             <select class="ef" id="ep-level">
+               <option value="">Sin nivel</option>
+               ${[0,1,2,3,4,5,6,7].map(v=>`<option value="${v}"${(props.level===String(v)||props.level===v)?' selected':''}>L${v}</option>`).join('')}
+             </select>
+           </div>
+           <div>
+             <label class="ef-label">Color del Texto</label>
+             <div style="display:flex;gap:8px;align-items:center;height:40px">
+               <input type="color" id="ep-txt-col" value="${props.textColor||TC[n.theme]||'#00E5FF'}" style="width:30px;height:24px;border:none;background:transparent;cursor:pointer">
+               <button class="btn-sm" style="font-size:.45rem;padding:2px 5px" onclick="resetTextColor('${id}')">Reset</button>
+             </div>
+           </div>
+        </div>
+
+        <div class="ps-t" style="margin:1.4rem 0 .5rem">Personalización Visual</div>
+        <label class="ef-label">Tema de Color</label>
         <div class="cp-row" id="ep-cp"></div>
-        <label class="ef-label">Icono</label>
+        <label class="ef-label">Icono de Identificación</label>
         <div class="ic-grid" id="ep-ic"></div>
         <input class="ef" id="ep-icon" value="${esc(n.icon)}" placeholder="Emoji" style="margin-top:4px">
 
-        <div class="ps-t" style="margin:1.4rem 0 .5rem;color:var(--c-yellow)">Información del Negocio</div>
-        <label class="ef-label">Procesos (uno por línea)</label>
-        <textarea class="ef" id="ep-det-proc" style="height:80px" placeholder="ej. Coordinación de embarques...">${(props.detail||n.detail)?.procesos?.join('\n')||''}</textarea>
-        <label class="ef-label">Integraciones (separadas por coma)</label>
-        <input class="ef" id="ep-det-int" value="${(props.detail||n.detail)?.integraciones?.join(', ')||''}" placeholder="ej. Aduana, Contabilidad...">
-        <label class="ef-label">Puntos Críticos (uno por línea)</label>
-        <textarea class="ef" id="ep-det-crit" style="height:60px" placeholder="ej. Errores en clasificación...">${(props.detail||n.detail)?.criticos?.join('\n')||''}</textarea>
-        <label class="ef-label">Oportunidad OpenCore</label>
-        <textarea class="ef" id="ep-det-opp" style="height:60px" placeholder="ej. Automatizar seguimiento...">${(props.detail||n.detail)?.oportunidad||''}</textarea>
+        <div class="ps-t" style="margin:1.8rem 0 .5rem;color:var(--c-yellow)">Detalles de Negocio</div>
+        <label class="ef-label">Procesos Clave (uno por línea)</label>
+        <textarea class="ef" id="ep-det-proc" style="height:90px" placeholder="Enumera procesos...">${(props.detail||n.detail)?.procesos?.join('\n')||''}</textarea>
+        <label class="ef-label">Integraciones de Sistemas</label>
+        <input class="ef" id="ep-det-int" value="${(props.detail||n.detail)?.integraciones?.join(', ')||''}" placeholder="ej. SAP, Aduana...">
+        <label class="ef-label">Puntos Críticos de Control</label>
+        <textarea class="ef" id="ep-det-crit" style="height:70px" placeholder="Identifica riesgos...">${(props.detail||n.detail)?.criticos?.join('\n')||''}</textarea>
+        <label class="ef-label">✨ Oportunidad OpenCore</label>
+        <textarea class="ef" id="ep-det-opp" style="height:80px" placeholder="Visión de mejora...">${(props.detail||n.detail)?.oportunidad||''}</textarea>
         
-        <div class="ps-t" style="margin:1.4rem 0 .5rem;color:var(--c-cyan)">Apariencia Visual</div>
-        <label class="ef-label">Color del Texto del Nodo</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:15px">
-          <input type="color" id="ep-txt-col" value="${props.textColor||TC[n.theme]||'#00E5FF'}" style="width:40px;height:30px;border:none;background:transparent;cursor:pointer">
-          <span style="font-size:.62rem;color:rgba(255,255,255,.4)">${props.textColor?'Personalizado':'Tema'}</span>
-          <button class="btn-sm" style="font-size:.5rem;padding:2px 6px" onclick="resetTextColor('${id}')">Reset</button>
-        </div>
-
-        <button class="btn-save" style="margin-top:1.2rem" onclick="saveNodeProps('${id}')">Guardar cambios</button>
+        <button class="btn-save" style="margin-top:1.5rem;width:100%;height:44px;font-size:.65rem;border-color:var(--c-cyan)" onclick="saveNodeProps('${id}')">Guardar todos los cambios</button>
       </div>`;
+
     // Color picker
     renderColorPicker(document.getElementById('ep-cp'),n.theme,(th)=>{
       document.querySelectorAll('#ep-cp .cp-sw').forEach(el=>el.classList.toggle('active',el.dataset.th===th));
@@ -2586,6 +2592,10 @@ function renderPanelBody(id,tab){
       document.querySelectorAll('#ep-ic .ic-btn').forEach(el=>el.classList.toggle('active',el.dataset.ic===ic));
     });
 
+  }else if(tab==='props'){
+    // This block is now retired but I need to clear it out correctly.
+    // However, I just replaced the start of tab==='info' until the start of tab==='files'.
+    // So 'props' is effectively gone. 
   }else if(tab==='files'){
     let h=`<div class="att-add-row">
       <label class="btn-sm" style="cursor:pointer;flex:1;text-align:center">📎 Archivo<input type="file" multiple accept="image/*,.pdf,.xlsx,.docx,.pptx,.txt,.csv" style="display:none" onchange="handleFileUpload('${id}',this)"></label>
