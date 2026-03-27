@@ -38,29 +38,29 @@
 
 body.light-mode {
   --bg: #fdfdfd;
-  --c-text: #050505;
+  /* Canvas whitens, but topnav/toolbar stay DARK with white/cyan text */
+  --c-text: #ffffff;
   --c-grid: rgba(0,0,0,0.06);
-  --c-nav-bg: rgba(255,255,255,0.96);
-  --c-tb-bg: rgba(248,250,252,0.9);
-  --c-tb-border: rgba(0,0,0,0.08);
-  /* REVERSED CONTRAST FOR COMPONENTS: Dark panels on White bg */
+  --c-nav-bg: rgba(8,8,12,.98);
+  --c-tb-bg: rgba(10,12,18,.88);
+  --c-tb-border: rgba(186,230,253,.12);
+  --c-glass-text: rgba(255,255,255,.6);
+  --c-tb-text: rgba(186,230,253,.55);
+  --c-tb-hover: rgba(186,230,253,.08);
+  --c-tb-active: rgba(186,230,253,.14);
+  /* COMPONENTS: Dark nodes and panels on white canvas */
   --c-panel-bg: rgba(10,12,18,.98);
-  --c-panel-border: rgba(0,0,0,0.15);
-  --c-card-bg: rgba(15,18,25,.95); 
+  --c-panel-border: rgba(186,230,253,.1);
+  --c-card-bg: rgba(15,18,25,.95);
   --c-card-bg-hover: rgba(20,25,35,1);
-  --c-card-border: rgba(0,0,0,0.2);
-  --c-card-shadow: rgba(0,0,0,0.15);
-  --c-glass-text: rgba(0,0,0,0.65);
-  /* Components stay dark, so their text stays bright */
+  --c-card-border: rgba(255,255,255,.07);
+  --c-card-shadow: rgba(0,0,0,0.2);
   --c-node-text: #ffffff;
   --c-node-sub: rgba(255,255,255,.7);
   --c-panel-text: #ffffff;
   --c-panel-sub: rgba(255,255,255,.7);
   --c-input-bg: rgba(255,255,255,.05);
-  --c-tb-text: rgba(0,0,0,0.6);
-  --c-tb-hover: rgba(0,0,0,0.04);
-  --c-tb-active: rgba(0,0,0,0.08);
-  --c-dropdown-bg: #ffffff;
+  --c-dropdown-bg: rgba(10,12,18,.96);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-family:var(--font-s);-webkit-font-smoothing:antialiased;overflow:hidden;transition:background .3s, color .3s}
