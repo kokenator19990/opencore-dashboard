@@ -96,8 +96,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-f
   border-bottom:1px solid var(--c-tb-border);
   display:flex;align-items:center;padding:0 12px;z-index:300;
   gap:4px;
-  overflow-x:auto;
-  overflow-y:hidden;
+  overflow-x:visible;
+  overflow-y:visible;
   scrollbar-width:none;
   transition:all .3s cubic-bezier(.16,1,.3,1);
 }
@@ -131,7 +131,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-f
 /* Dropdown */
 .tb-dropdown { position: relative; height: 100%; display: flex; align-items: center; }
 .tb-dropdown-content {
-  display: none; position: absolute; top: calc(100% - 6px); left: 0;
+  display: none; position: absolute; top: calc(100% + 2px); left: 0;
   background: var(--c-dropdown-bg); min-width: 170px;
   border-radius: 12px; border: 1px solid var(--c-tb-border);
   box-shadow: 0 12px 40px rgba(0,0,0,.7); z-index: 500;
@@ -139,6 +139,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-f
   animation: slideDown .2s cubic-bezier(.16,1,.3,1);
 }
 @keyframes slideDown { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
+.tb-dropdown.open .tb-dropdown-content { display: block; }
 .tb-dropdown:hover .tb-dropdown-content { display: block; }
 .tb-dropdown-btn {
   width: 100%; text-align: left; padding: 10px 14px; background: none; border: none;
@@ -482,7 +483,7 @@ body.pmode #panel-strip{top:0!important}
 
 /* ── NAV COLLAPSE ─────────────────────────────────── */
 #nav-toggle{
-  position:fixed;right:10px;top:0;z-index:202;
+  position:fixed;right:10px;top:0;z-index:501;
   width:32px;height:var(--nav-h);
   background:transparent;border:none;
   color:rgba(255,255,255,.9);cursor:pointer;
@@ -692,16 +693,16 @@ body.pmode #float-ctrl { display: none; }
   <div class="tn-sep" style="height:20px;width:1px;background:rgba(186,230,253,.15);margin:0 4px"></div>
 
   <div class="tb-dropdown">
-    <button class="tb-btn" data-tooltip="ORGANIZAR — Ajusta la distribución de los nodos de forma automática.">
+    <button class="tb-btn" onclick="toggleOrganize(event)" data-tooltip="ORGANIZAR — Ajusta la distribución de los nodos de forma automática.">
       <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg></span>
       <span class="tb-lbl">Organizar ▾</span>
     </button>
-    <div class="tb-dropdown-content">
-      <button class="tb-dropdown-btn" onclick="organizeByLevel()">
+    <div class="tb-dropdown-content" id="organize-menu">
+      <button class="tb-dropdown-btn" onclick="organizeByLevel(); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 6 18 0"/><path d="m3 12 18 0"/><path d="m3 18 18 0"/></svg>
         Por niveles
       </button>
-      <button class="tb-dropdown-btn" onclick="organizeLayout()">
+      <button class="tb-dropdown-btn" onclick="organizeLayout(); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
         En pantalla
       </button>
@@ -2722,6 +2723,7 @@ cwrap.addEventListener('click',e=>{
 // Click outside edge ctx hides it
 document.addEventListener('click',e=>{
   if(!e.target.closest('#edge-ctx')&&!e.target.closest('#asvg')&&edgeCtxIdx!=null)hideEdgeCtx();
+  if(!e.target.closest('.tb-dropdown'))closeOrganize();
 },true);
 
 document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault();submitModal();});
@@ -2740,24 +2742,24 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
       const r=btn.getBoundingClientRect();
       tip.style.maxWidth='280px';
       tip.style.left='0';tip.style.top='0'; // reset to measure
-      // Force layout to get tip width
-      requestAnimationFrame(()=>{
-        const tw=Math.min(280,tip.offsetWidth||220);
-        let left=r.left+r.width/2-tw/2;
-        left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
-        tip.style.left=left+'px';
-        
-        // Measure height and decide Above vs Below (v4.19 reflow fix)
-        void tip.offsetHeight; 
-        const th=tip.offsetHeight||32;
-        let t=r.top-th-12;
-        if(t<6) t=r.bottom+12; 
-        
-        console.log('Tooltip:', {text:tip.textContent, top:t, h:th, spaceAbove:r.top});
-        tip.style.top=t+'px';
-        tip.style.opacity='1';
+        // Force layout to get tip width
+        requestAnimationFrame(()=>{
+          const tw=Math.min(280,tip.offsetWidth||220);
+          let left=r.left+r.width/2-tw/2;
+          left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
+          tip.style.left=left+'px';
+          
+          // Position ABOVE by default (Executive feedback)
+          void tip.offsetHeight; 
+          const th=tip.offsetHeight||32;
+          let t=r.top-th-8;  
+          if(t<0 && r.bottom + th + 12 < window.innerHeight) t=r.bottom+12; 
+          else if(t<0) t=5; // clamp to top instead of flipping if possible
+          
+          tip.style.top=t+'px';
+          tip.style.opacity='1';
+        });
       });
-    });
     btn.addEventListener('mouseleave',()=>{
       hideTimer=setTimeout(()=>{tip.style.opacity='0';},120);
     });
@@ -2821,6 +2823,15 @@ function toggleTheme(){
   const isLight = document.body.classList.toggle('light-mode');
   localStorage.setItem('ocf-theme', isLight ? 'light' : 'dark');
   playSfx('undo');
+}
+
+function toggleOrganize(e){
+  e.stopPropagation();
+  const d=document.querySelector('.tb-dropdown');
+  d.classList.toggle('open');
+}
+function closeOrganize(){
+  document.querySelector('.tb-dropdown')?.classList.remove('open');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
