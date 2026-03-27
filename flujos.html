@@ -36,8 +36,8 @@
   --c-card-shadow: rgba(0,0,0,0.45);
   --c-node-text: #ffffff;
   --c-node-sub: rgba(255,255,255,.6);
-  --c-edge: #5a7082;
-  --c-edge-act: #00e5ff;
+  --c-edge: #6b7a8d;
+  --c-edge-act: #9eabb8;
 }
 
 body.light-mode {
@@ -65,9 +65,9 @@ body.light-mode {
   --c-panel-sub: rgba(255,255,255,.7);
   --c-input-bg: rgba(255,255,255,.04);
   --c-dropdown-bg: #0f1218;
-  /* EDGES: Unified Matte Metallic Cyan Lead */
-  --c-edge: #5a7082;
-  --c-edge-act: #00e5ff;
+  /* EDGES: Unified Matte Metallic Cyan Lead (Silver-Cyan Matte) */
+  --c-edge: #6b7a8d;
+  --c-edge-act: #9eabb8;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-family:var(--font-s);-webkit-font-smoothing:antialiased;overflow:hidden;transition:background .3s, color .3s}
@@ -144,6 +144,9 @@ body.light-mode [id*="grid"] {
   border-color:rgba(0,229,255,.5);
   box-shadow:0 0 15px rgba(0,229,255,.2);
 }
+.btn-db-save{border-color:rgba(0,229,255,.3)!important;color:rgba(255,255,255,0.9)!important}
+.btn-db-save:hover{background:rgba(0,229,255,.12)!important;border-color:rgba(0,229,255,.6)!important;color:#00e5ff!important;box-shadow:0 0 20px rgba(0,229,255,0.25)!important;animation:db-glow 1.5s infinite ease-in-out}
+@keyframes db-glow{0%{box-shadow:0 0 5px rgba(0,229,255,.2)}50%{box-shadow:0 0 18px rgba(0,229,255,.4)}100%{box-shadow:0 0 5px rgba(0,229,255,.2)}}
 .tb-ico{ font-size: 0; display: flex; align-items: center; justify-content: center; }
 .tb-ico svg { width: 17px; height: 17px; stroke-width: 2.2px; }
 
@@ -434,6 +437,8 @@ select.ef option{background:#0d0f14;color:var(--c-panel-text)}
 .att-btn.del:hover{color:#FF4444;border-color:rgba(255,68,68,.3)}
 .att-empty{font-size:.7rem;color:rgba(255,255,255,.22);padding:.5rem 0;text-align:center}
 
+.att-empty{font-size:.7rem;color:rgba(255,255,255,.22);padding:.5rem 0;text-align:center}
+
 /* ── COMMENTS ────────────────────────────────────── */
 .c-ta{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--c-panel-text);font-family:var(--font-s);font-size:.75rem;padding:8px 10px;margin-bottom:7px;outline:none;resize:vertical;min-height:58px;transition:border-color .18s}
 .c-ta:focus{border-color:rgba(0,229,255,.4)}
@@ -450,32 +455,7 @@ select.ef option{background:#0d0f14;color:var(--c-panel-text)}
 #minimap{position:fixed;bottom:14px;right:14px;z-index:200;width:140px;height:80px;background:var(--c-panel-bg);border:1px solid var(--c-panel-border);border-radius:8px;overflow:hidden;cursor:pointer}
 #mm-c{width:140px;height:80px;display:block}
 
-/* ── MODALS (Butter-Smooth Executive Transitions) ── */
-#m-overlay, #lnk-overlay {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(4, 5, 8, 0.88);
-  backdrop-filter: blur(14px);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity .4s cubic-bezier(.16,1,.3,1), visibility .4s cubic-bezier(.16,1,.3,1);
-}
-#m-overlay.open, #lnk-overlay.open {
-  opacity: 1; visibility: visible; pointer-events: auto;
-}
-.mbox {
-  background: linear-gradient(160deg, #161a24 0%, #0d0f14 100%);
-  border: 1px solid rgba(186,230,253,.15);
-  border-radius: 20px; padding: 1.6rem; width: 360px;
-  max-width: calc(100vw - 2rem); max-height: 90vh; overflow-y: auto;
-  box-shadow: 0 40px 100px rgba(0,0,0,0.85), inset 0 1px 1px rgba(255,255,255,0.05);
-  transform: scale(0.92) translateY(40px);
-  opacity: 0;
-  transition: transform .5s cubic-bezier(.16,1,.3,1), opacity .4s ease;
-}
-#m-overlay.open .mbox, #lnk-overlay.open .mbox {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
+/* Modal styles moved to consolidated block for v4.31 consistency */
 
 /* ── TOAST ───────────────────────────────────────── */
 #toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:700;display:flex;flex-direction:column;gap:7px;pointer-events:none;align-items:center}
@@ -731,6 +711,58 @@ body.pmode #float-ctrl { display: none; }
     transition: all 0.3s;
   }
   .tb-logo:hover::before { transform: rotate(90deg) scale(1.2); background: #fff; }
+
+  /* ── CONSOLIDATED MODAL FIX — CONVERTED TO GRID (v4.31) ── */
+  #m-overlay, #lnk-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(4, 5, 8, 0.94); backdrop-filter: blur(18px);
+    display: none; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: all .35s cubic-bezier(.16,1,.3,1);
+  }
+  #m-overlay.open, #lnk-overlay.open {
+    display: flex; opacity: 1; visibility: visible; pointer-events: auto;
+  }
+  .mbox {
+    background: linear-gradient(165deg, #1a1f2c 0%, #06080a 100%);
+    border: 1px solid rgba(0,229,255,.15); border-radius: 24px;
+    padding: 2.5rem; width: 420px; max-width: 95vw;
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 50px 100px rgba(0,0,0,0.95), 0 0 40px rgba(0,229,255,0.05);
+  }
+  .m-title { font-family: var(--font-h); font-size: 1.25rem; font-weight: 900; color: #fff; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+  .m-lbl { display: block !important; font-size: 0.62rem; color: var(--c-cyan); margin-bottom: 8px; margin-top: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.8; }
+  .m-field { display: block !important; width: 100% !important; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 12px 14px; color: #fff; font-family: var(--font-s); font-size: 0.88rem; outline: none; transition: all .2s; }
+  .m-field:focus { border-color: var(--c-cyan); background: rgba(0,229,255,0.05); box-shadow: 0 0 15px rgba(0,229,255,0.15); }
+  select.m-field { cursor: pointer; background: #0d0f14; border: 1px solid rgba(255,255,255,.12); }
+  
+  /* GRID REPAIR: Forcing horizontal icon layout */
+  .ic-grid { 
+    display: grid !important; 
+    grid-template-columns: repeat(8, 1fr) !important; 
+    gap: 8px !important; 
+    margin: 10px 0 !important;
+    width: 100% !important;
+  }
+  .ic-btn { 
+    width: 100% !important; aspect-ratio: 1/1 !important; 
+    border-radius: 10px; background: rgba(255,255,255,.04); 
+    border: 1px solid rgba(255,255,255,.08); color: #fff; 
+    cursor: pointer; font-size: 1rem; display: flex; 
+    align-items: center; justify-content: center; transition: all .2s; 
+  }
+  .ic-btn:hover { background: rgba(255,255,255,.1); transform: translateY(-2px); border-color: var(--c-cyan); }
+  .ic-btn.active { background: rgba(0,229,255,.2); border-color: var(--c-cyan); box-shadow: 0 0 12px rgba(0,229,255,0.3); }
+  
+  .cp-row { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin: 10px 0; }
+  .cp-sw { width: 100%; aspect-ratio: 1/1; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .15s; }
+  .cp-sw.active { border-color: #fff; box-shadow: 0 0 10px #fff4; transform: scale(1.1); }
+  
+  .m-row { display: flex; gap: 15px; margin-top: 2.5rem; }
+  .m-ok { flex: 1.5; background: var(--c-cyan); color: #000; border: none; border-radius: 12px; padding: 14px; font-weight: 900; font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .2s; }
+  .m-ok:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,229,255,0.4); }
+  .m-cancel { flex: 1; background: rgba(255,255,255,.05); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 14px; font-weight: 800; font-size: .75rem; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+  .m-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
 </style>
 </head>
 <body class="mode-select">
@@ -809,9 +841,14 @@ body.pmode #float-ctrl { display: none; }
 
   <div class="tn-sep" style="height:20px;width:1px;background:rgba(186,230,253,.15);margin:0 4px"></div>
   
-  <button class="tb-btn" onclick="togglePresentation()" data-tooltip="PRESENTAR — Entra en modo pantalla completa sin distracciones para comités ejecutivos. (F11)">
+  <button class="tb-btn" onclick="togglePresentation()" data-tooltip="PRESENTAR — Pantalla completa sin distracciones para comités ejecutivos. (F11)">
     <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
     <span class="tb-lbl">Presentar</span>
+  </button>
+  
+  <button class="tb-btn btn-db-save" id="btn-save-db" onclick="saveFullStateToDB()" data-tooltip="GUARDAR DIAGRAMA — Sincroniza la organización, estética y datos en el servidor (Nube).">
+    <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v13a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
+    <span class="tb-lbl">Guardar</span>
   </button>
 
   <div class="tb-logo">OPENCORE CONNECT</div>
@@ -959,7 +996,7 @@ TC.hub = TC.cyan;
 const TG = Object.fromEntries(Object.entries(THEMES).map(([k,v])=>[k,v.g]));
 TG.hub = TG.cyan;
 
-const FILES_API = 'https://opencore.cl/dashboard/upload.php';
+const FILES_API = 'upload.php';
 
 const ICONS = ['⚙️','📦','💼','🌐','📋','🏭','🏗️','💱','⚖️','📊','🗃️','🔩','🔧','🤝','🧾','🔄','💡','🏢','🚚','🔬','💻','📱','🔐','📈','💰','🎯','⬡','🏆','📌','🔑'];
 
@@ -1181,23 +1218,6 @@ function updateHistBtns(){
 }
 
 // ─── LOCAL STORAGE ────────────────────────────────────────────────────────────
-function loadState(){
-  S.nodes=NODES_BASE.map(n=>({...n}));
-  S.edges=EDGES_BASE.map(e=>({...e,dir:e.dir||'forward',label:e.label||''}));
-  try{
-    const d=JSON.parse(localStorage.getItem('ocf')||'{}');
-    if(d.pos) d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
-    if(d.nodes) S.nodes.push(...d.nodes);
-    if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
-    S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
-    S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
-    S.notes=JSON.parse(localStorage.getItem('ocf-notes')||'[]');
-    S.notes=(S.notes||[]).filter(n=>n.nodeId);
-  }catch(e){console.warn('LS load',e)}
-  // Cargar adjuntos desde el servidor (igual que tareas)
-  loadAttachments();
-}
-
 function loadAttachments(){
   fetch(FILES_API)
     .then(r=>r.ok?r.json():Promise.reject(r.status))
@@ -1211,6 +1231,49 @@ function loadAttachments(){
     });
 }
 
+async function loadState(){
+  // 1. Initial Defaults
+  S.nodes=NODES_BASE.map(n=>({...n}));
+  S.edges=EDGES_BASE.map(e=>({...e,dir:e.dir||'forward',label:e.label||''}));
+  
+  // 2. Try loading from Server (Cloud Sync v4.30)
+  try {
+    const res = await fetch(FILES_API + '?action=load_state');
+    const data = await res.json();
+    if(data && !data.empty) {
+      console.log('Loading state from Server...');
+      applyStateFromJSON(data);
+      loadAttachments();
+      return;
+    }
+  } catch(e) {
+    console.warn('Server load failed, falling back to LocalStorage', e);
+  }
+
+  // 3. Fallback to LocalStorage
+  try{
+    const d=JSON.parse(localStorage.getItem('ocf')||'{}');
+    if(d.pos) d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
+    if(d.nodes) S.nodes.push(...d.nodes);
+    if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
+    S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
+    S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
+    S.notes=JSON.parse(localStorage.getItem('ocf-notes')||'[]');
+    S.notes=(S.notes||[]).filter(n=>n.nodeId);
+  }catch(e){console.warn('LS load',e)}
+  
+  loadAttachments();
+}
+
+function applyStateFromJSON(d) {
+  if(!d.nodes || !d.edges) return;
+  S.nodes = d.nodes.map(n=>({...n}));
+  S.edges = d.edges.map(e=>({...e}));
+  S.nodeProps = d.nodeProps || {};
+  S.comments = d.comments || {};
+  S.notes = (d.notes || []).filter(n=>n.nodeId);
+}
+
 function saveState(){
   try{
     const pos=S.nodes.map(n=>({id:n.id,x:n.x,y:n.y}));
@@ -1222,8 +1285,36 @@ function saveState(){
     localStorage.setItem('ocf-props',JSON.stringify(S.nodeProps));
     localStorage.setItem('ocf-comments',JSON.stringify(S.comments));
     localStorage.setItem('ocf-notes',JSON.stringify(S.notes));
-    // Adjuntos se guardan en el servidor — no en localStorage
   }catch(e){console.warn('LS save',e)}
+}
+
+function saveFullStateToDB(){
+  const data = {
+    nodes: S.nodes.map(n=>({...n})),
+    edges: S.edges.map(e=>({...e})),
+    nodeProps: S.nodeProps,
+    comments: S.comments,
+    notes: S.notes,
+    ts: new Date().toISOString()
+  };
+  
+  const fd = new FormData();
+  fd.append('action', 'save_state');
+  fd.append('state', JSON.stringify(data));
+  
+  toast('Sincronizando con el servidor…', 'info');
+  playSfx('save');
+  
+  fetch(FILES_API, { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(res => {
+      if(res.ok) {
+        toast('Copia de seguridad guardada en la nube', 'ok');
+      } else {
+        toast('Error al guardar en servidor: ' + (res.error||'Desconocido'), 'err');
+      }
+    })
+    .catch(() => toast('Servidor no disponible — Autoguardado local activo', 'info'));
 }
 
 // ─── DOM REFS ─────────────────────────────────────────────────────────────────

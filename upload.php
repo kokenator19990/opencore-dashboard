@@ -18,7 +18,8 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit(0); }
 
-define('DATA_FILE', __DIR__ . '/flujos-files.json');
+define('DATA_FILE',  __DIR__ . '/flujos-files.json');
+define('STATE_FILE', __DIR__ . '/flujos-state.json');
 define('UPLOAD_DIR', __DIR__ . '/uploads/');
 define('UPLOAD_URL', 'https://opencore.cl/dashboard/uploads/');
 define('MAX_SIZE',   10 * 1024 * 1024); // 10 MB
@@ -46,6 +47,13 @@ function err($msg, $code = 400) {
 
 // ── GET — devolver todos los adjuntos ─────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $action = $_GET['action'] ?? '';
+    if ($action === 'load_state') {
+        if (!file_exists(STATE_FILE)) { echo json_encode(['empty' => true]); exit; }
+        echo file_get_contents(STATE_FILE);
+        exit;
+    }
+    // Default: return attachments
     echo json_encode(loadData(), JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -146,6 +154,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         saveData($data);
         echo json_encode(['ok' => true]);
+        exit;
+    }
+
+    // ── SAVE FULL STATE ───────────────────────────
+    if ($action === 'save_state') {
+        $state = $_POST['state'] ?? '';
+        if (!$state) err('Falta el estado (state)');
+        if (file_put_contents(STATE_FILE, $state)) {
+            echo json_encode(['ok' => true, 'ts' => date('Y-m-d H:i:s')]);
+        } else {
+            err('No se pudo guardar el archivo de estado', 500);
+        }
         exit;
     }
 
