@@ -2734,6 +2734,7 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
   let hideTimer;
   document.querySelectorAll('.tb-btn[data-tooltip]').forEach(btn=>{
     btn.addEventListener('mouseenter',()=>{
+      if(btn.closest('.tb-dropdown')?.classList.contains('open')) return;
       clearTimeout(hideTimer);
       tip.textContent=btn.getAttribute('data-tooltip');
       tip.style.opacity='0';
@@ -2742,28 +2743,34 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
       const r=btn.getBoundingClientRect();
       tip.style.maxWidth='280px';
       tip.style.left='0';tip.style.top='0'; // reset to measure
-        // Force layout to get tip width
-        requestAnimationFrame(()=>{
-          const tw=Math.min(280,tip.offsetWidth||220);
-          let left=r.left+r.width/2-tw/2;
-          left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
-          tip.style.left=left+'px';
-          
-          // Position ABOVE by default (Executive feedback)
-          void tip.offsetHeight; 
-          const th=tip.offsetHeight||32;
-          let t=r.top-th-8;  
-          if(t<0 && r.bottom + th + 12 < window.innerHeight) t=r.bottom+12; 
-          else if(t<0) t=5; // clamp to top instead of flipping if possible
-          
-          tip.style.top=t+'px';
-          tip.style.opacity='1';
+          // Force layout to get tip width
+          requestAnimationFrame(()=>{
+            const tw=Math.min(280,tip.offsetWidth||220);
+            let left=r.left+r.width/2-tw/2;
+            left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
+            tip.style.left=left+'px';
+            
+            // Position ABOVE strictly for toolbar (top ~150px) to avoid covering dropdowns
+            void tip.offsetHeight; 
+            const th=tip.offsetHeight||32;
+            let t=r.top-th-8;  
+            if(r.top < 120) {
+              t = Math.max(2, r.top-th-6);
+            } else if(t<0) {
+              t = r.bottom+12;
+            }
+            
+            tip.style.top=t+'px';
+            tip.style.opacity='1';
+          });
         });
-      });
     btn.addEventListener('mouseleave',()=>{
       hideTimer=setTimeout(()=>{tip.style.opacity='0';},120);
     });
-    btn.addEventListener('mousedown',()=>{tip.style.opacity='0';});
+    btn.addEventListener('mousedown',()=>{
+      tip.style.opacity='0';
+      tip.style.display='none';
+    });
   });
 })();
 
@@ -2828,7 +2835,11 @@ function toggleTheme(){
 function toggleOrganize(e){
   e.stopPropagation();
   const d=document.querySelector('.tb-dropdown');
-  d.classList.toggle('open');
+  const isOpen = d.classList.toggle('open');
+  if(isOpen) {
+    const tip = document.getElementById('tb-tip');
+    if(tip) { tip.style.opacity='0'; tip.style.display='none'; }
+  }
 }
 function closeOrganize(){
   document.querySelector('.tb-dropdown')?.classList.remove('open');
