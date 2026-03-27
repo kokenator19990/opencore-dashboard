@@ -34,6 +34,8 @@
   --c-dropdown-bg: rgba(10,12,18,.96);
   --c-card-bg: rgba(20,25,35,.88);
   --c-card-bg-hover: rgba(25,30,45,.95);
+  --c-edge: #94aed0;
+  --c-edge-act: #e0f2fe;
 }
 
 body.light-mode {
@@ -50,17 +52,20 @@ body.light-mode {
   --c-tb-active: rgba(186,230,253,.14);
   /* COMPONENTS: Dark nodes and panels on white canvas */
   --c-panel-bg: rgba(10,12,18,.98);
-  --c-panel-border: rgba(186,230,253,.1);
+  --c-panel-border: rgba(186,230,253,.2);
   --c-card-bg: rgba(15,18,25,.95);
   --c-card-bg-hover: rgba(20,25,35,1);
-  --c-card-border: rgba(255,255,255,.07);
-  --c-card-shadow: rgba(0,0,0,0.2);
+  --c-card-border: rgba(0,0,0,.15);
+  --c-card-shadow: rgba(0,0,0,0.32);
   --c-node-text: #ffffff;
   --c-node-sub: rgba(255,255,255,.7);
   --c-panel-text: #ffffff;
   --c-panel-sub: rgba(255,255,255,.7);
   --c-input-bg: rgba(255,255,255,.05);
   --c-dropdown-bg: rgba(10,12,18,.96);
+  /* EDGES: High-Contrast for white background */
+  --c-edge: #475569;
+  --c-edge-act: #0284c7;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:var(--bg);color:var(--c-text);font-family:var(--font-s);-webkit-font-smoothing:antialiased;overflow:hidden;transition:background .3s, color .3s}
@@ -1349,9 +1354,11 @@ function updateEdges(){
   svgEl.innerHTML='';
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
 
-  // White-Cyan high-visibility edge palette
-  const EDGE_COL='#94aed0';      // blanco-cian intermedio sobrio
-  const EDGE_COL_ACT='#e0f2fe';  // blanco-cian brillante
+  // Fetch colors from CSS Variables (Theme-aware)
+  const style = getComputedStyle(document.body);
+  const EDGE_COL = style.getPropertyValue('--c-edge').trim() || '#94aed0';
+  const EDGE_COL_ACT = style.getPropertyValue('--c-edge-act').trim() || '#e0f2fe';
+
   // Glow filter for edges
   defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
   // Minimalist markers: smaller and sharper for professional look
@@ -1390,7 +1397,7 @@ function updateEdges(){
     // Corporate weights: thinner and cleaner
     const drawCol=(activeFlow||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
     const markerSfx=(activeFlow||isEdgeSel)?'eact':'edim';
-    const opacity=isEdgeSel?1:activeFlow?0.95:(hasSel?0.06:0.28);
+    const opacity=isEdgeSel?1:activeFlow?0.95:(hasSel?0.15:0.4);
     const strokeW=isEdgeSel?3.5:activeFlow?2.2:1.4;
     const useGlow=isEdgeSel||activeFlow;
     const showFlow=isEdgeSel||activeFlow;
