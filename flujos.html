@@ -1410,19 +1410,20 @@ function getAnchors(fid,tid){
   const C=Math.min(120, dist*0.4);
   const off=Math.min(40, dist*0.18);
   
+  const PAD = 8;
   let sx,sy,ex,ey,c1x,c1y,c2x,c2y;
 
   if(ang>-45&&ang<=45){ // Sector RIGHT
-    sx=A.x+A.w;sy=A.cy;c1x=sx+C;ex=B.x;ey=B.cy;c2x=ex-C;
+    sx=A.x+A.w+PAD;sy=A.cy;c1x=sx+C;ex=B.x-PAD;ey=B.cy;c2x=ex-C;
     if(Math.abs(sy-ey)<2){ c1y=sy-off; c2y=ey-off; } else { c1y=sy; c2y=ey; }
   }else if(ang>45&&ang<=135){ // Sector BOTTOM
-    sx=A.cx;sy=A.y+A.h;c1y=sy+C;ex=B.cx;ey=B.y;c2y=ey-C;
+    sx=A.cx;sy=A.y+A.h+PAD;c1y=sy+C;ex=B.cx;ey=B.y-PAD;c2y=ey-C;
     if(Math.abs(sx-ex)<2){ c1x=sx+off; c2x=ex+off; } else { c1x=sx; c2x=ex; }
   }else if(ang>135||ang<=-135){ // Sector LEFT
-    sx=A.x;sy=A.cy;c1x=sx-C;ex=B.x+B.w;ey=B.cy;c2x=ex+C;
+    sx=A.x-PAD;sy=A.cy;c1x=sx-C;ex=B.x+B.w+PAD;ey=B.cy;c2x=ex+C;
     if(Math.abs(sy-ey)<2){ c1y=sy-off; c2y=ey-off; } else { c1y=sy; c2y=ey; }
   }else{ // Sector TOP
-    sx=A.cx;sy=A.y;c1y=sy-C;ex=B.cx;ey=B.y+B.h;c2y=ey+C;
+    sx=A.cx;sy=A.y-PAD;c1y=sy-C;ex=B.cx;ey=B.y+B.h+PAD;c2y=ey+C;
     if(Math.abs(sx-ex)<2){ c1x=sx-off; c2x=ex-off; } else { c1x=sx; c2x=ex; }
   }
   return{sx,sy,ex,ey,c1x,c1y,c2x,c2y};
