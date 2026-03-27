@@ -176,7 +176,7 @@ body.light-mode [id*="grid"] {
 .tb-dropdown-btn svg { width: 14px; height: 14px; opacity: 0.7; }
 
 #tb-tip{
-  position:fixed;z-index:9999;pointer-events:none;
+  position:fixed;z-index:400;pointer-events:none;
   background:rgba(12,14,20,0.96);
   color:var(--c-text);
   font-family:var(--font-s);font-size:.78rem;font-weight:400;
@@ -3008,7 +3008,9 @@ document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault
   let hideTimer;
   
   const showTip = (el) => {
+    if(el.closest('.tb-dropdown')?.matches(':hover')) return;
     if(el.closest('.tb-dropdown')?.classList.contains('open')) return;
+    if(document.querySelector('.tb-dropdown.open')) return;
     clearTimeout(hideTimer);
     tip.textContent = el.getAttribute('data-tooltip');
     tip.style.display = 'block'; // ensure layout
@@ -3138,7 +3140,7 @@ function toggleOrganize(e){
   const isOpen = d.classList.toggle('open');
   if(isOpen) {
     const tip = document.getElementById('tb-tip');
-    if(tip) { tip.style.opacity='0'; tip.style.display='none'; }
+    if(tip) { tip.classList.remove('show'); setTimeout(()=>tip.style.display='none', 100); }
   }
 }
 function closeOrganize(){
