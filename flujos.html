@@ -333,6 +333,27 @@ body.light-mode [id*="grid"] {
 .ec-lbl-input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;color:var(--c-panel-text);font-family:var(--font-s);font-size:.7rem;padding:4px 7px;width:90px;outline:none}
 .ec-lbl-input:focus{border-color:rgba(0,229,255,.4)}
 
+/* ── LEVEL CONTEXT MENU ──────────────────────────── */
+#lvl-ctx{
+  position:fixed;z-index:450;
+  background:rgba(12,12,18,.98);border:1px solid rgba(0,229,255,.2);border-radius:12px;
+  padding:8px;display:none;
+  backdrop-filter:blur(20px);box-shadow:0 12px 32px rgba(0,0,0,.6);
+  width:120px;
+}
+.lvl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.lvl-item{
+  display:flex;align-items:center;justify-content:center;
+  height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);color:var(--c-panel-sub);
+  cursor:pointer;font-family:var(--font-h);font-size:.7rem;font-weight:700;
+  transition:all .18s;
+}
+.lvl-item:hover{background:rgba(0,229,255,.12);color:#fff;border-color:rgba(0,229,255,.4)}
+.lvl-item.active{background:rgba(0,229,255,.2);color:#00E5FF;border-color:rgba(0,229,255,.6)}
+.lvl-item.clear{grid-column:span 3;color:#FF4444;border-color:rgba(255,68,68,.2)}
+.lvl-item.clear:hover{background:rgba(255,68,68,.12);border-color:rgba(255,68,68,.5)}
+
 /* ── RIGHT PANEL ─────────────────────────────────── */
 #panel{
   position:fixed;top:calc(var(--nav-h) + var(--tb-h));right:0;bottom:0;
@@ -919,6 +940,21 @@ body.pmode #float-ctrl { display: none; }
   <button class="ec-btn del" onclick="deleteSelectedEdge()" title="Eliminar conexión">✕</button>
 </div>
 
+<!-- LEVEL CONTEXT MENU -->
+<div id="lvl-ctx">
+  <div class="lvl-grid">
+    <button class="lvl-item" onclick="setNodeLvl(0)">L0</button>
+    <button class="lvl-item" onclick="setNodeLvl(1)">L1</button>
+    <button class="lvl-item" onclick="setNodeLvl(2)">L2</button>
+    <button class="lvl-item" onclick="setNodeLvl(3)">L3</button>
+    <button class="lvl-item" onclick="setNodeLvl(4)">L4</button>
+    <button class="lvl-item" onclick="setNodeLvl(5)">L5</button>
+    <button class="lvl-item" onclick="setNodeLvl(6)">L6</button>
+    <button class="lvl-item" onclick="setNodeLvl(7)">L7</button>
+    <button class="lvl-item clear" onclick="setNodeLvl(null)">Remover Nivel</button>
+  </div>
+</div>
+
 <!-- ADD NODE MODAL -->
 <div id="m-overlay">
   <div class="mbox">
@@ -1367,7 +1403,7 @@ function renderNodes(){
 
     const lvlVal=S.nodeProps[n.id]?.level;
     const lvlHasVal=lvlVal!==undefined&&lvlVal!==null&&lvlVal!=='';
-    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="cycleLvl(event,'${n.id}')" title="Ajustar Nivel del Nodo">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
+    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="showLvlMenu(event,'${n.id}')" title="Ajustar Nivel del Nodo">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
     el.innerHTML=`
       <div class="nc">
         ${lvlBadge}
@@ -1835,20 +1871,36 @@ function fitView(){
 //   Nivel N = nodos que dependen de nivel N-1 → filas siguientes
 //   Dentro de cada fila los nodos se ordenan por posición promedio de sus
 //   padres (barycenter heuristic) para minimizar cruces de flechas.
-// --- LEVEL BADGE CYCLE ---
-function cycleLvl(e,id){
+let lvlCtxNodeId=null;
+function showLvlMenu(e,id){
   e.stopPropagation();e.preventDefault();
+  lvlCtxNodeId=id;
+  const ctx=document.getElementById('lvl-ctx');
+  ctx.style.display='block';
+  // Position near badge
+  ctx.style.left=e.clientX+'px';
+  ctx.style.top=(e.clientY+10)+'px';
+  // Mark active level
+  const cur=S.nodeProps[id]?.level;
+  document.querySelectorAll('.lvl-item').forEach(btn=>{
+    const lText=btn.textContent.replace('L','');
+    const isActive=(cur===lText || (cur===null && btn.classList.contains('clear')));
+    btn.classList.toggle('active',isActive);
+  });
+}
+function hideLvlMenu(){
+  lvlCtxNodeId=null;
+  document.getElementById('lvl-ctx').style.display='none';
+}
+function setNodeLvl(lvl){
+  if(!lvlCtxNodeId)return;
+  const id=lvlCtxNodeId;
   if(!S.nodeProps[id])S.nodeProps[id]={};
-  const cur=S.nodeProps[id].level;
-  const levels=[null,0,1,2,3,4,5,6,7];
-  let curNorm=(cur===undefined||cur===null||cur==='')?null:Number(cur);
-  let idx=levels.findIndex(v=>v===curNorm);
-  if(idx<0)idx=0;
-  const next=levels[(idx+1)%levels.length];
-  S.nodeProps[id].level=next===null?null:String(next);
+  S.nodeProps[id].level=lvl===null?null:String(lvl);
   snapshot();
+  hideLvlMenu();
   render();saveState();
-  toast(next===null?'Nivel removido':'Nivel '+next+' asignado','ok');
+  toast(lvl===null?'Nivel removido':'Nivel L'+lvl+' asignado','ok');
 }
 
 // --- ZOOM TO NODE ---
@@ -2998,6 +3050,7 @@ cwrap.addEventListener('click',e=>{
 document.addEventListener('click',e=>{
   if(!e.target.closest('#edge-ctx')&&!e.target.closest('#asvg')&&edgeCtxIdx!=null)hideEdgeCtx();
   if(!e.target.closest('.tb-dropdown'))closeOrganize();
+  if(!e.target.closest('#lvl-ctx'))hideLvlMenu();
 },true);
 
 document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault();submitModal();});
