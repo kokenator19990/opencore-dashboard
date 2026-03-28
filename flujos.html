@@ -1295,12 +1295,19 @@ async function loadState(){
   // 2. Try loading from Server (Cloud Sync v4.30)
   try {
     const res = await fetch(FILES_API + '?action=load_state');
-    const data = await res.json();
-    if(data && !data.empty) {
-      console.log('Loading state from Server...');
-      applyStateFromJSON(data);
-      loadAttachments();
-      return;
+    if (res.ok) {
+      const text = await res.text();
+      try {
+        const data = JSON.parse(text);
+        if(data && !data.empty) {
+          console.log('Loading state from Server...');
+          applyStateFromJSON(data);
+          loadAttachments();
+          return;
+        }
+      } catch(jsonErr) {
+        console.warn('Server returned non-JSON response. Falling back.');
+      }
     }
   } catch(e) {
     console.warn('Server load failed, falling back to LocalStorage', e);
@@ -1668,11 +1675,13 @@ function updateEdges(){
     path.setAttribute('opacity',String(opacity));
     if(useGlow)path.setAttribute('filter','url(#edge-glow)');
     
-    // Apply Markers
+    // Apply Markers (v4.41 Logic Fix)
     const mSfx = (activeFlow||isEdgeSel)?'act':'dim';
-    if(dir==='forward') path.setAttribute('marker-end', `url(#arr-fwd-${mSfx})`);
-    if(dir==='back')    path.setAttribute('marker-end', `url(#arr-bwd-${mSfx})`);
-    if(dir==='both') {
+    if(dir==='forward') {
+      path.setAttribute('marker-end', `url(#arr-fwd-${mSfx})`);
+    } else if(dir==='back') {
+      path.setAttribute('marker-start', `url(#arr-bwd-${mSfx})`);
+    } else if(dir==='both') {
       path.setAttribute('marker-end', `url(#arr-fwd-${mSfx})`);
       path.setAttribute('marker-start', `url(#arr-bwd-${mSfx})`);
     }
@@ -1762,39 +1771,31 @@ function updateEdges(){
   if(prevLine&&prevLine.parentNode!==svgEl)svgEl.appendChild(prevLine);
 }
 
-// ─── EDGE SELECTION ───────────────────────────────────────────────────────────
+// ─── EDGE SELECTION & DIRECTION (v4.41) ──────────────────────────────────────
 function selectEdge(idx,ev){
-  // Deselect node
   if(S.selected){document.getElementById('node-'+S.selected)?.classList.remove('selected');S.selected=null;}
   closePanel();
   S.selectedEdge=idx;
-  updateEdges();
-  showEdgeCtx(idx,ev);
-}
-
-function showEdgeCtx(idx,ev){
   edgeCtxIdx=idx;
   const e=S.edges[idx];
   const ctx=document.getElementById('edge-ctx');
   ctx.style.display='flex';
-  // Position near click
-  const x=Math.min(ev.clientX-80, window.innerWidth-320);
-  const y=Math.max(ev.clientY-50, 10);
-  ctx.style.left=x+'px';
-  ctx.style.top=y+'px';
-  // Set active direction button
-  ['fwd','bwd','bth','non'].forEach(k=>{
-    document.getElementById('ec-'+k)?.classList.remove('active');
-  });
-  const map={forward:'fwd',back:'bwd',both:'bth',none:'non'};
-  document.getElementById('ec-'+(map[e.dir||'forward']||'fwd'))?.classList.add('active');
-  // Set label
+  ctx.style.left=ev.clientX+'px';
+  ctx.style.top=ev.clientY+'px';
   document.getElementById('ec-lbl').value=e.label||'';
+  updateEdgeCtxUI(e.dir||'forward');
+  updateEdges();
+}
+
+function updateEdgeCtxUI(dir){
+  const btns={forward:'ec-fwd', back:'ec-bwd', both:'ec-bth', none:'ec-non'};
+  Object.entries(btns).forEach(([k,id])=>{
+    document.getElementById(id)?.classList.toggle('active', k===dir);
+  });
 }
 
 function hideEdgeCtx(){
-  edgeCtxIdx=null;
-  S.selectedEdge=null;
+  edgeCtxIdx=null; S.selectedEdge=null;
   document.getElementById('edge-ctx').style.display='none';
   updateEdges();
 }
@@ -1802,11 +1803,8 @@ function hideEdgeCtx(){
 function setEdgeDir(dir){
   if(edgeCtxIdx==null)return;
   S.edges[edgeCtxIdx].dir=dir;
-  const map={forward:'fwd',back:'bwd',both:'bth',none:'non'};
-  ['fwd','bwd','bth','non'].forEach(k=>document.getElementById('ec-'+k)?.classList.remove('active'));
-  document.getElementById('ec-'+(map[dir]||'fwd'))?.classList.add('active');
-  snapshot();
-  updateEdges(); saveState();
+  updateEdgeCtxUI(dir);
+  snapshot(); updateEdges(); saveState();
 }
 
 function setEdgeLabel(val){
@@ -1818,10 +1816,8 @@ function setEdgeLabel(val){
 function deleteSelectedEdge(){
   if(edgeCtxIdx==null)return;
   S.edges.splice(edgeCtxIdx,1);
-  snapshot();
-  hideEdgeCtx();
-  render(); saveState();
-  playSfx('delete');
+  snapshot(); hideEdgeCtx();
+  render(); saveState(); playSfx('delete');
   toast('Conexión eliminada','info');
 }
 
@@ -3287,7 +3283,7 @@ function closeOrganize(){
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-console.log('%c [v4.39.8-CURVED-FINAL] LOADING... ', 'background:#0891b2;color:#fff;font-weight:bold');
+console.log('%c [v4.41-DIRECTIONAL-FIX] LOADING... ', 'background:#10b981;color:#fff;font-weight:bold');
 (async () => {
   if ('serviceWorker' in navigator) {
     const regs = await navigator.serviceWorker.getRegistrations();
