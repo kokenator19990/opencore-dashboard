@@ -762,7 +762,13 @@ body.pmode #float-ctrl { display: none; }
     padding: 2.5rem; width: 420px; max-width: 95vw;
     max-height: 85vh; overflow-y: auto;
     box-shadow: 0 50px 100px rgba(0,0,0,0.95), 0 0 40px rgba(0,229,255,0.05);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,229,255,0.2) transparent;
   }
+  .mbox::-webkit-scrollbar { width: 6px; }
+  .mbox::-webkit-scrollbar-track { background: transparent; }
+  .mbox::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 10px; }
+  .mbox::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.4); }
   .m-title { font-family: var(--font-h); font-size: 1.25rem; font-weight: 900; color: #fff; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
   .m-lbl { display: block !important; font-size: 0.62rem; color: var(--c-cyan); margin-bottom: 8px; margin-top: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.8; }
   .m-field { display: block !important; width: 100% !important; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 12px 14px; color: #fff; font-family: var(--font-s); font-size: 0.88rem; outline: none; transition: all .2s; }
