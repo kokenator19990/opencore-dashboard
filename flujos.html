@@ -790,17 +790,17 @@ body.pmode #float-ctrl { display: none; }
   .m-cancel { flex: 1; background: rgba(255,255,255,.05); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 14px; font-weight: 800; font-size: .75rem; text-transform: uppercase; cursor: pointer; transition: all .2s; }
   .m-cancel:hover { background: rgba(255,255,255,.12); color: #fff; }
 
-  /* ── v4.38 EDGE FLOW ANIMATIONS ──────────────────── */
+  /* ── v4.40 EDGE PULSE ANIMATIONS ──────────────────── */
   @keyframes edgeFlow {
-    from { stroke-dashoffset: 22; }
+    from { stroke-dashoffset: 120; }
     to { stroke-dashoffset: 0; }
   }
   @keyframes edgeFlowBack {
     from { stroke-dashoffset: 0; }
-    to { stroke-dashoffset: 20; }
+    to { stroke-dashoffset: 120; }
   }
   @keyframes edgeFlowAlways {
-    from { stroke-dashoffset: 20; }
+    from { stroke-dashoffset: 30; }
     to { stroke-dashoffset: 0; }
   }
 </style>
@@ -1586,8 +1586,20 @@ function updateEdges(){
   const EDGE_COL = style.getPropertyValue('--c-edge').trim() || '#94aed0';
   const EDGE_COL_ACT = style.getPropertyValue('--c-edge-act').trim() || '#e0f2fe';
 
-  // Glow filter for edges
-  defs.innerHTML+=`<filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  // Energy Pulse Glow Filter (v4.40)
+  defs.innerHTML+=`
+    <filter id="edge-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="pulse-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  `;
   
   // v4.39 SVG Markers - Restoration
   const arrowDim = `<path d="M0,0 L10,5 L0,10 Z" fill="${EDGE_COL}" opacity="0.6"/>`;
@@ -1683,26 +1695,43 @@ function updateEdges(){
       svgEl.appendChild(idle);
     }
 
-    // Active flow dash
+    // ─── ENERGY PULSE FLOW (v4.40) ───────────────────────────
     if(showFlow){
-      const flow=document.createElementNS('http://www.w3.org/2000/svg','path');
-      flow.setAttribute('d',d);
-      flow.setAttribute('stroke',drawCol);
-      flow.setAttribute('stroke-width','2');
-      flow.setAttribute('fill','none');
-      if(S.showAllFlows) {
-        flow.setAttribute('stroke-dasharray','40 0'); // nearly solid
-        flow.setAttribute('stroke-width','2.8');
-        flow.setAttribute('opacity','0.35');
+      const createPulse = (dPath, isBack) => {
+        const flow=document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        flow.setAttribute('d', dPath);
+        flow.setAttribute('stroke', drawCol);
+        flow.setAttribute('fill', 'none');
+        flow.setAttribute('stroke-linecap', 'round');
+        flow.setAttribute('filter', 'url(#pulse-glow)');
+        
+        if(S.showAllFlows) {
+          flow.setAttribute('stroke-dasharray', '8 112');
+          flow.setAttribute('stroke-width', '4');
+          flow.setAttribute('opacity', '0.5');
+        } else {
+          flow.setAttribute('stroke-dasharray', '4 56');
+          flow.setAttribute('stroke-width', '2.5');
+          flow.setAttribute('opacity', isEdgeSel ? '1' : '0.85');
+        }
+        flow.style.pointerEvents = 'none';
+        flow.style.animation = (isBack ? 'edgeFlowBack ' : 'edgeFlow ') + (isEdgeSel ? '1.2s' : '2s') + ' linear infinite';
+        return flow;
+      };
+
+      if(dir==='both'){
+        // To avoid superposition, we create two pulses on slightly offset paths
+        // For simplicity in Bezier, we clone and translate slightly
+        const p1 = createPulse(d, false);
+        p1.setAttribute('transform', 'translate(1.5, 1.5)');
+        svgEl.appendChild(p1);
+        
+        const p2 = createPulse(d, true);
+        p2.setAttribute('transform', 'translate(-1.5, -1.5)');
+        svgEl.appendChild(p2);
       } else {
-        flow.setAttribute('stroke-dasharray','8 14');
-        flow.setAttribute('stroke-width','2');
-        flow.setAttribute('opacity',isEdgeSel?'0.9':'0.65');
+        svgEl.appendChild(createPulse(d, dir==='back'));
       }
-      flow.style.pointerEvents='none';
-      flow.style.animation='edgeFlow '+(isEdgeSel?'1s':'1.6s')+' linear infinite';
-      if(dir==='back')flow.style.animationDirection='reverse';
-      svgEl.appendChild(flow);
     }
 
     // Edge label (v4.38 Fix: Correctly refer to e.label)
