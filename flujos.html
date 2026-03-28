@@ -156,12 +156,19 @@ body.light-mode [id*="grid"] {
 /* Dropdown */
 .tb-dropdown { position: relative; height: 100%; display: flex; align-items: center; }
 .tb-dropdown-content {
-  display: none; position: absolute; top: calc(100% + 2px); left: 0;
+  display: none; position: absolute; top: 100%; left: 0;
   background: var(--c-dropdown-bg); min-width: 170px;
   border-radius: 12px; border: 1px solid var(--c-tb-border);
   box-shadow: 0 12px 40px rgba(0,0,0,.7); z-index: 500;
   backdrop-filter: blur(20px); padding: 8px;
   animation: slideDown .2s cubic-bezier(.16,1,.3,1);
+}
+/* Hover Bridge to prevent premature closing */
+.tb-dropdown-content::before {
+  content: "";
+  position: absolute;
+  top: -12px; left: 0; right: 0; height: 12px;
+  background: transparent;
 }
 @keyframes slideDown { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
 .tb-dropdown.open .tb-dropdown-content { display: block; }
