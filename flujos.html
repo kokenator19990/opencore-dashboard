@@ -1553,7 +1553,7 @@ function nodeBounds(id){
   return{x:n.x,y:n.y,w:sz.w,h:sz.h,cx:n.x+sz.w/2,cy:n.y+sz.h/2};
 }
 
-function getAnchors(fid,tid){
+function getAnchors(fid,tid, sIdx=0, sTotal=1, eIdx=0, eTotal=1){
   const A=nodeBounds(fid),B=nodeBounds(tid);
   if(!A||!B)return null;
   const dx=B.cx-A.cx,dy=B.cy-A.cy;
@@ -1561,13 +1561,33 @@ function getAnchors(fid,tid){
   const PAD = 8;
   
   let sx,sy,ex,ey;
-  // Point-to-Point logic for curves (Center or Edges)
+  // Percentage padding from corners (15%)
+  const marginX = A.w * 0.15;
+  const marginY = A.h * 0.15;
+  const availW = A.w - 2 * marginX;
+  const availH = A.h - 2 * marginY;
+
+  const marginXB = B.w * 0.15;
+  const marginYB = B.h * 0.15;
+  const availWB = B.w - 2 * marginXB;
+  const availHB = B.h - 2 * marginYB;
+
   if(Math.abs(dx)>Math.abs(dy)){ // Horizontal primary
-    if(dx>0){sx=A.x+A.w+PAD;sy=A.cy;ex=B.x-PAD;ey=B.cy;}
-    else{sx=A.x-PAD;sy=A.cy;ex=B.x+B.w+PAD;ey=B.cy;}
-  }else{ // Vertical primary
-    if(dy>0){sx=A.cx;sy=A.y+A.h+PAD;ex=B.cx;ey=B.y-PAD;}
-    else{sx=A.cx;sy=A.y-PAD;ex=B.cx;ey=B.y+B.h+PAD;}
+    if(dx>0){
+      sx=A.x+A.w+PAD; sy=A.y+marginY+(sIdx+1)*availH/(sTotal+1); 
+      ex=B.x-PAD; ey=B.y+marginYB+(eIdx+1)*availHB/(eTotal+1);
+    } else {
+      sx=A.x-PAD; sy=A.y+marginY+(sIdx+1)*availH/(sTotal+1); 
+      ex=B.x+B.w+PAD; ey=B.y+marginYB+(eIdx+1)*availHB/(eTotal+1);
+    }
+  } else { // Vertical primary
+    if(dy>0){
+      sx=A.x+marginX+(sIdx+1)*availW/(sTotal+1); sy=A.y+A.h+PAD;
+      ex=B.x+marginXB+(eIdx+1)*availWB/(eTotal+1); ey=B.y-PAD;
+    } else {
+      sx=A.x+marginX+(sIdx+1)*availW/(sTotal+1); sy=A.y-PAD;
+      ex=B.x+marginXB+(eIdx+1)*availWB/(eTotal+1); ey=B.y+B.h+PAD;
+    }
   }
   return{sx,sy,ex,ey,ang};
 }
@@ -1624,7 +1644,7 @@ function updateEdges(){
   const hasSel=!!selNode;
 
   // Compute upstream / downstream sets for selected node
-  if(selNode){
+  if(hasSel){
     const up=new Set();const dn=new Set();
     const uq=[selNode];const uv=new Set([selNode]);
     for(let i=0;i<uq.length;i++){const c=uq[i];S.edges.forEach(e=>{if(e.to===c&&!uv.has(e.from)){uv.add(e.from);up.add(e.from);uq.push(e.from);}});}
@@ -1635,8 +1655,43 @@ function updateEdges(){
     S.upstream=new Set();S.downstream=new Set();
   }
 
+  // Pre-calculate Port Stubs (v4.42 Distribution)
+  const sideGroups = {}; // { node_id: { right: [], left: [], top: [], bottom: [] } }
+  S.edges.forEach((e, idx) => {
+    const A = nodeBounds(e.from), B = nodeBounds(e.to);
+    if(!A||!B) return;
+    const dx = B.cx - A.cx, dy = B.cy - A.cy;
+    let side;
+    if(Math.abs(dx) > Math.abs(dy)){ side = dx > 0 ? 'right' : 'left'; } 
+    else { side = dy > 0 ? 'bottom' : 'top'; }
+    if(!sideGroups[e.from]) sideGroups[e.from] = {right:[],left:[],top:[],bottom:[]};
+    if(!sideGroups[e.to]) sideGroups[e.to] = {right:[],left:[],top:[],bottom:[]};
+    sideGroups[e.from][side].push({idx, type:'out', otherPos: (side==='right'||side==='left' ? B.cy : B.cx)});
+    const opp = {right:'left', left:'right', bottom:'top', top:'bottom'}[side];
+    sideGroups[e.to][opp].push({idx, type:'in', otherPos: (opp==='right'||opp==='left' ? A.cy : A.cx)});
+  });
+  // Sort for crossover minimization
+  Object.values(sideGroups).forEach(node => {
+     Object.values(node).forEach(group => group.sort((a,b) => a.otherPos - b.otherPos));
+  });
+
   S.edges.forEach((e,idx)=>{
-    const a=getAnchors(e.from,e.to);
+    const sgSrc = sideGroups[e.from], sgDst = sideGroups[e.to];
+    let sIdx=0, sTotal=1, eIdx=0, eTotal=1;
+    if(sgSrc){
+       const A = nodeBounds(e.from), B = nodeBounds(e.to);
+       const dx = B.cx - A.cx, dy = B.cy - A.cy;
+       let side = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'bottom' : 'top');
+       const group = sgSrc[side];
+       sIdx = group.findIndex(g => g.idx === idx && g.type === 'out');
+       sTotal = group.length;
+       const opp = {right:'left', left:'right', bottom:'top', top:'bottom'}[side];
+       const groupE = sgDst[opp];
+       eIdx = groupE.findIndex(g => g.idx === idx && g.type === 'in');
+       eTotal = groupE.length;
+    }
+
+    const a=getAnchors(e.from,e.to, sIdx, sTotal, eIdx, eTotal);
     if(!a)return;
     const dir=e.dir||'forward';
     const isEdgeSel=S.selectedEdge===idx;
