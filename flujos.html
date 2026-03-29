@@ -217,6 +217,25 @@ body.light-mode [id*="grid"] {
   left:0; top:0;
   transition:transform .2s cubic-bezier(.16,1,.3,1), filter .12s;
 }
+.node.diamond {
+  min-width: 140px !important; width: 140px !important; height: 140px !important;
+}
+.node.diamond .nc {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  height: 100%; border-left-width: 1px !important; /* diamond uses uniform border */
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 10px !important;
+}
+.node.diamond .n-icon { font-size: 1.5rem; margin-bottom: 2px; }
+.node.diamond .n-lbl { 
+  font-size: 0.72rem; max-width: 85px; 
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-clamp: 3; overflow: hidden;
+}
+.node.diamond .n-sub, .node.diamond .n-meta, .node.diamond .n-badge { display: none; }
+.node.diamond .n-status { top: 15px; right: 15px; }
+.node.diamond .n-lvl { top: 15px; left: 15px; right: auto; transform: none; }
+.node.diamond .n-panel-tab { border-radius: 0 0 14px 0; bottom: 10px; right: 10px; width: 32px; height: 24px; font-size: 11px; }
+
 .node.is-drag{
   z-index:1000!important;
   transition:none;
@@ -579,6 +598,39 @@ body.pmode #panel{top:0!important}
 .ps-extra-lbl { writing-mode: vertical-rl; font-family: var(--font-h); font-size: .55rem; font-weight: 800; letter-spacing: 2px; color: rgba(186,230,253, .45); user-select: none; transition: color .2s; text-transform: uppercase; }
 .ps-extra-btn:hover .ps-extra-lbl, .ps-extra-btn.active .ps-extra-lbl { color: #fff; }
 body.pmode #panel-strip{top:0!important}
+.story-active #topnav, .story-active #toolbar, .story-active #panel, .story-active #panel-strip, .story-active #minimap { display: none !important; }
+.story-active .grid-bg { opacity: 0.02; }
+.story-active .sn-frame { opacity: 0.04; filter: blur(2px); }
+.story-active .node { opacity: 0.1; filter: grayscale(1) blur(1px); pointer-events: none; transform: scale(0.95); transition: all 1s cubic-bezier(.16,1,.3,1); }
+.story-active .node.story-focus { opacity: 1; filter: none; transform: scale(1.1); z-index: 2000; pointer-events: auto; box-shadow: 0 0 60px var(--nc, #00E5FF); border-color: #fff; }
+.story-active #asvg path { opacity: 0.05; }
+.story-active #asvg path.story-edge { opacity: 0.8 !important; stroke-width: 3 !important; filter: drop-shadow(0 0 8px #fff); stroke: #fff !important; }
+
+/* ── STORY PLAYER ───────────────────────────────── */
+#story-player {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: rgba(13, 15, 20, 0.85); backdrop-filter: blur(30px);
+  border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 20px;
+  padding: 12px 24px; display: none; align-items: center; gap: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,229,255,0.1);
+  z-index: 2500; transition: all 0.6s cubic-bezier(.16,1,.3,1);
+  opacity: 0;
+}
+#story-player.show { transform: translateX(-50%) translateY(0); opacity: 1; display: flex; }
+.sp-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+  color: #fff; border-radius: 12px; padding: 10px 18px; cursor: pointer;
+  font-family: var(--font-h); font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.sp-btn:hover { background: rgba(0,229,255,0.15); border-color: var(--c-cyan); color: var(--c-cyan); transform: scale(1.05); }
+.sp-btn:active { transform: scale(0.95); }
+.sp-btn.close { border-color: rgba(255,68,68,0.3); color: #ff6b6b; }
+.sp-btn.close:hover { background: rgba(255,68,68,0.1); border-color: #ff4444; color: #ff4444; }
+.sp-desc { font-size: 0.65rem; color: rgba(255,255,255,0.7); max-width: 400px; margin: 4px auto 0; font-weight: 500; line-height: 1.4; white-space: pre-wrap; }
+.sp-btn.auto-btn { color: var(--c-yellow); border-color: rgba(229,255,0,0.3); }
+.sp-btn.auto-btn.active { background: var(--c-yellow); color: #000; box-shadow: 0 0 15px rgba(229,255,0,0.4); }
 
 /* ── NAV COLLAPSE ─────────────────────────────────── */
 #nav-toggle{
@@ -703,8 +755,20 @@ body.pmode #nav-toggle{display:none}
   width: 20px; height: 20px; cursor: nwse-resize;
   background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.1) 50%);
   border-radius: 0 0 12px 0;
+  z-index: 2;
 }
 .sn-frame-handle:hover { background: linear-gradient(135deg, transparent 50%, var(--c-cyan) 50%); }
+
+.sn-frame-btn.del:hover { background: rgba(255,85,85,0.2); color: #ff8888; }
+
+.sn-resizer {
+  position: absolute; bottom: 0; right: 0;
+  width: 14px; height: 14px; cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.15) 50%);
+  border-radius: 0 0 2px 0;
+  z-index: 5;
+}
+.sn-resizer:hover { background: linear-gradient(135deg, transparent 50%, var(--c-cyan) 50%); }
 /* ── FLOAT CTRL (barra inferior izquierda) ───── */
 #float-ctrl {
   position: fixed; left: 14px; bottom: 14px; z-index: 200;
@@ -866,6 +930,21 @@ body.pmode #float-ctrl { display: none; }
     from { stroke-dashoffset: 30; }
     to { stroke-dashoffset: 0; }
   }
+  
+  /* v4.50 Narrative Trace */
+  @keyframes pathTrace {
+    0% { stroke-dashoffset: 1000; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0; }
+  }
+  .path-trace-anim {
+    fill: none; stroke: #fff; stroke-width: 5;
+    stroke-dasharray: 1000; stroke-dashoffset: 1000;
+    pointer-events: none; z-index: 2100;
+    filter: drop-shadow(0 0 10px #00E5FF);
+    animation: pathTrace 1.4s cubic-bezier(.16,1,.3,1) forwards;
+  }
 
   /* ── v4.43 PREMIUM NODE NOTES QUICK-VIEW ────────── */
   .note-quick-pop {
@@ -1001,14 +1080,25 @@ body.pmode #float-ctrl { display: none; }
         En pantalla
       </button>
 
-      <button class="tb-btn" onclick="addFrame()" data-tooltip="AGREGAR GRUPO — Crea un contenedor lógico para organizar y agrupar nodos relacionados.">
-        <span class="tb-ico">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <path d="M3 9h18"/>
-          </svg>
-        </span>
-        <span class="tb-lbl">Grupo</span>
+      <div class="tn-sep" style="width:100%;height:1px;margin:5px 0;opacity:.1"></div>
+      
+      <button class="tb-dropdown-btn" onclick="setLineStyle(true); closeOrganize()" id="btn-line-rect">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 19H5V5"/></svg>
+        Líneas Rectas
+      </button>
+      <button class="tb-dropdown-btn" onclick="setLineStyle(false); closeOrganize()" id="btn-line-curv">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 19C12 19 12 5 19 5"/></svg>
+        Líneas Curvas
+      </button>
+
+      <div class="tn-sep" style="width:100%;height:1px;margin:5px 0;opacity:.1"></div>
+
+      <button class="tb-dropdown-btn" onclick="addFrame(); closeOrganize()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18"/>
+        </svg>
+        Grupo
       </button>
     </div>
   </div>
@@ -1028,16 +1118,22 @@ body.pmode #float-ctrl { display: none; }
   <div class="tn-sep" style="height:20px;width:1px;background:rgba(186,230,253,.15);margin:0 4px"></div>
   
   <button class="tb-btn" onclick="togglePresentation()" data-tooltip="PRESENTAR — Pantalla completa sin distracciones para comités ejecutivos. (F11)">
-    <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
     <span class="tb-lbl">Presentar</span>
   </button>
   
+  <button class="tb-btn" id="btn-story-play" onclick="startStoryteller()" data-tooltip="HISTORIA — Inicia un recorrido narrativo guiado por los nodos clave del negocio.">
+    <span class="tb-ico">
+       <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-yellow)" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+    </span>
+    <span class="tb-lbl" style="color:var(--c-yellow)">Historia</span>
+  </button>
+
   <button class="tb-btn btn-db-save" id="btn-save-db" onclick="saveFullStateToDB()" data-tooltip="GUARDAR DIAGRAMA — Sincroniza la organización, estética y datos en el servidor (Nube).">
     <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v13a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
     <span class="tb-lbl">Guardar</span>
   </button>
 
-  <div class="tb-logo">OPENCORE CONNECT</div>
+  <div class="tb-logo">OPENCORE CONNECT <span style="font-size:0.5rem;opacity:0.3;vertical-align:middle">v4.51</span></div>
 </div>
 
 <!-- CANVAS -->
@@ -1067,6 +1163,7 @@ body.pmode #float-ctrl { display: none; }
     <button class="ptab active" onclick="switchTab('info')">Información</button>
     <button class="ptab" onclick="switchTab('files')">Archivos <span id="f-badge" style="font-size:.5rem;opacity:.5"></span></button>
     <button class="ptab" onclick="switchTab('notes')">Notas <span id="c-badge" style="font-size:.5rem;opacity:.5"></span></button>
+    <button class="ptab" onclick="switchTab('story')">Historia</button>
   </div>
   <div id="p-body"></div>
 </div>
@@ -1149,6 +1246,12 @@ body.pmode #float-ctrl { display: none; }
       <label class="m-lbl">Color</label>
       <div class="cp-row" id="m-cp"></div>
       <input type="hidden" id="m-theme" value="cyan">
+
+      <label class="m-lbl">Forma (v4.46)</label>
+      <div style="display:flex; gap:10px; margin-top:5px">
+         <label style="color:#fff; font-size:0.7rem; cursor:pointer"><input type="radio" name="m-shape" value="rect" checked> Proceso (Rect)</label>
+         <label style="color:#fff; font-size:0.7rem; cursor:pointer"><input type="radio" name="m-shape" value="diamond"> Decisión (Rombo)</label>
+      </div>
       <div class="m-row">
         <button type="submit" class="m-ok">Agregar</button>
         <button type="button" class="m-cancel" onclick="hideModal()">Cancelar</button>
@@ -1177,6 +1280,19 @@ body.pmode #float-ctrl { display: none; }
 
 <!-- TOAST CONTAINER -->
 <div id="toasts"></div>
+
+<div id="story-player">
+  <button class="sp-btn" onclick="prevStoryStep()" title="Anterior">←</button>
+  <div class="sp-info">
+    <div class="sp-step" id="sp-step-label">PASO 0 de 0</div>
+    <div class="sp-title" id="sp-step-title">TÍTULO DEL PASO</div>
+    <div class="sp-desc" id="sp-step-desc">Descripción narrativa del paso…</div>
+  </div>
+  <button class="sp-btn" onclick="nextStoryStep()" title="Siguiente">→</button>
+  <div style="width:1px; height:24px; background:rgba(255,255,255,0.1); margin:0 5px"></div>
+  <button class="sp-btn auto-btn" id="sp-auto-btn" onclick="toggleAutoPlay()" title="Auto-Play — Avance automático cada 5s">AUTO</button>
+  <button class="sp-btn close" onclick="stopStoryteller()">Finalizar</button>
+</div>
 
 <script>
 // ─── THEMES ───────────────────────────────────────────────────────────────────
@@ -1325,10 +1441,14 @@ const S = {
   activeTab:'info',
   nodeDragMoved:false,
   snapGrid:false,
+  rectilinear:false,
   showAllFlows:false,
   panelEditMode:false,
+  inStoryMode:false,
+  storyIdx:0,
+  story:[],
   frames:[],
-  draggingFrameId:null, resizingFrameId:null,
+  draggingFrameId:null, resizingFrameId:null
 };
 let panMoved=false;
 let expandedNoteId=null;
@@ -1467,16 +1587,21 @@ async function loadState(){
     if(d.pos) d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
     if(d.nodes) S.nodes.push(...d.nodes);
     if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
+    if(d.story) S.story=d.story;
+    if(d.rectilinear !== undefined) S.rectilinear = d.rectilinear;
     S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
     S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
-    
-    // Load and migrate notes/frames (v4.45)
     S.notes = migrateNotes(JSON.parse(localStorage.getItem('ocf-notes')||'[]'));
     S.frames = JSON.parse(localStorage.getItem('ocf-frames')||'[]');
   }catch(e){console.warn('LS load',e)}
   
+  if(!S.nodes.length){
+    S.nodes = JSON.parse(JSON.stringify(NODES_BASE));
+    S.edges = JSON.parse(JSON.stringify(EDGES_BASE));
+  }
+
   loadAttachments();
-  render(); // Ensure UI reflects the loaded state
+  render();
 }
 
 function applyStateFromJSON(d) {
@@ -1489,6 +1614,7 @@ function applyStateFromJSON(d) {
   // Migration logic for S.notes/frames (v4.45)
   S.notes = migrateNotes(d.notes || []);
   S.frames = d.frames || [];
+  S.story = d.story || [];
   
   render(); // Ensure UI reflects the new state
 }
@@ -1517,8 +1643,9 @@ function saveState(){
     const pos=S.nodes.map(n=>({id:n.id,x:n.x,y:n.y}));
     localStorage.setItem('ocf',JSON.stringify({
       pos,
-      nodes:S.nodes.filter(n=>n.custom),
-      edges:S.edges.filter(e=>e.custom||e.dir!=='forward'||e.label)
+      edges:S.edges.filter(e=>e.custom||e.dir!=='forward'||e.label),
+      story:S.story,
+      rectilinear: !!S.rectilinear
     }));
     localStorage.setItem('ocf-props',JSON.stringify(S.nodeProps));
     localStorage.setItem('ocf-comments',JSON.stringify(S.comments));
@@ -1535,6 +1662,7 @@ function saveFullStateToDB(){
     comments: S.comments,
     notes: S.notes,
     frames: S.frames,
+    story: S.story,
     ts: new Date().toISOString()
   };
   
@@ -1590,7 +1718,8 @@ function renderNodes(){
     const isDown=hasSel2&&S.downstream&&S.downstream.has(n.id);
     const isDimN=hasSel2&&!isUp&&!isDown&&n.id!==S.selected;
     const finalDim=S.showAllFlows?false:isDimN;
-    el.className='node'+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'')+(isUp?' upstream':'')+(isDown?' downstream':'')+(finalDim?' dim-ud':'');
+    const isDiamond=n.shape==='diamond';
+    el.className='node'+(isDiamond?' diamond':'')+(S.selected===n.id?' selected':'')+(S.connecting===n.id?' c-source':'')+(isUp?' upstream':'')+(isDown?' downstream':'')+(finalDim?' dim-ud':'');
     el.id='node-'+n.id;
     el.dataset.id=n.id;
     el.style.transform=`translate3d(${n.x}px, ${n.y}px, 0)`;
@@ -1728,7 +1857,10 @@ function renderNotes(){
     const rot = (parseInt(note.id.split('-')[1]) % 6) - 3; 
     el.style.transform = `rotate(${rot}deg)`;
 
-    el.innerHTML=`<div class="sn-note-txt">${esc(note.text || 'Nueva nota…')}</div>`;
+    el.innerHTML=`
+      <div class="sn-note-txt">${esc(note.text || 'Nueva nota…')}</div>
+      <div class="sn-resizer" onmousedown="onNoteResizeMD(event, '${note.id}')"></div>
+    `;
     
     el.addEventListener('mousedown', e => onStickyNoteMD(e, note.id));
     el.addEventListener('click', e => { e.stopPropagation(); openNote(note.id); });
@@ -1834,19 +1966,22 @@ function renderFrames(){
     el.id='fr-'+f.id;
     el.style.left=f.x+'px';
     el.style.top=f.y+'px';
-    el.style.width=f.w+'px';
-    el.style.height=f.h+'px';
+    el.style.width=(f.w||400)+'px';
+    el.style.height=(f.h||300)+'px';
     if(f.theme) el.style.setProperty('--frame-hdr-bg', TG[f.theme] || '');
 
     el.innerHTML=`
-      <div class="sn-frame-hdr" onmousedown="onFrameMD(event, '${f.id}', 'move')">
-        <div class="sn-frame-title" ondblclick="renameFrame('${f.id}')">${esc(f.title || 'NUEVO GRUPO')}</div>
-        <button class="sn-frame-del" onclick="deleteFrame('${f.id}')" title="Eliminar grupo">✕</button>
+      <div class="sn-frame-hdr" onmousedown="onFrameMD(event,'${f.id}','move')">
+        <div class="sn-frame-title">${esc(f.title || 'NUEVO GRUPO')}</div>
+        <div class="sn-frame-act">
+          <button class="sn-frame-btn" onclick="renameFrame('${f.id}')" title="Renombrar">✎</button>
+          <button class="sn-frame-btn" onclick="nextFrameTheme('${f.id}')" title="Color">🎨</button>
+          <button class="sn-frame-btn del" onclick="deleteFrame('${f.id}')" title="Eliminar">✕</button>
+        </div>
       </div>
-      <div class="sn-frame-handle" onmousedown="onFrameMD(event, '${f.id}', 'resize')"></div>
+      <div class="sn-resizer" onmousedown="onFrameMD(event,'${f.id}','resize')"></div>
     `;
-    
-    // Insert before nodes/edges to be in the background
+    // Insert behind nodes
     diag.insertBefore(el, diag.firstChild);
   });
 }
@@ -1859,7 +1994,7 @@ function addFrame(){
   const f={id:'frame-'+Date.now(), x:cx, y:cy, w:400, h:300, title:'NUEVO GRUPO', theme:'white'};
   if(!S.frames)S.frames=[];
   S.frames.push(f);
-  snapshot(); render(); saveState();
+  snapshot(); renderFrames(); saveState();
   playSfx('note');
 }
 
@@ -1878,8 +2013,20 @@ function onFrameMD(e, id, action){
     document.getElementById('fr-'+id)?.classList.add('is-drag');
   } else {
     S.resizingFrameId=id;
-    S.dragOffset={x:mx-f.w, y:my-f.h}; // using offset to store initial diff or just w/h
+    S.dragOffset={x:mx-(f.w||400), y:my-(f.h||300)};
   }
+  e.preventDefault();
+}
+
+function onNoteResizeMD(e, id){
+  if(e.button!==0 || S.mode!=='select') return;
+  e.stopPropagation();
+  const n=S.notes.find(n=>n.id===id); if(!n) return;
+  const wr=cwrap.getBoundingClientRect();
+  const mx=(e.clientX-wr.left-S.tx)/S.scale;
+  const my=(e.clientY-wr.top-S.ty)/S.scale;
+  S.resizingNoteId=id;
+  S.dragOffset={x:mx-(n.w||120), y:my-(n.h||120)};
   e.preventDefault();
 }
 
@@ -1899,12 +2046,23 @@ function deleteFrame(id){
   toast('Grupo eliminado','info');
 }
 
+function nextFrameTheme(id){
+  const f=S.frames.find(f=>f.id===id); if(!f) return;
+  const keys=Object.keys(THEMES);
+  let idx=keys.indexOf(f.theme||'white');
+  idx=(idx+1)%keys.length;
+  f.theme=keys[idx];
+  render(); saveState();
+  playSfx('note');
+}
+
 // ─── EDGE ROUTING ─────────────────────────────────────────────────────────────
 function nodeBounds(id){
   const n=S.nodes.find(n=>n.id===id);
   if(!n)return null;
-  const sz=szCache[id]||{w:162,h:74};
-  return{x:n.x,y:n.y,w:sz.w,h:sz.h,cx:n.x+sz.w/2,cy:n.y+sz.h/2};
+  const isDiamond = n.shape === 'diamond';
+  const sz=szCache[id]||(isDiamond ? {w:140,h:140} : {w:290,h:95});
+  return{x:n.x,y:n.y,w:sz.w,h:sz.h,cx:n.x+sz.w/2,cy:n.y+sz.h/2, shape:n.shape};
 }
 
 function getAnchors(fid,tid, sIdx=0, sTotal=1, eIdx=0, eTotal=1){
@@ -1915,42 +2073,51 @@ function getAnchors(fid,tid, sIdx=0, sTotal=1, eIdx=0, eTotal=1){
   const PAD = 8;
   
   let sx,sy,ex,ey;
-  // Percentage padding from corners (15%)
-  const marginX = A.w * 0.15;
-  const marginY = A.h * 0.15;
-  const availW = A.w - 2 * marginX;
-  const availH = A.h - 2 * marginY;
-
-  const marginXB = B.w * 0.15;
-  const marginYB = B.h * 0.15;
-  const availWB = B.w - 2 * marginXB;
-  const availHB = B.h - 2 * marginYB;
+  
+  const getPos = (rect, side, idx, total) => {
+    const isD = rect.shape === 'diamond';
+    const marginX = rect.w * (isD ? 0.35 : 0.15);
+    const marginY = rect.h * (isD ? 0.35 : 0.15);
+    const availW = rect.w - 2 * marginX;
+    const availH = rect.h - 2 * marginY;
+    
+    if(side === 'right')  return { x: rect.x + rect.w + PAD, y: rect.y + marginY + (idx+1)*availH/(total+1) };
+    if(side === 'left')   return { x: rect.x - PAD, y: rect.y + marginY + (idx+1)*availH/(total+1) };
+    if(side === 'bottom') return { x: rect.x + marginX + (idx+1)*availW/(total+1), y: rect.y + rect.h + PAD };
+    if(side === 'top')    return { x: rect.x + marginX + (idx+1)*availW/(total+1), y: rect.y - PAD };
+  };
 
   if(Math.abs(dx)>Math.abs(dy)){ // Horizontal primary
-    if(dx>0){
-      sx=A.x+A.w+PAD; sy=A.y+marginY+(sIdx+1)*availH/(sTotal+1); 
-      ex=B.x-PAD; ey=B.y+marginYB+(eIdx+1)*availHB/(eTotal+1);
-    } else {
-      sx=A.x-PAD; sy=A.y+marginY+(sIdx+1)*availH/(sTotal+1); 
-      ex=B.x+B.w+PAD; ey=B.y+marginYB+(eIdx+1)*availHB/(eTotal+1);
-    }
+    const sideA = dx > 0 ? 'right' : 'left';
+    const sideB = dx > 0 ? 'left' : 'right';
+    const pA = getPos(A, sideA, sIdx, sTotal);
+    const pB = getPos(B, sideB, eIdx, eTotal);
+    sx=pA.x; sy=pA.y; ex=pB.x; ey=pB.y;
   } else { // Vertical primary
-    if(dy>0){
-      sx=A.x+marginX+(sIdx+1)*availW/(sTotal+1); sy=A.y+A.h+PAD;
-      ex=B.x+marginXB+(eIdx+1)*availWB/(eTotal+1); ey=B.y-PAD;
-    } else {
-      sx=A.x+marginX+(sIdx+1)*availW/(sTotal+1); sy=A.y-PAD;
-      ex=B.x+marginXB+(eIdx+1)*availWB/(eTotal+1); ey=B.y+B.h+PAD;
-    }
+    const sideA = dy > 0 ? 'bottom' : 'top';
+    const sideB = dy > 0 ? 'top' : 'bottom';
+    const pA = getPos(A, sideA, sIdx, sTotal);
+    const pB = getPos(B, sideB, eIdx, eTotal);
+    sx=pA.x; sy=pA.y; ex=pB.x; ey=pB.y;
   }
   return{sx,sy,ex,ey,ang};
 }
 
 function getCurvedPath(a){
-  // v4.39.8 Cubic Bezier Restoration
   const cp1x = a.sx + (a.ex - a.sx) * 0.45;
   const cp2x = a.sx + (a.ex - a.sx) * 0.55;
   return `M${a.sx},${a.sy} C${cp1x},${a.sy} ${cp2x},${a.ey} ${a.ex},${a.ey}`;
+}
+
+function getRectilinearPath(a){
+  const midX = (a.sx + a.ex) / 2;
+  const midY = (a.sy + a.ey) / 2;
+  // Simple Z-shape routing
+  if(Math.abs(a.ex - a.sx) > Math.abs(a.ey - a.sy)) {
+    return `M${a.sx},${a.sy} L${midX},${a.sy} L${midX},${a.ey} L${a.ex},${a.ey}`;
+  } else {
+    return `M${a.sx},${a.sy} L${a.sx},${midY} L${a.ex},${midY} L${a.ex},${a.ey}`;
+  }
 }
 
 function pathMid(a){
@@ -2061,7 +2228,7 @@ function updateEdges(){
     const useGlow=isEdgeSel||activeFlow;
     const showFlow=isEdgeSel||activeFlow;
 
-    const d=getCurvedPath(a);
+    const d = S.rectilinear ? getRectilinearPath(a) : getCurvedPath(a);
 
     // Hit area (invisible, wide for easy click)
     const hit=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -2700,6 +2867,11 @@ document.addEventListener('fullscreenchange',()=>{
   if(!document.fullscreenElement)document.body.classList.remove('pmode');
 });
 
+function setLineStyle(isRect){
+  S.rectilinear=isRect;
+  render(); saveState();
+  toast(isRect?'Estilo: Líneas Rectas':'Estilo: Líneas Curvas','info');
+}
 // ─── NODE DRAG ────────────────────────────────────────────────────────────────
 function snapVal(v,g=40){return S.snapGrid?Math.round(v/g)*g:v;}
 
@@ -2795,6 +2967,15 @@ function onMouseMove(e){
       if(el){ el.style.width=f.w+'px'; el.style.height=f.h+'px'; }
       requestUpdate();
     }
+  }else if(S.resizingNoteId){
+    const n=S.notes.find(n=>n.id===S.resizingNoteId);
+    if(n){
+      n.w = Math.max(80, mx - S.dragOffset.x);
+      n.h = Math.max(80, my - S.dragOffset.y);
+      const el=document.getElementById('sn-'+n.id);
+      if(el){ el.style.width=n.w+'px'; el.style.height=n.h+'px'; }
+      requestUpdate();
+    }
   }else if(S.mode==='connect'&&S.connecting){
     updateConnPreview(e);
   }
@@ -2827,7 +3008,10 @@ function onMouseUp(){
     saveState();
   }
   if(S.resizingFrameId){
-    S.resizingFrameId=null;
+    saveState();
+  }
+  if(S.resizingNoteId){
+    S.resizingNoteId=null;
     saveState();
   }
   if(S.panDragging){S.panDragging=false;cwrap.classList.remove('dragging');}
@@ -2889,12 +3073,21 @@ function deleteSelected(){
   const id=S.selected;
   S.edges=S.edges.filter(e=>e.from!==id&&e.to!==id);
   S.nodes=S.nodes.filter(n=>n.id!==id);
-  delete S.comments[id];delete S.attachments[id];delete S.nodeProps[id];
+  // Vacuum metadata
+  S.story=S.story.filter(step=>step.id!==id);
+  delete S.comments[id]; 
+  delete S.attachments[id]; 
+  delete S.nodeProps[id];
+  if(szCache[id]) delete szCache[id];
+  
+  // v4.51 Storyteller safety
+  if(S.inStoryMode) stopStoryteller();
+  
   S.selected=null;
   snapshot();
-  closePanel();render();saveState();
+  closePanel(); render(); saveState();
   playSfx('delete');
-  toast('Nodo eliminado','info');
+  toast('Nodo & Datos eliminados','info');
 }
 
 // ─── CONNECT ─────────────────────────────────────────────────────────────────
@@ -2993,7 +3186,7 @@ function togglePanelStrip(){
 function switchTab(tab){
   S.activeTab=tab;
   S.panelEditMode=false;
-  const tabs=['info','files','notes'];
+  const tabs=['info','files','notes','story'];
   document.querySelectorAll('.ptab').forEach((el,i)=>el.classList.toggle('active',tabs[i]===tab));
   renderPanelBody(panelNodeId||S.selected,tab);
 }
@@ -3070,13 +3263,14 @@ function renderPanelBody(id,tab){
                ${[0,1,2,3,4,5,6,7].map(v=>`<option value="${v}"${(props.level===String(v)||props.level===v)?' selected':''}>L${v}</option>`).join('')}
              </select>
            </div>
-           <div>
-             <label class="ef-label">Color del Texto</label>
-             <div style="display:flex;gap:8px;align-items:center;height:40px">
-               <input type="color" id="ep-txt-col" value="${props.textColor||TC[n.theme]||'#00E5FF'}" style="width:30px;height:24px;border:none;background:transparent;cursor:pointer">
-               <button class="btn-sm" style="font-size:.45rem;padding:2px 5px" onclick="resetTextColor('${id}')">Reset</button>
+          </div>
+          <div>
+             <label class="ef-label">Forma del Nodo (v4.46)</label>
+             <div style="display:flex;gap:10px;margin-top:5px;height:40px;align-items:center">
+                <label style="color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="ep-shape" value="rect"${n.shape!=='diamond'?' checked':''}> PROCESO</label>
+                <label style="color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="ep-shape" value="diamond"${n.shape==='diamond'?' checked':''}> DECISIÓN</label>
              </div>
-           </div>
+          </div>
         </div>
 
         <div class="ps-t" style="margin:1.4rem 0 .5rem">Personalización Visual</div>
@@ -3128,7 +3322,7 @@ function renderPanelBody(id,tab){
     h+='</div>';
     body.innerHTML=h;
 
-  }else{ // notes
+  }else if(tab==='notes'){
     const comments=S.comments[id]||[];
     let h = '';
     
@@ -3159,7 +3353,202 @@ function renderPanelBody(id,tab){
     }
     h += `</div>`;
     body.innerHTML=h;
+
+  }else if(tab==='story'){
+    const isAdded = S.story.includes(id);
+    let h = `<div class="ps">
+      <div class="ps-t">Flujo Narrativo</div>
+      <p style="font-size:.65rem;opacity:.6;margin-bottom:15px;line-height:1.4">Define el orden en que este nodo aparecerá en la presentación guiada.</p>
+      
+      ${!isAdded ? 
+        `<button class="btn-save" style="width:100%;margin-bottom:20px" onclick="addToStory('${id}')">+ Agregar a la Historia</button>` :
+        `<div style="background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.2);padding:10px;border-radius:8px;margin-bottom:20px;text-align:center;color:var(--c-cyan);font-size:.65rem;font-weight:700">✓ YA EN LA HISTORIA</div>`
+      }
+
+      <div class="ps-t" style="margin-top:20px">Secuencia Actual</div>
+      <div class="story-list" style="display:flex;flex-direction:column;gap:8px">`;
+      
+    if(!S.story.length){
+      h += `<div style="font-size:.65rem;opacity:.3;text-align:center;padding:20px">No hay pasos definidos.</div>`;
+    } else {
+      S.story.forEach((item, idx) => {
+        const sid = typeof item === 'string' ? item : item.id;
+        const stitle = typeof item === 'object' ? item.title : '';
+        const sdesc = typeof item === 'object' ? item.desc : '';
+        const sn = S.nodes.find(n=>n.id===sid);
+        const isCurrent = (sid === id);
+        
+        h += `<div class="story-item" style="background:rgba(255,255,255,${isCurrent?0.08:0.03});padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,${isCurrent?0.2:0.05});margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fitNode('${sid}');selectNode('${sid}');renderPanelBody('${sid}','story')">
+            <div style="font-size:.6rem;font-weight:900;opacity:.4;width:20px">${idx+1}</div>
+            <div style="flex:1;font-size:.7rem;font-weight:700;color:${isCurrent?'var(--c-cyan)':'#fff'}">${esc(stitle || sn?.label || 'Nodo eliminado')}</div>
+            <div style="display:flex;gap:4px">
+              <button class="pr-btn" style="padding:2px 6px" onclick="event.stopPropagation();toggleStepMeta('${idx}')" title="Editar narración">✎</button>
+              <button class="pr-btn" style="padding:2px 6px" onclick="event.stopPropagation();moveStoryStep(${idx},-1)">↑</button>
+              <button class="pr-btn" style="padding:2px 6px" onclick="event.stopPropagation();moveStoryStep(${idx},1)">↓</button>
+              <button class="pr-btn" style="padding:2px 6px;color:var(--c-red)" onclick="event.stopPropagation();removeFromStory(${idx})">✕</button>
+            </div>
+          </div>
+          <div id="step-meta-${idx}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.05)">
+            <label class="ef-label" style="font-size:0.55rem">Título Personalizado</label>
+            <input class="ef" id="step-title-${idx}" value="${esc(stitle)}" placeholder="ej. Iniciación del Proceso" style="font-size:0.65rem">
+            <label class="ef-label" style="font-size:0.55rem;margin-top:8px">Narración / Descripción</label>
+            <textarea class="ef" id="step-desc-${idx}" style="height:60px;font-size:0.65rem" placeholder="Escribe el discurso para este paso…">${esc(sdesc)}</textarea>
+            <button class="btn-save" style="width:100%;margin-top:8px;height:28px;font-size:0.55rem" onclick="saveStepMeta(${idx})">Guardar Narración</button>
+          </div>
+        </div>`;
+      });
+    }
+    h += `</div></div>`;
+    body.innerHTML = h;
   }
+}
+
+// ─── STORYTELLER ACTIONS ───────────────────────────────────────────────────
+let autoPlayTimer = null;
+
+function toggleStepMeta(idx) {
+  const el = document.getElementById(`step-meta-${idx}`);
+  if(el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function saveStepMeta(idx) {
+  const title = document.getElementById(`step-title-${idx}`).value.trim();
+  const desc = document.getElementById(`step-desc-${idx}`).value.trim();
+  const current = S.story[idx];
+  const id = typeof current === 'string' ? current : current.id;
+  S.story[idx] = { id, title, desc };
+  saveState();
+  renderPanelBody(panelNodeId || id, 'story');
+  toast('Narración guardada', 'ok');
+}
+
+function addToStory(id){
+  // Support both old and new formats (id or object)
+  const isAdded = S.story.some(item => (typeof item === 'string' ? item : item.id) === id);
+  if(!isAdded) S.story.push(id);
+  saveState(); renderPanelBody(id,'story');
+  toast('Nodo añadido a la historia','ok');
+}
+function removeFromStory(idx){
+  S.story.splice(idx,1);
+  saveState(); renderPanelBody(panelNodeId||S.selected,'story');
+  toast('Paso eliminado', 'info');
+}
+function moveStoryStep(idx, dir){
+  const next = idx + dir;
+  if(next < 0 || next >= S.story.length) return;
+  const temp = S.story[idx];
+  S.story[idx] = S.story[next];
+  S.story[next] = temp;
+  saveState(); renderPanelBody(panelNodeId||S.selected,'story');
+}
+
+function startStoryteller(){
+  if(!S.story.length) return toast('Añada nodos a la historia primero','info');
+  S.inStoryMode = true;
+  S.storyIdx = 0;
+  document.body.classList.add('story-active');
+  document.getElementById('story-player').classList.add('show');
+  goToStoryStep(0);
+}
+function stopStoryteller(){
+  S.inStoryMode = false;
+  if(autoPlayTimer) clearInterval(autoPlayTimer);
+  autoPlayTimer = null;
+  document.getElementById('sp-auto-btn')?.classList.remove('active');
+  document.body.classList.remove('story-active');
+  document.getElementById('story-player').classList.remove('show');
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('story-focus'));
+  document.querySelectorAll('#asvg path').forEach(p=>p.classList.remove('story-edge'));
+  render();
+}
+function goToStoryStep(idx){
+  if(idx<0 || idx>=S.story.length) return;
+  const prevIdx = S.storyIdx;
+  S.storyIdx = idx;
+  const item = S.story[idx];
+  const nid = typeof item === 'string' ? item : item.id;
+  const n = S.nodes.find(node=>node.id===nid);
+  if(!n) return;
+  
+  // Trace animation (v4.50)
+  if(idx !== prevIdx){
+    const prevItem = S.story[prevIdx];
+    const prevId = typeof prevItem === 'string' ? prevItem : prevItem.id;
+    const edge = S.edges.find(e => (e.from===prevId && e.to===nid) || (e.from===nid && e.to===prevId));
+    if(edge){
+      const a = getAnchors(edge.from, edge.to);
+      if(a){
+        const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+        p.setAttribute('d', S.rectilinear ? getRectilinearPath(a) : getCurvedPath(a));
+        p.setAttribute('class','path-trace-anim');
+        svgEl.appendChild(p);
+        setTimeout(() => p.remove(), 1500);
+      }
+    }
+  }
+
+  // Custom Meta
+  const stitle = (typeof item === 'object' && item.title) ? item.title : (n.label || 'S/N');
+  const sdesc = (typeof item === 'object' && item.desc) ? item.desc : '';
+
+  // Update Highlights
+  document.querySelectorAll('.node').forEach(el=>el.classList.remove('story-focus'));
+  const el = document.getElementById('node-'+nid);
+  if(el) el.classList.add('story-focus');
+  
+  // Highlight edges
+  document.querySelectorAll('#asvg path').forEach(p=>p.classList.remove('story-edge'));
+  if(idx > 0){
+    const prevItem = S.story[idx-1];
+    const prevId = typeof prevItem === 'string' ? prevItem : prevItem.id;
+    // We search for the edge element in the DOM
+    const p = svgEl.querySelector(`#ep-${S.edges.findIndex(e=>(e.from===prevId&&e.to===nid)||(e.to===prevId&&e.from===nid))}`);
+    if(p) p.classList.add('story-edge');
+  }
+
+  // Auto-pan / Zoom
+  fitNode(nid);
+  
+  // Render Player UI
+  document.getElementById('sp-step-label').textContent = `PASO ${idx+1} de ${S.story.length}`;
+  document.getElementById('sp-step-title').textContent = stitle.toUpperCase();
+  document.getElementById('sp-step-desc').textContent = sdesc;
+}
+function nextStoryStep(){ 
+  if(S.storyIdx < S.story.length-1) goToStoryStep(S.storyIdx+1); 
+  else { stopStoryteller(); toast('Historia finalizada','ok'); }
+}
+function prevStoryStep(){ if(S.storyIdx > 0) goToStoryStep(S.storyIdx-1); }
+
+function toggleAutoPlay() {
+  const btn = document.getElementById('sp-auto-btn');
+  if(autoPlayTimer) {
+    clearInterval(autoPlayTimer);
+    autoPlayTimer = null;
+    btn.classList.remove('active');
+    toast('Auto-Play pausado', 'info');
+  } else {
+    btn.classList.add('active');
+    toast('Auto-Play iniciado (5s)', 'ok');
+    autoPlayTimer = setInterval(() => {
+      if(S.storyIdx < S.story.length-1) nextStoryStep();
+      else stopStoryteller();
+    }, 5000);
+  }
+}
+
+function fitNode(id){
+  const n=S.nodes.find(n=>n.id===id); if(!n) return;
+  const wr=cwrap.getBoundingClientRect();
+  const sz = szCache[id]||{w:290,h:95};
+  const targetScale = 1.0;
+  S.scale = targetScale;
+  S.tx = (wr.width/2) - (n.x + sz.w/2) * S.scale;
+  S.ty = (wr.height/2) - (n.y + sz.h/2) * S.scale;
+  document.getElementById('diagram').style.transform = `translate(${S.tx}px,${S.ty}px) scale(${S.scale})`;
+  updateMinimap();
 }
 
 // ─── NODE PROPS SAVE ──────────────────────────────────────────────────────────
@@ -3173,10 +3562,12 @@ function saveNodeProps(id){
   const theme=document.getElementById('ep-cp')?.dataset.val||n.theme;
   const icon=document.getElementById('ep-icon')?.value.trim()||n.icon;
   const tCol=document.getElementById('ep-txt-col')?.value;
+  const shape=document.querySelector('input[name="ep-shape"]:checked')?.value;
   
   if(label)n.label=label;
   n.sub=sub!==undefined?sub:n.sub;
   n.theme=theme;n.icon=icon;
+  if(shape)n.shape=shape;
   
   if(!S.nodeProps[id])S.nodeProps[id]={};
   S.nodeProps[id].responsible=resp||'';
@@ -3452,13 +3843,14 @@ function submitModal(){
   const sub=document.getElementById('m-sub').value.trim();
   const icon=document.getElementById('m-icon').value.trim()||'⬡';
   const theme=document.getElementById('m-theme').value||'cyan';
+  const shape=document.querySelector('input[name="m-shape"]:checked')?.value||'rect';
   const resp=document.getElementById('m-resp').value.trim();
   const lvl=document.getElementById('m-level').value;
   if(!label){document.getElementById('m-label').focus();return;}
   const vpCX=(cwrap.clientWidth/2-S.tx)/S.scale;
   const vpCY=(cwrap.clientHeight/2-S.ty)/S.scale;
   const id='c_'+Date.now();
-  const nn={id,label:label.toUpperCase(),sub,icon,theme,x:snapVal(vpCX-80),y:snapVal(vpCY-40),custom:true,detail:null};
+  const nn={id,label:label.toUpperCase(),sub,icon,theme,shape,x:snapVal(vpCX-80),y:snapVal(vpCY-40),custom:true,detail:null};
   S.nodes.push(nn);
   if(!S.nodeProps[id])S.nodeProps[id]={};
   if(resp)S.nodeProps[id].responsible=resp;
