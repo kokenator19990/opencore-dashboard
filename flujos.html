@@ -1562,7 +1562,9 @@ const S = {
   frames:[],
   draggingFrameId:null, resizingFrameId:null,
   viewContext: 'root', // v4.54 context depth
-  viewStack: [] // v4.54 breadcrumb history
+  viewStack: [], // v4.54 breadcrumb history
+  syncTimer: null, // v4.54.6 debounce timer
+  isServerOffline: false // v4.54.6 silence noise
 };
 let panMoved=false;
 let expandedNoteId=null;
@@ -1784,12 +1786,23 @@ function saveState(){
       viewContext: S.viewContext,
       viewStack: S.viewStack
     };
+    // 1. Instant Local Save
     localStorage.setItem('ocf',JSON.stringify(d));
-    saveFullStateToDB(d);
+    
+    // 2. Debounced Cloud Sync (5 seconds quiet period)
+    if(S.syncTimer) clearTimeout(S.syncTimer);
+    S.syncTimer = setTimeout(() => {
+      saveFullStateToDB(d);
+      S.syncTimer = null;
+    }, 5000);
+
   }catch(e){console.warn('LS save',e)}
 }
 
 function saveFullStateToDB(){
+  // Silence noise if server is known offline
+  if(S.isServerOffline) return;
+
   const data = {
     nodes: S.nodes.map(n=>({...n})),
     edges: S.edges.map(e=>({...e})),
@@ -1807,19 +1820,28 @@ function saveFullStateToDB(){
   fd.append('action', 'save_state');
   fd.append('state', JSON.stringify(data));
   
+  // Singleton Notification: Clear existing sync toasts if any
+  const container = document.getElementById('toasts');
+  if(container) container.innerHTML = ''; 
+
   toast('Sincronizando con el servidor…', 'info');
-  playSfx('save');
   
   fetch(FILES_API, { method: 'POST', body: fd })
     .then(r => r.json())
     .then(res => {
+      if(container) container.innerHTML = '';
       if(res.ok) {
         toast('Copia de seguridad guardada en la nube', 'ok');
       } else {
         toast('Error al guardar en servidor: ' + (res.error||'Desconocido'), 'err');
       }
     })
-    .catch(() => toast('Servidor no disponible — Autoguardado local activo', 'info'));
+    .catch(() => {
+      if(container) container.innerHTML = '';
+      toast('Servidor no disponible — Autoguardado local activo', 'info');
+      S.isServerOffline = true; // Silence further attempts this session
+      console.warn('Sync failed: Server offline.');
+    });
 }
 
 // ─── DOM REFS ─────────────────────────────────────────────────────────────────
