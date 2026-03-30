@@ -366,7 +366,7 @@ body.light-mode [id*="grid"] {
 }
 .nc{position:relative}
 .n-lvl{
-  position:absolute;top:7px;right:7px;z-index:5;
+  position:absolute;top:7px;left:7px;right:auto;z-index:5;
   font-family:var(--font-h);font-size:.52rem;font-weight:700;letter-spacing:.6px;
   padding:2px 8px;border-radius:20px;
   background:rgba(255,255,255,.12);
@@ -695,31 +695,34 @@ body.pmode #panel-strip{top:0!important}
   100% { opacity: 1.0; stroke-width: 6; filter: drop-shadow(0 0 20px #fff); }
 }
 
-/* ── STORY PLAYER ───────────────────────────────── */
+/* ── STORY PLAYER (DEV MODE UI) ───────────────────────────────── */
 #story-player {
   position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-  background: rgba(13, 15, 20, 0.85); backdrop-filter: blur(30px);
-  border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 20px;
-  padding: 12px 24px; display: none; align-items: center; gap: 20px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(0,229,255,0.1);
-  z-index: 2500; transition: all 0.6s cubic-bezier(.16,1,.3,1);
+  background: #0d0f14; border: 1px solid rgba(0,229,255,0.3);
+  border-radius: 4px; padding: 10px 20px;
+  display: none; align-items: center; gap: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 15px rgba(0,229,255,0.05);
+  z-index: 2500; transition: all 0.4s cubic-bezier(.16,1,.3,1);
   opacity: 0;
+  font-family: 'Consolas', 'Courier New', monospace;
 }
 #story-player.show { transform: translateX(-50%) translateY(0); opacity: 1; display: flex; }
 .sp-btn {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
-  color: #fff; border-radius: 12px; padding: 10px 18px; cursor: pointer;
-  font-family: var(--font-h); font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1.5px; transition: all 0.2s;
-  display: flex; align-items: center; gap: 8px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; border-radius: 2px; padding: 8px 14px; cursor: pointer;
+  font-family: 'Consolas', 'Courier New', monospace; font-size: 0.75rem; font-weight: bold;
+  text-transform: uppercase; letter-spacing: 1px; transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
 }
-.sp-btn:hover { background: rgba(0,229,255,0.15); border-color: var(--c-cyan); color: var(--c-cyan); transform: scale(1.05); }
-.sp-btn:active { transform: scale(0.95); }
-.sp-btn.close { border-color: rgba(255,68,68,0.3); color: #ff6b6b; }
-.sp-btn.close:hover { background: rgba(255,68,68,0.1); border-color: #ff4444; color: #ff4444; }
-.sp-desc { font-size: 0.65rem; color: rgba(255,255,255,0.7); max-width: 400px; margin: 4px auto 0; font-weight: 500; line-height: 1.4; white-space: pre-wrap; }
-.sp-btn.auto-btn { color: var(--c-yellow); border-color: rgba(229,255,0,0.3); }
-.sp-btn.auto-btn.active { background: var(--c-yellow); color: #000; box-shadow: 0 0 15px rgba(229,255,0,0.4); }
+.sp-btn:hover { background: rgba(0,229,255,0.1); border-color: var(--c-cyan); color: var(--c-cyan); box-shadow: 0 0 8px rgba(0,229,255,0.2); }
+.sp-btn:active { transform: translateY(1px); }
+.sp-btn.close { border-color: rgba(255,68,68,0.3); color: #ff5555; }
+.sp-btn.close:hover { background: rgba(255,68,68,0.15); border-color: #ff4444; color: #ff4444; box-shadow: 0 0 8px rgba(255,68,68,0.2); }
+
+.sp-text { text-align: center; min-width: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sp-title { font-family: var(--font-h); font-size: 0.8rem; font-weight: 700; color: #fff; letter-spacing: 1.5px; }
+.sp-step { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.6rem; color: var(--c-cyan); margin-bottom: 2px; opacity: 0.8; letter-spacing: 1px; }
+.sp-desc { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.65rem; color: rgba(255,255,255,0.5); max-width: 450px; margin: 4px auto 0; line-height: 1.4; white-space: pre-wrap; font-weight: normal; text-transform: none; }
 
 /* ── NAV COLLAPSE ─────────────────────────────────── */
 #nav-toggle{
@@ -1181,11 +1184,7 @@ body.pmode #float-ctrl { display: none; }
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0"></div>
       <button class="tb-dropdown-btn ${S.lineStyle==='direct'?'active':''}" onclick="setLineStyle('direct'); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-        Líneas Directas (v4.53)
-      </button>
-      <button class="tb-dropdown-btn ${S.lineStyle==='orthogonal'?'active':''}" onclick="setLineStyle('orthogonal'); closeOrganize()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6h-8v12h-8"/></svg>
-        Líneas Ortogonales
+        Líneas Rectas
       </button>
       <button class="tb-dropdown-btn ${S.lineStyle==='curved'?'active':''}" onclick="setLineStyle('curved'); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12c4-8 14-8 18 0"/></svg>
@@ -1386,23 +1385,24 @@ body.pmode #float-ctrl { display: none; }
 
 <div id="story-player">
   <div style="display:flex;flex-direction:column;gap:4px;margin-right:15px">
-    <div style="font-size:8px;color:rgba(0,229,255,0.4);font-weight:900;letter-spacing:1px;text-transform:uppercase">Secuencia</div>
+    <div style="font-size:8px;color:rgba(0,229,255,0.4);font-weight:900;letter-spacing:1px;text-transform:uppercase;font-family:'Consolas',monospace">Secuencia</div>
     <div style="display:flex;gap:4px">
-      <button class="btn-sm ${S.activeStory===1?'active':''}" style="padding:2px 6px;font-size:9px" onclick="setActiveStory(1)">H1</button>
-      <button class="btn-sm ${S.activeStory===2?'active':''}" style="padding:2px 6px;font-size:9px" onclick="setActiveStory(2)">H2</button>
-      <button class="btn-sm ${S.activeStory===3?'active':''}" style="padding:2px 6px;font-size:9px" onclick="setActiveStory(3)">H3</button>
+      <button class="btn-sm ${S.activeStory===1?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(1)">H1</button>
+      <button class="btn-sm ${S.activeStory===2?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(2)">H2</button>
+      <button class="btn-sm ${S.activeStory===3?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(3)">H3</button>
     </div>
   </div>
   <div class="tn-sep" style="height:30px;width:1px;background:rgba(255,255,255,0.1);margin:0 10px"></div>
-  <button class="sp-btn" onclick="goToStoryStep(S.storyIdx-1)" title="Paso Anterior">←</button>
+  <button class="sp-btn" onclick="prevStoryStep()" title="Paso Anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m15 18-6-6 6-6"/></svg></button>
   <div class="sp-text">
-    <div class="sp-title" id="sp-step-title"></div>
     <div class="sp-step" id="sp-step-label"></div>
+    <div class="sp-title" id="sp-step-title"></div>
+    <div class="sp-desc" id="sp-step-desc"></div>
   </div>
-  <button class="sp-btn" onclick="goToStoryStep(S.storyIdx+1)" title="Siguiente Paso">→</button>
+  <button class="sp-btn" onclick="nextStoryStep()" title="Siguiente Paso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="m9 18 6-6-6-6"/></svg></button>
   <div class="tn-sep" style="height:30px;width:1px;background:rgba(255,255,255,0.1);margin:0 15px"></div>
-  <button class="sp-btn auto-btn" id="sp-auto-btn" onclick="toggleAutoPlay()">AUTO</button>
-  <button class="sp-btn close" onclick="stopStoryteller()">FINALIZAR</button>
+  <button class="sp-btn" id="sp-auto-btn" onclick="toggleAutoPlay()" style="color:var(--c-yellow);border-color:rgba(229,255,0,0.3)">[ AUTO ]</button>
+  <button class="sp-btn close" onclick="stopStoryteller()">[ EXIT ]</button>
 </div>
 
 <script>
@@ -3772,7 +3772,7 @@ function goToStoryStep(idx){
   // Highlight edges
   document.querySelectorAll('#asvg path').forEach(p=>p.classList.remove('story-edge'));
   if(idx > 0){
-    const prevItem = S.story[idx-1];
+    const prevItem = story[idx-1];
     const prevId = typeof prevItem === 'string' ? prevItem : prevItem.id;
     // We search for the edge element in the DOM
     const p = svgEl.querySelector(`#ep-${S.edges.findIndex(e=>(e.from===prevId&&e.to===nid)||(e.to===prevId&&e.from===nid))}`);
@@ -3783,12 +3783,13 @@ function goToStoryStep(idx){
   fitNode(nid);
   
   // Render Player UI
-  document.getElementById('sp-step-label').textContent = `PASO ${idx+1} de ${S.story.length}`;
+  document.getElementById('sp-step-label').textContent = `STEP [ ${idx+1} / ${story.length} ]`;
   document.getElementById('sp-step-title').textContent = stitle.toUpperCase();
   document.getElementById('sp-step-desc').textContent = sdesc;
 }
 function nextStoryStep(){ 
-  if(S.storyIdx < S.story.length-1) goToStoryStep(S.storyIdx+1); 
+  const story = S.stories[S.activeStory];
+  if(S.storyIdx < story.length-1) goToStoryStep(S.storyIdx+1); 
   else { stopStoryteller(); toast('Historia finalizada','ok'); }
 }
 function prevStoryStep(){ if(S.storyIdx > 0) goToStoryStep(S.storyIdx-1); }
@@ -3799,12 +3800,17 @@ function toggleAutoPlay() {
     clearInterval(autoPlayTimer);
     autoPlayTimer = null;
     btn.classList.remove('active');
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--c-yellow)';
     toast('Auto-Play pausado', 'info');
   } else {
     btn.classList.add('active');
+    btn.style.background = 'rgba(229,255,0,0.15)';
+    btn.style.color = '#fff';
     toast('Auto-Play iniciado (5s)', 'ok');
     autoPlayTimer = setInterval(() => {
-      if(S.storyIdx < S.story.length-1) nextStoryStep();
+      const story = S.stories[S.activeStory];
+      if(S.storyIdx < story.length-1) nextStoryStep();
       else stopStoryteller();
     }, 5000);
   }
