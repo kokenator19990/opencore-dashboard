@@ -141,6 +141,21 @@ body.light-mode [id*="grid"] {
   transform:translateY(-1px);
 }
 
+/* ── LEFT NAVIGATION TOOLS ───────────────────────── */
+#left-tools{
+  position:fixed;top:calc(var(--nav-h) + var(--tb-h) + 16px);left:16px;z-index:300;
+  display:flex;flex-direction:column;gap:6px;
+  background: linear-gradient(180deg, rgba(17,20,27,.98) 0%, rgba(10,12,18,1) 100%);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--c-tb-border);border-radius:12px;padding:6px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+#left-tools .tb-btn{
+  flex-direction:column;font-size:0.6rem;padding:8px;border-radius:8px;
+}
+#left-tools .tb-btn .tb-ico svg{width:20px;height:20px;}
+#left-tools .tb-btn .tb-lbl{margin-top:4px}
+
 /* ── BREADCRUMBS ─────────────────────────────────── */
 #breadcrumbs {
   position: fixed; top: calc(var(--nav-h) + 16px); left: 20px; z-index: 1500;
@@ -1138,6 +1153,14 @@ body.pmode #float-ctrl { display: none; }
   <button class="qt-btn qt-del" onclick="deleteSelectedNode()" title="Eliminar Nodo">🗑</button>
 </div>
 
+<!-- LEFT TOOLS (Nav) -->
+<div id="left-tools">
+  <button class="tb-btn" id="btn-pan" onclick="setMode('pan')" data-tooltip="MOVER — Desplázate libremente por el lienzo del diagrama.">
+    <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></span>
+    <span class="tb-lbl">Mover</span>
+  </button>
+</div>
+
 <!-- TOOLBAR -->
 <div id="toolbar">
   <button class="tb-btn active" id="btn-sel" onclick="setMode('select')" data-tooltip="SELECCIONAR — Arrastra para mover nodos, haz clic para ver detalles.">
@@ -1148,10 +1171,7 @@ body.pmode #float-ctrl { display: none; }
     <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A3 3 0 1 0 18 2a3 3 0 0 0 0 6Z"/><path d="M6 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 5H9a4 4 0 0 0-4 4v7"/></svg></span>
     <span class="tb-lbl">Conectar</span>
   </button>
-  <button class="tb-btn" id="btn-pan" onclick="setMode('pan')" data-tooltip="MOVER — Desplázate libremente por el lienzo del diagrama.">
-    <span class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></span>
-    <span class="tb-lbl">Mover</span>
-  </button>
+  <!-- [Mover tool moved to left-tools] -->
 
   <div class="tn-sep" style="height:20px;width:1px;background:rgba(186,230,253,.15);margin:0 4px"></div>
 
@@ -1220,7 +1240,7 @@ body.pmode #float-ctrl { display: none; }
       <span class="tb-ico">
          <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-yellow)" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
       </span>
-      <span class="tb-lbl" style="color:var(--c-yellow);font-size:9px">Historia (H${S.activeStory})</span>
+      <span class="tb-lbl" style="color:var(--c-yellow);font-size:9px;letter-spacing:1px">STORY</span>
     </div>
   </button>
 
