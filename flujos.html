@@ -285,7 +285,7 @@ body.light-mode [id*="grid"] {
   transition:none;
 }
 .nc {
-  background: linear-gradient(145deg, #181d28 0%, #0d0f14 100%);
+  background: linear-gradient(145deg, rgba(28, 28, 30, 0.85) 0%, rgba(10, 10, 12, 0.95) 100%);
   backdrop-filter:blur(24px);
   -webkit-backdrop-filter:blur(24px);
   border:1px solid rgba(255,255,255,0.08);
@@ -298,7 +298,7 @@ body.light-mode [id*="grid"] {
   cursor:pointer;overflow:hidden;
 }
 .node:hover .nc {
-  background: linear-gradient(145deg, #1c2230 0%, #0d0f14 100%);
+  background: linear-gradient(145deg, rgba(36, 36, 38, 0.9) 0%, rgba(14, 14, 16, 0.98) 100%);
   box-shadow:
     0 20px 60px rgba(0,0,0,.6),
     0 0 1px var(--nc),
@@ -366,20 +366,19 @@ body.light-mode [id*="grid"] {
 }
 .nc{position:relative}
 .n-lvl{
-  position:absolute;top:7px;left:7px;right:auto;z-index:5;
-  font-family:var(--font-h);font-size:.52rem;font-weight:700;letter-spacing:.6px;
-  padding:2px 8px;border-radius:20px;
-  background:rgba(255,255,255,.12);
-  color:var(--c-node-text);
-  border:1px solid rgba(255,255,255,.2);
+  position:absolute;top:10px;left:10px;right:auto;z-index:5;
+  font-family:var(--font-h);font-size:.56rem;font-weight:800;letter-spacing:.6px;
+  padding:3px 8px;border-radius:6px;
+  background:rgba(0,0,0,0.6);
   color:#fff;
+  border:1px solid rgba(255,255,255,0.3);
   cursor:pointer;user-select:none;
   transition:all .18s;white-space:nowrap;
-  box-shadow:0 2px 12px var(--c-card-shadow);
+  box-shadow:0 3px 10px rgba(0,0,0,0.5);
 }
-.n-lvl:hover{background:rgba(255,255,255,.2);transform:scale(1.1);box-shadow:0 0 14px var(--nc,#00E5FF)}
-.n-lvl-unset{opacity:.75;border-style:dashed;color:rgba(255,255,255,.8)!important;border-color:rgba(255,255,255,.3)!important;background:rgba(0,229,255,.1)}
-.n-lvl-unset:hover{opacity:1!important;background:rgba(0,229,255,.2)}
+.n-lvl:hover{background:rgba(255,255,255,.15);border-color:#fff;transform:scale(1.05);box-shadow:0 0 15px var(--nc,#00E5FF)}
+.n-lvl-unset{opacity:.75;border-style:dashed;color:rgba(255,255,255,.6)!important;border-color:rgba(255,255,255,.2)!important;background:rgba(0,0,0,0.3);}
+.n-lvl-unset:hover{opacity:1!important;background:rgba(0,0,0,0.6);border-color:rgba(255,255,255,.4)!important;}
 .node.upstream .nc{border-left-color:#00FF85!important;box-shadow:0 0 16px rgba(0,255,133,.2),inset 0 1px 0 rgba(0,255,133,.08)!important}
 .node.downstream .nc{border-left-color:#E5FF00!important;box-shadow:0 0 16px rgba(229,255,0,.18),inset 0 1px 0 rgba(229,255,0,.07)!important}
 .node.dim-ud .nc{opacity:.22;filter:grayscale(.5)}
