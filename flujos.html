@@ -411,8 +411,23 @@ body.light-mode [id*="grid"] {
   box-shadow:0 3px 10px rgba(0,0,0,0.5);
 }
 .n-lvl:hover{background:rgba(255,255,255,.15);border-color:#fff;transform:scale(1.05);box-shadow:0 0 15px var(--nc,#00E5FF)}
-.n-lvl-unset{opacity:.75;border-style:dashed;color:rgba(255,255,255,.6)!important;border-color:rgba(255,255,255,.2)!important;background:rgba(0,0,0,0.3);}
 .n-lvl-unset:hover{opacity:1!important;background:rgba(0,0,0,0.6);border-color:rgba(255,255,255,.4)!important;}
+/* STORY BADGES ON NODES */
+.n-story-add-group {
+  position: absolute; top: 10px; right: 10px; z-index: 5;
+  display: flex; gap: 4px; pointer-events: auto;
+}
+.n-story-add {
+  background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+  font-family: var(--font-h); font-size: 0.6rem; font-weight: 800;
+  width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); padding:0;
+}
+.n-story-add:hover {
+  background: rgba(229, 255, 0, 0.15); border-color: rgba(229, 255, 0, 0.6);
+  color: #E5FF00; transform: scale(1.15);
+}
 .node.upstream .nc{border-left-color:#00FF85!important;box-shadow:0 0 16px rgba(0,255,133,.2),inset 0 1px 0 rgba(0,255,133,.08)!important}
 .node.downstream .nc{border-left-color:#E5FF00!important;box-shadow:0 0 16px rgba(229,255,0,.18),inset 0 1px 0 rgba(229,255,0,.07)!important}
 .node.dim-ud .nc{opacity:.22;filter:grayscale(.5)}
@@ -1264,13 +1279,11 @@ body.pmode #float-ctrl { display: none; }
     <span class="tb-lbl">Presentar</span>
   </button>
   
-  <button class="tb-btn" id="btn-story-play" onclick="startStoryteller()" data-tooltip="HISTORIA — Inicia un recorrido narrativo guiado por los nodos clave del negocio.">
-    <div style="display:flex;flex-direction:column;align-items:center">
-      <span class="tb-ico">
-         <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-yellow)" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-      </span>
-      <span class="tb-lbl" style="color:var(--c-yellow);font-size:9px;letter-spacing:1px">STORY</span>
-    </div>
+  <button class="tb-btn" id="btn-story-play" onclick="startStoryteller()" data-tooltip="STORY — Inicia un recorrido narrativo guiado por los nodos.">
+    <span class="tb-ico">
+       <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-yellow)" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+    </span>
+    <span class="tb-lbl" style="color:var(--c-yellow);font-weight:700;letter-spacing:.5px">STORY</span>
   </button>
 
   <button class="tb-btn btn-db-save" id="btn-save-db" onclick="saveFullStateToDB()" data-tooltip="GUARDAR DIAGRAMA — Sincroniza la organización, estética y datos en el servidor (Nube).">
@@ -1834,9 +1847,14 @@ async function loadState(){
   const lsKey = S.activeWorkspace === 'default' ? 'ocf' : 'ocf-' + S.activeWorkspace;
   try{
     const d=JSON.parse(localStorage.getItem(lsKey)||'{}');
-    if(d.pos) d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
-    if(d.nodes) S.nodes.push(...d.nodes);
-    if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
+    if(d.nodes && d.nodes.length > 0) {
+      S.nodes = d.nodes.map(n=>({...n}));
+    } else if(d.pos) {
+      d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
+    }
+    if(d.edges && d.edges.length > 0) {
+      S.edges = d.edges.map(e=>({dir:'forward',label:'',...e}));
+    }
     if(d.story) S.stories[1]=d.story;
     if(d.stories) S.stories=d.stories;
     if(d.activeStory) S.activeStory=d.activeStory;
