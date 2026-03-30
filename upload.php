@@ -49,8 +49,22 @@ function err($msg, $code = 400) {
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? '';
     if ($action === 'load_state') {
-        if (!file_exists(STATE_FILE)) { echo json_encode(['empty' => true]); exit; }
-        echo file_get_contents(STATE_FILE);
+        $wpId = $_GET['workspace'] ?? 'default';
+        $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $wpId) ?: 'default';
+        $file = __DIR__ . "/flujos-state-{$safeId}.json";
+        
+        if ($safeId === 'default' && !file_exists($file)) {
+            $file = STATE_FILE; // Retrocompatibilidad
+        }
+        
+        if (!file_exists($file)) { echo json_encode(['empty' => true]); exit; }
+        echo file_get_contents($file);
+        exit;
+    }
+    if ($action === 'load_index') {
+        $file = __DIR__ . "/flujos-workspaces.json";
+        if (!file_exists($file)) { echo json_encode(['empty' => true]); exit; }
+        echo file_get_contents($file);
         exit;
     }
     // Default: return attachments
@@ -161,10 +175,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save_state') {
         $state = $_POST['state'] ?? '';
         if (!$state) err('Falta el estado (state)');
-        if (file_put_contents(STATE_FILE, $state)) {
+        
+        $wpId = $_POST['workspace'] ?? 'default';
+        $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $wpId) ?: 'default';
+        $file = __DIR__ . "/flujos-state-{$safeId}.json";
+
+        if (file_put_contents($file, $state)) {
             echo json_encode(['ok' => true, 'ts' => date('Y-m-d H:i:s')]);
         } else {
             err('No se pudo guardar el archivo de estado', 500);
+        }
+        exit;
+    }
+
+    // ── SAVE INDEX ────────────────────────────────
+    if ($action === 'save_index') {
+        $index = $_POST['index'] ?? '';
+        if (!$index) err('Falta el índice');
+        $file = __DIR__ . "/flujos-workspaces.json";
+        if (file_put_contents($file, $index)) {
+            echo json_encode(['ok' => true, 'ts' => date('Y-m-d H:i:s')]);
+        } else {
+            err('No se pudo guardar el índice de perfiles', 500);
         }
         exit;
     }

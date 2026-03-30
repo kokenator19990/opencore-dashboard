@@ -110,6 +110,25 @@ body.light-mode [id*="grid"] {
 .topnav a.active{color:var(--c-text);border-bottom-color:var(--c-cyan)}
 .tn-sep{width:1px;height:16px;background:var(--c-tb-border);margin:0 2px}
 
+/* ── WORKSPACE SELECTOR ───────────────────────────── */
+.wp-selector {
+  display: flex; align-items: center; background: rgba(255,255,255,0.03); 
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px 8px;
+  height: 26px; font-family: var(--font-h); font-weight: 600; margin-left: 20px;
+}
+.wp-selector select {
+  background: transparent; border: none; color: var(--c-cyan); font-family: inherit; font-size: 0.72rem;
+  font-weight: 700; outline: none; cursor: pointer; text-transform: uppercase;
+  max-width: 150px; text-overflow: ellipsis; white-space: nowrap;
+}
+.wp-selector select option { background: #0d0f14; color: #fff; text-transform: none; }
+.wp-add-btn {
+  background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 14px;
+  cursor: pointer; margin-left: 8px; padding: 0 4px; display: flex; align-items: center;
+  transition: color 0.2s, transform 0.2s;
+}
+.wp-add-btn:hover { color: var(--c-cyan); transform: scale(1.15); }
+
 /* ── TOOLBAR (Top) ───────────────────────────────── */
 #toolbar{
   position:fixed;top:var(--nav-h);left:0;right:0;height:var(--tb-h);
@@ -1133,9 +1152,19 @@ body.pmode #float-ctrl { display: none; }
 <div class="grid-bg" id="grid-bg"></div>
 
 <nav class="topnav">
-  <a href="dashboard.html">Stats</a>
-  <div class="tn-sep"></div>
-  <a href="flujos.html" class="active">Flujos</a>
+  <div style="display:flex;align-items:center;height:100%">
+    <a href="dashboard.html">Stats</a>
+    <div class="tn-sep"></div>
+    <a href="flujos.html" class="active">Flujos</a>
+  </div>
+  
+  <div class="wp-selector">
+    <span style="font-size:0.55rem;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-right:6px">Perfil:</span>
+    <select id="wp-select" onchange="switchWorkspace(this.value)">
+      <option value="default">Principal</option>
+    </select>
+    <button class="wp-add-btn" onclick="createNewWorkspace()" title="Crear Nuevo Perfil">＋</button>
+  </div>
 </nav>
 <button id="nav-toggle" onclick="toggleNav()" title="Ocultar barra superior">▲</button>
 
@@ -1583,7 +1612,9 @@ const S = {
   viewContext: 'root', // v4.54 context depth
   viewStack: [], // v4.54 breadcrumb history
   syncTimer: null, // v4.54.6 debounce timer
-  isServerOffline: false // v4.54.6 silence noise
+  isServerOffline: false, // v4.54.6 silence noise
+  activeWorkspace: 'default', // v4.55 Workspaces
+  workspacesIndex: [{id:'default', name:'Principal'}]
 };
 let panMoved=false;
 let expandedNoteId=null;
@@ -1676,7 +1707,7 @@ function updateHistBtns(){
   if(fr)fr.disabled=H.idx>=H.stack.length-1;
 }
 
-// ─── LOCAL STORAGE ────────────────────────────────────────────────────────────
+// ─── LOCAL STORAGE & WORKSPACES ───────────────────────────────────────────────
 function loadAttachments(){
   fetch(FILES_API)
     .then(r=>r.ok?r.json():Promise.reject(r.status))
@@ -1690,20 +1721,103 @@ function loadAttachments(){
     });
 }
 
-async function loadState(){
-  // 1. Initial Defaults
-  S.nodes=NODES_BASE.map(n=>({...n}));
-  S.edges=EDGES_BASE.map(e=>({...e,dir:e.dir||'forward',label:e.label||''}));
+function loadIndexFromDB(callback) {
+  S.activeWorkspace = localStorage.getItem('ocf-active-wp') || 'default';
   
-  // 2. Try loading from Server (Cloud Sync v4.30)
+  fetch(FILES_API + '?action=load_index')
+  .then(r => r.json())
+  .then(data => {
+    if (!data.empty && Array.isArray(data)) {
+      S.workspacesIndex = data;
+      localStorage.setItem('ocf-workspaces', JSON.stringify(S.workspacesIndex));
+    } else {
+      S.workspacesIndex = JSON.parse(localStorage.getItem('ocf-workspaces') || '[{"id":"default","name":"Principal"}]');
+    }
+    renderWorkspaceSelector();
+    if(callback) callback();
+  }).catch(() => {
+    S.workspacesIndex = JSON.parse(localStorage.getItem('ocf-workspaces') || '[{"id":"default","name":"Principal"}]');
+    renderWorkspaceSelector();
+    if(callback) callback();
+  });
+}
+
+function saveIndexToDB() {
+  localStorage.setItem('ocf-workspaces', JSON.stringify(S.workspacesIndex));
+  const fd = new FormData();
+  fd.append('action', 'save_index');
+  fd.append('index', JSON.stringify(S.workspacesIndex));
+  fetch(FILES_API, {method:'POST', body:fd}).then(r=>r.json()).catch(e=>{});
+}
+
+function renderWorkspaceSelector() {
+  const sel = document.getElementById('wp-select');
+  if(!sel) return;
+  let html = '';
+  S.workspacesIndex.forEach(wp => {
+    html += `<option value="${wp.id}" ${wp.id===S.activeWorkspace?'selected':''}>${wp.name}</option>`;
+  });
+  sel.innerHTML = html;
+}
+
+function switchWorkspace(id) {
+  if (S.activeWorkspace === id) return;
+  
+  S.activeWorkspace = id;
+  localStorage.setItem('ocf-active-wp', id);
+  
+  // Limpiar lienzo actual
+  S.nodes = []; S.edges = []; S.notes = []; S.frames = [];
+  S.stories = {1:[], 2:[], 3:[]};
+  S.nodeProps = {}; S.comments = {}; S.attachments = {};
+  S.viewContext = 'root'; S.viewStack = [];
+  
+  loadState(); 
+  toast('Cargando perfil...', 'info');
+}
+
+function createNewWorkspace() {
+  const name = prompt("Nombre del nuevo perfil/mapeo:");
+  if (!name) { renderWorkspaceSelector(); return; }
+  const id = 'wp_' + Date.now();
+  S.workspacesIndex.push({ id, name });
+  
+  saveIndexToDB();
+  
+  S.activeWorkspace = id;
+  localStorage.setItem('ocf-active-wp', id);
+  
+  // Nuevo lienzo limpio
+  S.nodes = []; S.edges = []; S.notes = []; S.frames = [];
+  S.stories = {1:[], 2:[], 3:[]};
+  S.nodeProps = {}; S.comments = {}; S.attachments = {};
+  S.activeStory = 1; S.viewContext = 'root'; S.viewStack = [];
+  
+  saveState();
+  saveFullStateToDB();
+  renderWorkspaceSelector();
+  render();
+  toast('Nuevo perfil creado', 'ok');
+}
+
+async function loadState(){
+  // 1. Initial Defaults for 'default' workspace only
+  if (S.activeWorkspace === 'default') {
+    S.nodes=NODES_BASE.map(n=>({...n}));
+    S.edges=EDGES_BASE.map(e=>({...e,dir:e.dir||'forward',label:e.label||''}));
+  } else {
+    S.nodes = []; S.edges = [];
+  }
+  
+  // 2. Try loading from Server (Cloud Sync)
   try {
-    const res = await fetch(FILES_API + '?action=load_state');
+    const res = await fetch(FILES_API + '?action=load_state&workspace=' + S.activeWorkspace);
     if (res.ok) {
       const text = await res.text();
       try {
         const data = JSON.parse(text);
         if(data && !data.empty) {
-          console.log('Loading state from Server...');
+          console.log('Loading state from Server (' + S.activeWorkspace + ')');
           applyStateFromJSON(data);
           loadAttachments();
           return;
@@ -1717,8 +1831,9 @@ async function loadState(){
   }
 
   // 3. Fallback to LocalStorage
+  const lsKey = S.activeWorkspace === 'default' ? 'ocf' : 'ocf-' + S.activeWorkspace;
   try{
-    const d=JSON.parse(localStorage.getItem('ocf')||'{}');
+    const d=JSON.parse(localStorage.getItem(lsKey)||'{}');
     if(d.pos) d.pos.forEach(p=>{const n=S.nodes.find(n=>n.id===p.id);if(n){n.x=p.x;n.y=p.y;}});
     if(d.nodes) S.nodes.push(...d.nodes);
     if(d.edges) S.edges.push(...d.edges.map(e=>({dir:'forward',label:'',...e})));
@@ -1806,7 +1921,8 @@ function saveState(){
       viewStack: S.viewStack
     };
     // 1. Instant Local Save
-    localStorage.setItem('ocf',JSON.stringify(d));
+    const lsKey = S.activeWorkspace === 'default' ? 'ocf' : 'ocf-' + S.activeWorkspace;
+    localStorage.setItem(lsKey,JSON.stringify(d));
     
     // 2. Debounced Cloud Sync (5 seconds quiet period)
     if(S.syncTimer) clearTimeout(S.syncTimer);
@@ -1837,6 +1953,7 @@ function saveFullStateToDB(){
   
   const fd = new FormData();
   fd.append('action', 'save_state');
+  fd.append('workspace', S.activeWorkspace);
   fd.append('state', JSON.stringify(data));
   
   // Singleton Notification: Clear existing sync toasts if any
@@ -4458,7 +4575,7 @@ function closeOrganize(){
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-console.log('%c [v4.44-CANVAS-NOTES] LOADING... ', 'background:var(--c-cyan);color:#000;font-weight:bold');
+console.log('%c [v4.55-WORKSPACES] LOADING... ', 'background:var(--c-cyan);color:#000;font-weight:bold');
 (async () => {
   if ('serviceWorker' in navigator) {
     const regs = await navigator.serviceWorker.getRegistrations();
@@ -4468,12 +4585,15 @@ console.log('%c [v4.44-CANVAS-NOTES] LOADING... ', 'background:var(--c-cyan);col
   const savedW = localStorage.getItem('ocf-panel-w');
   if (savedW) document.documentElement.style.setProperty('--panel-w', savedW);
   
-  await loadState(); // FIXED: Waiting for state before proceeding
-  initPanelResize();
-  snapshot(); 
-  applyTransform(false);
-  syncGridVisibility();
-  render();
+  loadIndexFromDB(async () => {
+    await loadState();
+    initPanelResize();
+    snapshot(); 
+    applyTransform(false);
+    syncGridVisibility();
+    render();
+  });
+})();
 // ─── HIERARCHY LOGIC (v4.54) ────────────────────────────────────────────────
 function enterNode(id){
   const n = S.nodes.find(n => n.id === id);
@@ -4576,7 +4696,6 @@ function deselectAll(){
   hideQuickToolbar();
   hideEdgeCtx();
 }
-})();
 </script>
 <!-- BARRA FLOTANTE INFERIOR IZQUIERDA -->
 <div id="float-ctrl">
