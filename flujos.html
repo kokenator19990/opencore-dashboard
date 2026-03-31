@@ -1257,11 +1257,11 @@ body.pmode #float-ctrl { display: none; }
         Layout Horizontal
       </button>
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0"></div>
-      <button class="tb-dropdown-btn ${S.lineStyle==='direct'?'active':''}" onclick="setLineStyle('direct'); closeOrganize()">
+      <button class="tb-dropdown-btn" id="btn-line-direct" onclick="setLineStyle('direct'); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
         Líneas Rectas
       </button>
-      <button class="tb-dropdown-btn ${S.lineStyle==='curved'?'active':''}" onclick="setLineStyle('curved'); closeOrganize()">
+      <button class="tb-dropdown-btn" id="btn-line-curved" onclick="setLineStyle('curved'); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12c4-8 14-8 18 0"/></svg>
         Líneas Curvas
       </button>
@@ -1460,9 +1460,9 @@ body.pmode #float-ctrl { display: none; }
   <div style="display:flex;flex-direction:column;gap:4px;margin-right:15px">
     <div style="font-size:8px;color:rgba(0,229,255,0.4);font-weight:900;letter-spacing:1px;text-transform:uppercase;font-family:'Consolas',monospace">Secuencia</div>
     <div style="display:flex;gap:4px">
-      <button class="btn-sm ${S.activeStory===1?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(1)">H1</button>
-      <button class="btn-sm ${S.activeStory===2?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(2)">H2</button>
-      <button class="btn-sm ${S.activeStory===3?'active':''}" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(3)">H3</button>
+      <button class="btn-sm" id="sp-h1" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(1)">H1</button>
+      <button class="btn-sm" id="sp-h2" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(2)">H2</button>
+      <button class="btn-sm" id="sp-h3" style="padding:2px 6px;font-size:9px;font-family:'Consolas',monospace;border-radius:2px" onclick="setActiveStory(3)">H3</button>
     </div>
   </div>
   <div class="tn-sep" style="height:30px;width:1px;background:rgba(255,255,255,0.1);margin:0 10px"></div>
@@ -1503,19 +1503,19 @@ const ICONS = ['⚙️','📦','💼','🌐','📋','🏭','🏗️','💱','⚖
 
 // ─── NODES BASE ───────────────────────────────────────────────────────────────
 const NODES_BASE = [
-  {id:'comex',label:'COMEX',sub:'Comercio Exterior',icon:'🌐',x:80,y:120,theme:'cyan',
+  {id:'comex',label:'COMEX',sub:'Comercio Exterior',icon:'🌐',x:80,y:60,theme:'cyan',
    detail:{subtitle:'Gestión de Importaciones / Exportaciones',
     procesos:['Coordinación de embarques internacionales','Documentación aduanera','Negociación con proveedores (CAT, Morton)','Gestión de fletes y seguros','Control de tiempos de tránsito'],
     integraciones:['Aduana / Informes de Importación','Finanzas Internacional','Fábrica CAT / Morton'],
     criticos:['Errores en clasificación arancelaria','Demoras en liberación aduanera','Fluctuación tipo de cambio'],
     oportunidad:'Automatizar seguimiento de embarques y alertas de retrasos. Dashboard de tránsito en tiempo real integrado al ERP.'}},
-  {id:'finanzas',label:'FINANZAS INTL',sub:'Pagos & FX',icon:'💱',x:310,y:70,theme:'yellow',
+  {id:'finanzas',label:'FINANZAS INTL',sub:'Pagos & FX',icon:'💱',x:460,y:60,theme:'yellow',
    detail:{subtitle:'Finanzas Internacionales y Control de Pagos',
     procesos:['Pagos a proveedores internacionales (USD/EUR)','Gestión de cartas de crédito','Control de tipo de cambio','Conciliación de facturas de importación','Provisión de landed cost'],
     integraciones:['COMEX','Contabilidad','Control Contable','ACME/ERP'],
     criticos:['Diferencias de cambio no provisionadas','Retrasos en aprobación de pagos','Falta de trazabilidad de facturas'],
     oportunidad:'Módulo de FX tracking automático con alerta de exposición cambiaria. Integración directa con banco para confirmación de pagos.'}},
-  {id:'aduana',label:'ADUANA',sub:'Inf. Importación',icon:'📋',x:80,y:310,theme:'cyan',
+  {id:'aduana',label:'ADUANA',sub:'Inf. Importación',icon:'📋',x:80,y:280,theme:'cyan',
    detail:{subtitle:'Despacho Aduanero e Informes de Importación',
     procesos:['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
     integraciones:['COMEX','ACME/ERP','Almacén Particular','Contabilidad'],
@@ -1527,73 +1527,73 @@ const NODES_BASE = [
     integraciones:['Aduana','ACME/ERP','Bodega/Patio'],
     criticos:['Discrepancias de cantidades vs factura','Daños en tránsito no registrados','Tiempos muertos de custodia'],
     oportunidad:'App de recepción con QR/código de barras para confirmación instantánea de bultos. Notificación automática al equipo de bodega.'}},
-  {id:'fabrica',label:'FÁBRICA',sub:'CAT / Morton',icon:'🏗️',x:580,y:70,theme:'white',
+  {id:'fabrica',label:'FÁBRICA',sub:'CAT / Morton',icon:'🏗️',x:840,y:60,theme:'white',
    detail:{subtitle:'Proveedores de Fábrica — CAT / Morton',
     procesos:['Generación de órdenes de compra internacionales','Comunicación de especificaciones técnicas','Confirmación de disponibilidad y plazo','Envío de facturas proforma','Coordinación de embarques CIF/FOB'],
     integraciones:['COMEX','ACME/ERP','FINANZAS INTL'],
     criticos:['Lead times largos','Cambios de especificación tardíos','Mínimos de pedido'],
     oportunidad:'Portal de proveedores con visibilidad de OC, confirmación de despacho y tracking de embarque integrado.'}},
-  {id:'erp',label:'ACME / ERP',sub:'Sistema Central',icon:'⚙️',x:400,y:350,theme:'hub',
+  {id:'erp',label:'ACME / ERP',sub:'Sistema Central',icon:'⚙️',x:460,y:380,theme:'hub',
    detail:{subtitle:'Sistema ERP Central — Hub de todas las operaciones',
     procesos:['Gestión de órdenes de compra y venta','Control de inventario en tiempo real','Facturación y cuentas por cobrar/pagar','Gestión de costos (standard, landed, franquicia)','Integración con módulos de aduana, bodega, contabilidad'],
     integraciones:['Todos los módulos del negocio'],
     criticos:['Datos desactualizados por carga manual','Falta de automatización en flujos inter-módulo','Reportería limitada o tardía'],
     oportunidad:'Implementar BI sobre el ERP para reportes ejecutivos en tiempo real. Automatizar flujos de datos entre módulos para eliminar re-digitación.'}},
-  {id:'bodega',label:'BODEGA / PATIO',sub:'Almacenaje Físico',icon:'📦',x:720,y:310,theme:'purple',
+  {id:'bodega',label:'BODEGA / PATIO',sub:'Almacenaje Físico',icon:'📦',x:840,y:380,theme:'purple',
    detail:{subtitle:'Bodega Principal y Patio de Equipos',
     procesos:['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas','Gestión de devoluciones','Despacho de equipos grandes (patio)'],
     integraciones:['ACME/ERP','Sistema de Inventario','Almacén Particular','Técnico'],
     criticos:['Diferencias de inventario físico vs sistema','Quiebres de stock no anticipados','Trazabilidad de números de serie'],
     oportunidad:'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo.'}},
-  {id:'inventario_sys',label:'SISTEMA INVENT.',sub:'Control de Stock',icon:'🗃️',x:930,y:240,theme:'purple',
+  {id:'inventario_sys',label:'SISTEMA INVENT.',sub:'Control de Stock',icon:'🗃️',x:1220,y:280,theme:'purple',
    detail:{subtitle:'Sistema de Control de Inventario',
     procesos:['Actualización de stocks en tiempo real','Control de lotes y series','Generación de reportes de rotación','Alertas de stock mínimo y máximo','Conciliación periódica físico-sistema'],
     integraciones:['ACME/ERP','Bodega/Patio','INU','Técnico'],
     criticos:['Diferencias post-inventario físico','Movimientos manuales no registrados','Clasificación incorrecta de ítems'],
     oportunidad:'Dashboard de inventario con alertas inteligentes de reposición y predicción de demanda basada en historial.'}},
-  {id:'inu',label:'INU',sub:'Ítem No Usado',icon:'🔄',x:930,y:430,theme:'purple',
+  {id:'inu',label:'INU',sub:'Ítem No Usado',icon:'🔄',x:1220,y:500,theme:'purple',
    detail:{subtitle:'Gestión de Ítems No Usados / Obsoletos',
     procesos:['Identificación de stock sin rotación','Clasificación de ítems obsoletos','Proceso de devolución a fábrica','Disposición final (venta, descarte, remate)','Ajuste contable de valor'],
     integraciones:['Sistema de Inventario','Inventario (Repuestos)','Contabilidad','ACME/ERP'],
     criticos:['Capital inmovilizado sin identificar','Falta de política de obsolescencia','Costo de almacenaje de ítems sin movimiento'],
     oportunidad:'Módulo de análisis de obsolescencia con propuesta automática de acciones: devolver, rematar, dar de baja.'}},
-  {id:'inventario',label:'INVENTARIO',sub:'Repuestos · Equipos · Costos',icon:'🔩',x:1130,y:350,theme:'purple',
+  {id:'inventario',label:'INVENTARIO',sub:'Repuestos · Equipos · Costos',icon:'🔩',x:1600,y:380,theme:'purple',
    detail:{subtitle:'Inventario Detallado por Categoría',
     procesos:['Inventario de repuestos críticos','Inventario de equipos (activos fijos)','Valorización a costo standard','Actualización de costo landed','Cargo de franquicia por ítem'],
     integraciones:['Sistema de Inventario','INU','Control Contable','Técnico','ACME/ERP'],
     criticos:['Valorización incorrecta por landed cost variable','Falta de control de repuestos críticos','Discrepancia entre activos físicos y contables'],
     oportunidad:'Catálogo unificado con valorización automática multi-método (standard, landed, franquicia). Alertas de repuestos críticos bajo mínimo.'}},
-  {id:'venta',label:'VENTA',sub:'Proceso Comercial',icon:'💼',x:400,y:620,theme:'green',
+  {id:'venta',label:'VENTA',sub:'Proceso Comercial',icon:'💼',x:460,y:700,theme:'green',
    detail:{subtitle:'Gestión Comercial y Proceso de Venta',
     procesos:['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
     integraciones:['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
     criticos:['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
     oportunidad:'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.'}},
-  {id:'clientes',label:'CLIENTES',sub:'Cuenta & Relación',icon:'🤝',x:200,y:760,theme:'green',
+  {id:'clientes',label:'CLIENTES',sub:'Cuenta & Relación',icon:'🤝',x:200,y:920,theme:'green',
    detail:{subtitle:'Gestión de Clientes y Cuenta Corriente',
     procesos:['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
     integraciones:['ACME/ERP','Venta','Settlement','Contabilidad'],
     criticos:['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
     oportunidad:'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.'}},
-  {id:'settlement',label:'SETTLEMENT',sub:'Liquidación & Cierre',icon:'🧾',x:600,y:760,theme:'green',
+  {id:'settlement',label:'SETTLEMENT',sub:'Liquidación & Cierre',icon:'🧾',x:720,y:920,theme:'green',
    detail:{subtitle:'Settlement — Cierre y Liquidación de Operaciones',
     procesos:['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
     integraciones:['Clientes','ACME/ERP','Contabilidad','Control Contable'],
     criticos:['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
     oportunidad:'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.'}},
-  {id:'tecnico',label:'TÉCNICO',sub:'Servicio & Mantención',icon:'🔧',x:930,y:620,theme:'red',
+  {id:'tecnico',label:'TÉCNICO',sub:'Servicio & Mantención',icon:'🔧',x:1220,y:700,theme:'red',
    detail:{subtitle:'Área Técnica — Servicio y Mantención',
     procesos:['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
     integraciones:['Inventario (Repuestos)','Bodega/Patio','ACME/ERP','Clientes','Sistema de Inventario'],
     criticos:['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
     oportunidad:'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.'}},
-  {id:'contabilidad',label:'CONTABILIDAD',sub:'Registro Contable',icon:'📊',x:720,y:510,theme:'yellow',
+  {id:'contabilidad',label:'CONTABILIDAD',sub:'Registro Contable',icon:'📊',x:840,y:600,theme:'yellow',
    detail:{subtitle:'Contabilidad General y Registro Tributario',
     procesos:['Registro de asientos contables','Gestión de cuentas por pagar y cobrar','Declaraciones tributarias (IVA, renta)','Cierre mensual y anual','Conciliación bancaria'],
     integraciones:['ACME/ERP','Settlement','Control Contable','Finanzas Internacional','Venta'],
     criticos:['Asientos manuales propensos a error','Desfase entre operación y registro contable','Falta de automatización en cierre de período'],
     oportunidad:'Automatización de asientos contables gatillados por eventos del ERP. Cierre de período asistido con checklist automático.'}},
-  {id:'control_contable',label:'CTRL CONTABLE',sub:'Franquicia · Std · Landed',icon:'⚖️',x:920,y:70,theme:'yellow',
+  {id:'control_contable',label:'CTRL CONTABLE',sub:'Franquicia · Std · Landed',icon:'⚖️',x:1220,y:60,theme:'yellow',
    detail:{subtitle:'Control Contable de Costos — 3 Dimensiones',
     procesos:['CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem','COSTO STANDARD: costo interno de referencia para valorización de inventario','LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'],
     integraciones:['Finanzas Internacional','Inventario','Contabilidad','ACME/ERP','Settlement'],
@@ -1625,7 +1625,7 @@ const S = {
   activeTab:'info',
   nodeDragMoved:false,
   snapGrid:false,
-  lineStyle:'curved', // curved, direct, orthogonal
+  lineStyle:'curved', // curved, direct
   showAllFlows:false,
   panelEditMode:false,
   inStoryMode:false,
@@ -1870,7 +1870,6 @@ async function loadState(){
     if(d.story) S.stories[1]=d.story;
     if(d.stories) S.stories=d.stories;
     if(d.activeStory) S.activeStory=d.activeStory;
-    if(d.rectilinear !== undefined) S.lineStyle = d.rectilinear ? 'orthogonal' : 'curved';
     if(d.lineStyle) S.lineStyle = d.lineStyle;
     S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
     S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
@@ -1905,8 +1904,7 @@ function applyStateFromJSON(d) {
   if(d.activeStory) S.activeStory = d.activeStory;
   
   // Migration for Line Styles (v4.53)
-  if(d.lineStyle) S.lineStyle = d.lineStyle;
-  else if(d.rectilinear !== undefined) S.lineStyle = d.rectilinear ? 'orthogonal' : 'curved';
+  if(d.lineStyle && d.lineStyle !== 'orthogonal') S.lineStyle = d.lineStyle;
   
   // v4.54 Hierarchy Restoration
   if(d.viewContext) S.viewContext = d.viewContext;
@@ -2441,18 +2439,20 @@ function getAnchors(fid,tid, sIdx=0, sTotal=1, eIdx=0, eTotal=1){
 }
 
 function getCurvedPath(a){
-  const cp1x = a.sx + (a.ex - a.sx) * 0.45;
-  const cp2x = a.sx + (a.ex - a.sx) * 0.55;
-  return `M${a.sx},${a.sy} C${cp1x},${a.sy} ${cp2x},${a.ey} ${a.ex},${a.ey}`;
-}
-
-function getRectilinearPath(a){
-  const midX = (a.sx + a.ex) / 2;
-  const midY = (a.sy + a.ey) / 2;
-  if(Math.abs(a.ex - a.sx) > Math.abs(a.ey - a.sy)) {
-    return `M${a.sx},${a.sy} L${midX},${a.sy} L${midX},${a.ey} L${a.ex},${a.ey}`;
+  const dx = Math.abs(a.ex - a.sx);
+  const dy = Math.abs(a.ey - a.sy);
+  if(dx >= dy) {
+    // Horizontal dominant: control points extend horizontally
+    const cpOff = Math.max(60, dx * 0.4);
+    const cp1x = a.sx + (a.ex > a.sx ? cpOff : -cpOff);
+    const cp2x = a.ex - (a.ex > a.sx ? cpOff : -cpOff);
+    return `M${a.sx},${a.sy} C${cp1x},${a.sy} ${cp2x},${a.ey} ${a.ex},${a.ey}`;
   } else {
-    return `M${a.sx},${a.sy} L${a.sx},${midY} L${a.ex},${midY} L${a.ex},${a.ey}`;
+    // Vertical dominant: control points extend vertically
+    const cpOff = Math.max(60, dy * 0.4);
+    const cp1y = a.sy + (a.ey > a.sy ? cpOff : -cpOff);
+    const cp2y = a.ey - (a.ey > a.sy ? cpOff : -cpOff);
+    return `M${a.sx},${a.sy} C${a.sx},${cp1y} ${a.ex},${cp2y} ${a.ex},${a.ey}`;
   }
 }
 
@@ -2567,16 +2567,15 @@ function updateEdges(){
     const isDimmed=hasSel&&!isLinked&&!S.showAllFlows;
     const activeFlow=isEdgeSel||isLinked||S.showAllFlows;
 
-    // Corporate weights: thinner and cleaner
+    // Corporate weights: clean and minimal
     const drawCol=(activeFlow||isEdgeSel)?EDGE_COL_ACT:EDGE_COL;
-    const opacity=isEdgeSel?1:activeFlow?0.95:(hasSel?0.15:0.4);
-    const strokeW=isEdgeSel?3.5:activeFlow?2.2:1.4;
+    const opacity=isEdgeSel?1:activeFlow?0.9:(hasSel?0.08:0.25);
+    const strokeW=isEdgeSel?3:activeFlow?2:1.1;
     const useGlow=isEdgeSel||activeFlow;
     const showFlow=isEdgeSel||activeFlow;
 
     let d = "";
-    if(S.lineStyle==='orthogonal') d = getRectilinearPath(a);
-    else if(S.lineStyle==='direct') d = getDirectPath(a);
+    if(S.lineStyle==='direct') d = getDirectPath(a);
     else d = getCurvedPath(a);
 
     // Hit area (invisible, wide for easy click)
@@ -2619,10 +2618,10 @@ function updateEdges(){
       const idle=document.createElementNS('http://www.w3.org/2000/svg','path');
       idle.setAttribute('d',d);
       idle.setAttribute('stroke',drawCol);
-      idle.setAttribute('stroke-width','1.1');
+      idle.setAttribute('stroke-width','0.8');
       idle.setAttribute('fill','none');
-      idle.setAttribute('stroke-dasharray','2 18');
-      idle.setAttribute('opacity',showFlow?'0':'0.12');
+      idle.setAttribute('stroke-dasharray','2 22');
+      idle.setAttribute('opacity',showFlow?'0':'0.06');
       idle.setAttribute('class', 'edge-anim');
       idle.style.pointerEvents='none';
       const idleDur=(5+idx*0.2)+'s';
@@ -3017,7 +3016,7 @@ function organizeByLevel(){
   }
 
   // Espaciado fijo (no llena pantalla, respeta jerarquía visual)
-  const NW=300,NH=95,gapX=60,gapY=90;
+  const NW=300,NH=95,gapX=100,gapY=130;
   const colW=NW+gapX;const rowH=NH+gapY;
 
   byLvl.forEach((levelNodes,l)=>{
@@ -3088,7 +3087,7 @@ function organizeHorizontal(){
     row.forEach((id,i)=>yOrd[id]=i);
   }
 
-  const NW=300,NH=95,gapX=80,gapY=60;
+  const NW=300,NH=95,gapX=120,gapY=80;
   const colW=NW+gapX; const rowH=NH+gapY;
 
   byLvl.forEach((levelNodes,l)=>{
@@ -3173,9 +3172,9 @@ function organizeLayout(){
   const maxInRow=Math.max(...byLvl.map(r=>r.length));
 
   // Gap X: reparte el ancho sobrante entre los nodos de la fila más poblada
-  const gapX=Math.max(50,Math.min(200,Math.floor((vpW-NW*maxInRow)/(maxInRow+1))));
+  const gapX=Math.max(80,Math.min(250,Math.floor((vpW-NW*maxInRow)/(maxInRow+1))));
   // Gap Y: reparte la altura sobrante entre los niveles
-  const gapY=Math.max(80,Math.min(200,Math.floor((vpH-NH*numLvls)/(numLvls+1))));
+  const gapY=Math.max(110,Math.min(250,Math.floor((vpH-NH*numLvls)/(numLvls+1))));
   const colW=NW+gapX;
   const rowH=NH+gapY;
 
@@ -3251,10 +3250,10 @@ document.addEventListener('fullscreenchange',()=>{
   if(!document.fullscreenElement)document.body.classList.remove('pmode');
 });
 
-function setLineStyle(isRect){
-  S.rectilinear=isRect;
+function setLineStyle(style){
+  S.lineStyle=style;
   render(); saveState();
-  toast(isRect?'Estilo: Líneas Rectas':'Estilo: Líneas Curvas','info');
+  toast(style==='direct'?'Estilo: Líneas Rectas':'Estilo: Líneas Curvas','info');
 }
 // ─── NODE DRAG ────────────────────────────────────────────────────────────────
 function snapVal(v,g=40){return S.snapGrid?Math.round(v/g)*g:v;}
@@ -3830,6 +3829,11 @@ function saveStepMeta(idx) {
 function setActiveStory(slot){
   S.activeStory = slot;
   saveState();
+  // Update story player button states
+  [1,2,3].forEach(i=>{
+    const btn=document.getElementById('sp-h'+i);
+    if(btn) btn.classList.toggle('active', i===slot);
+  });
   renderPanelBody(panelNodeId || S.selected, 'story');
   toast(`Secuencia ${slot} activa`, 'info');
   if(S.inStoryMode) goToStoryStep(0);
@@ -3919,7 +3923,7 @@ function goToStoryStep(idx){
       const a = getAnchors(edge.from, edge.to);
       if(a){
         const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const d_attr = (S.lineStyle==='orthogonal') ? getRectilinearPath(a) : (S.lineStyle==='direct' ? getDirectPath(a) : getCurvedPath(a));
+        const d_attr = (S.lineStyle==='direct') ? getDirectPath(a) : getCurvedPath(a);
         p.setAttribute('d', d_attr);
         p.setAttribute('class','path-trace-anim');
         svgEl.appendChild(p);
