@@ -1498,119 +1498,95 @@ const TG = Object.fromEntries(Object.entries(THEMES).map(([k,v])=>[k,v.g]));
 TG.hub = TG.cyan;
 
 const FILES_API = 'upload.php';
+const DATA_VERSION = 2; // Bump to force localStorage reset on default workspace
 
 const ICONS = ['⚙️','📦','💼','🌐','📋','🏭','🏗️','💱','⚖️','📊','🗃️','🔩','🔧','🤝','🧾','🔄','💡','🏢','🚚','🔬','💻','📱','🔐','📈','💰','🎯','⬡','🏆','📌','🔑'];
 
 // ─── NODES BASE ───────────────────────────────────────────────────────────────
+// v4.59 — 12 nodos core de negocio (limpieza de duplicados)
 const NODES_BASE = [
   {id:'comex',label:'COMEX',sub:'Comercio Exterior',icon:'🌐',x:80,y:60,theme:'cyan',
    detail:{subtitle:'Gestión de Importaciones / Exportaciones',
     procesos:['Coordinación de embarques internacionales','Documentación aduanera','Negociación con proveedores (CAT, Morton)','Gestión de fletes y seguros','Control de tiempos de tránsito'],
-    integraciones:['Aduana / Informes de Importación','Finanzas Internacional','Fábrica CAT / Morton'],
+    integraciones:['Aduana','Finanzas Internacional','Fábrica CAT / Morton'],
     criticos:['Errores en clasificación arancelaria','Demoras en liberación aduanera','Fluctuación tipo de cambio'],
     oportunidad:'Automatizar seguimiento de embarques y alertas de retrasos. Dashboard de tránsito en tiempo real integrado al ERP.'}},
-  {id:'finanzas',label:'FINANZAS INTL',sub:'Pagos & FX',icon:'💱',x:460,y:60,theme:'yellow',
+  {id:'finanzas',label:'FINANZAS INTL',sub:'Pagos & FX',icon:'💱',x:480,y:60,theme:'yellow',
    detail:{subtitle:'Finanzas Internacionales y Control de Pagos',
     procesos:['Pagos a proveedores internacionales (USD/EUR)','Gestión de cartas de crédito','Control de tipo de cambio','Conciliación de facturas de importación','Provisión de landed cost'],
     integraciones:['COMEX','Contabilidad','Control Contable','ACME/ERP'],
     criticos:['Diferencias de cambio no provisionadas','Retrasos en aprobación de pagos','Falta de trazabilidad de facturas'],
     oportunidad:'Módulo de FX tracking automático con alerta de exposición cambiaria. Integración directa con banco para confirmación de pagos.'}},
-  {id:'aduana',label:'ADUANA',sub:'Inf. Importación',icon:'📋',x:80,y:280,theme:'cyan',
-   detail:{subtitle:'Despacho Aduanero e Informes de Importación',
-    procesos:['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
-    integraciones:['COMEX','ACME/ERP','Almacén Particular','Contabilidad'],
-    criticos:['Corrección de glosas aduaneras','Tiempos de liberación','Aplicación correcta de aranceles'],
-    oportunidad:'Digitalización de informes de importación con OCR. Carga automática al ERP al momento de liberación aduanera.'}},
-  {id:'almacen',label:'ALMACÉN PART.',sub:'Custodia Temporal',icon:'🏭',x:80,y:500,theme:'cyan',
-   detail:{subtitle:'Almacén Particular / Zona de Tránsito',
-    procesos:['Recepción de mercancía liberada de aduana','Control de estado y embalaje','Coordinación de transferencia a Bodega/Patio','Registro de ingresos parciales','Custodia temporal hasta confirmación ERP'],
-    integraciones:['Aduana','ACME/ERP','Bodega/Patio'],
-    criticos:['Discrepancias de cantidades vs factura','Daños en tránsito no registrados','Tiempos muertos de custodia'],
-    oportunidad:'App de recepción con QR/código de barras para confirmación instantánea de bultos. Notificación automática al equipo de bodega.'}},
-  {id:'fabrica',label:'FÁBRICA',sub:'CAT / Morton',icon:'🏗️',x:840,y:60,theme:'white',
+  {id:'fabrica',label:'FÁBRICA',sub:'CAT / Morton',icon:'🏗️',x:880,y:60,theme:'white',
    detail:{subtitle:'Proveedores de Fábrica — CAT / Morton',
     procesos:['Generación de órdenes de compra internacionales','Comunicación de especificaciones técnicas','Confirmación de disponibilidad y plazo','Envío de facturas proforma','Coordinación de embarques CIF/FOB'],
     integraciones:['COMEX','ACME/ERP','FINANZAS INTL'],
     criticos:['Lead times largos','Cambios de especificación tardíos','Mínimos de pedido'],
     oportunidad:'Portal de proveedores con visibilidad de OC, confirmación de despacho y tracking de embarque integrado.'}},
-  {id:'erp',label:'ACME / ERP',sub:'Sistema Central',icon:'⚙️',x:460,y:380,theme:'hub',
+  {id:'control_contable',label:'CTRL CONTABLE',sub:'Franquicia · Std · Landed',icon:'⚖️',x:1280,y:60,theme:'yellow',
+   detail:{subtitle:'Control Contable de Costos — 3 Dimensiones',
+    procesos:['CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem','COSTO STANDARD: costo interno de referencia para valorización de inventario','LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'],
+    integraciones:['Finanzas Internacional','Contabilidad','ACME/ERP','Settlement'],
+    criticos:['Variaciones entre standard y landed no analizadas','Cargo de franquicia desactualizado','Landed cost calculado al cierre, no en tiempo real'],
+    oportunidad:'Motor de cálculo de landed cost en tiempo real desde el momento del embarque. Dashboard de variaciones standard vs real con drill-down por ítem.'}},
+  {id:'aduana',label:'ADUANA',sub:'Inf. Importación',icon:'📋',x:80,y:300,theme:'cyan',
+   detail:{subtitle:'Despacho Aduanero e Informes de Importación',
+    procesos:['Generación de DUS / DAM','Clasificación arancelaria (NCM/HS)','Coordinación con agente de aduana','Entrega de informes de importación al ERP','Gestión de regímenes especiales'],
+    integraciones:['COMEX','ACME/ERP','Contabilidad'],
+    criticos:['Corrección de glosas aduaneras','Tiempos de liberación','Aplicación correcta de aranceles'],
+    oportunidad:'Digitalización de informes de importación con OCR. Carga automática al ERP al momento de liberación aduanera.'}},
+  {id:'erp',label:'ACME / ERP',sub:'Sistema Central',icon:'⚙️',x:480,y:300,theme:'hub',
    detail:{subtitle:'Sistema ERP Central — Hub de todas las operaciones',
     procesos:['Gestión de órdenes de compra y venta','Control de inventario en tiempo real','Facturación y cuentas por cobrar/pagar','Gestión de costos (standard, landed, franquicia)','Integración con módulos de aduana, bodega, contabilidad'],
     integraciones:['Todos los módulos del negocio'],
     criticos:['Datos desactualizados por carga manual','Falta de automatización en flujos inter-módulo','Reportería limitada o tardía'],
     oportunidad:'Implementar BI sobre el ERP para reportes ejecutivos en tiempo real. Automatizar flujos de datos entre módulos para eliminar re-digitación.'}},
-  {id:'bodega',label:'BODEGA / PATIO',sub:'Almacenaje Físico',icon:'📦',x:840,y:380,theme:'purple',
-   detail:{subtitle:'Bodega Principal y Patio de Equipos',
-    procesos:['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas','Gestión de devoluciones','Despacho de equipos grandes (patio)'],
-    integraciones:['ACME/ERP','Sistema de Inventario','Almacén Particular','Técnico'],
+  {id:'bodega',label:'BODEGA / PATIO',sub:'Almacenaje & Inventario',icon:'📦',x:880,y:300,theme:'purple',
+   detail:{subtitle:'Bodega Principal, Patio de Equipos e Inventario',
+    procesos:['Recepción y ubicación de mercancía','Picking para despacho a clientes','Control de ubicaciones físicas y stock','Gestión de devoluciones e ítems obsoletos','Despacho de equipos grandes (patio)'],
+    integraciones:['ACME/ERP','Técnico','Aduana','Venta'],
     criticos:['Diferencias de inventario físico vs sistema','Quiebres de stock no anticipados','Trazabilidad de números de serie'],
-    oportunidad:'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo.'}},
-  {id:'inventario_sys',label:'SISTEMA INVENT.',sub:'Control de Stock',icon:'🗃️',x:1220,y:280,theme:'purple',
-   detail:{subtitle:'Sistema de Control de Inventario',
-    procesos:['Actualización de stocks en tiempo real','Control de lotes y series','Generación de reportes de rotación','Alertas de stock mínimo y máximo','Conciliación periódica físico-sistema'],
-    integraciones:['ACME/ERP','Bodega/Patio','INU','Técnico'],
-    criticos:['Diferencias post-inventario físico','Movimientos manuales no registrados','Clasificación incorrecta de ítems'],
-    oportunidad:'Dashboard de inventario con alertas inteligentes de reposición y predicción de demanda basada en historial.'}},
-  {id:'inu',label:'INU',sub:'Ítem No Usado',icon:'🔄',x:1220,y:500,theme:'purple',
-   detail:{subtitle:'Gestión de Ítems No Usados / Obsoletos',
-    procesos:['Identificación de stock sin rotación','Clasificación de ítems obsoletos','Proceso de devolución a fábrica','Disposición final (venta, descarte, remate)','Ajuste contable de valor'],
-    integraciones:['Sistema de Inventario','Inventario (Repuestos)','Contabilidad','ACME/ERP'],
-    criticos:['Capital inmovilizado sin identificar','Falta de política de obsolescencia','Costo de almacenaje de ítems sin movimiento'],
-    oportunidad:'Módulo de análisis de obsolescencia con propuesta automática de acciones: devolver, rematar, dar de baja.'}},
-  {id:'inventario',label:'INVENTARIO',sub:'Repuestos · Equipos · Costos',icon:'🔩',x:1600,y:380,theme:'purple',
-   detail:{subtitle:'Inventario Detallado por Categoría',
-    procesos:['Inventario de repuestos críticos','Inventario de equipos (activos fijos)','Valorización a costo standard','Actualización de costo landed','Cargo de franquicia por ítem'],
-    integraciones:['Sistema de Inventario','INU','Control Contable','Técnico','ACME/ERP'],
-    criticos:['Valorización incorrecta por landed cost variable','Falta de control de repuestos críticos','Discrepancia entre activos físicos y contables'],
-    oportunidad:'Catálogo unificado con valorización automática multi-método (standard, landed, franquicia). Alertas de repuestos críticos bajo mínimo.'}},
-  {id:'venta',label:'VENTA',sub:'Proceso Comercial',icon:'💼',x:460,y:700,theme:'green',
-   detail:{subtitle:'Gestión Comercial y Proceso de Venta',
-    procesos:['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
-    integraciones:['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
-    criticos:['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
-    oportunidad:'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.'}},
-  {id:'clientes',label:'CLIENTES',sub:'Cuenta & Relación',icon:'🤝',x:200,y:920,theme:'green',
-   detail:{subtitle:'Gestión de Clientes y Cuenta Corriente',
-    procesos:['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
-    integraciones:['ACME/ERP','Venta','Settlement','Contabilidad'],
-    criticos:['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
-    oportunidad:'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.'}},
-  {id:'settlement',label:'SETTLEMENT',sub:'Liquidación & Cierre',icon:'🧾',x:720,y:920,theme:'green',
-   detail:{subtitle:'Settlement — Cierre y Liquidación de Operaciones',
-    procesos:['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
-    integraciones:['Clientes','ACME/ERP','Contabilidad','Control Contable'],
-    criticos:['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
-    oportunidad:'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.'}},
-  {id:'tecnico',label:'TÉCNICO',sub:'Servicio & Mantención',icon:'🔧',x:1220,y:700,theme:'red',
-   detail:{subtitle:'Área Técnica — Servicio y Mantención',
-    procesos:['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
-    integraciones:['Inventario (Repuestos)','Bodega/Patio','ACME/ERP','Clientes','Sistema de Inventario'],
-    criticos:['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
-    oportunidad:'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.'}},
-  {id:'contabilidad',label:'CONTABILIDAD',sub:'Registro Contable',icon:'📊',x:840,y:600,theme:'yellow',
+    oportunidad:'WMS básico integrado al ERP: ubicaciones por bin, trazabilidad de series, alertas de stock mínimo, análisis de obsolescencia.'}},
+  {id:'contabilidad',label:'CONTABILIDAD',sub:'Registro Contable',icon:'📊',x:1280,y:300,theme:'yellow',
    detail:{subtitle:'Contabilidad General y Registro Tributario',
     procesos:['Registro de asientos contables','Gestión de cuentas por pagar y cobrar','Declaraciones tributarias (IVA, renta)','Cierre mensual y anual','Conciliación bancaria'],
     integraciones:['ACME/ERP','Settlement','Control Contable','Finanzas Internacional','Venta'],
     criticos:['Asientos manuales propensos a error','Desfase entre operación y registro contable','Falta de automatización en cierre de período'],
     oportunidad:'Automatización de asientos contables gatillados por eventos del ERP. Cierre de período asistido con checklist automático.'}},
-  {id:'control_contable',label:'CTRL CONTABLE',sub:'Franquicia · Std · Landed',icon:'⚖️',x:1220,y:60,theme:'yellow',
-   detail:{subtitle:'Control Contable de Costos — 3 Dimensiones',
-    procesos:['CARGO FRANQUICIA: costo pactado con proveedor internacional por ítem','COSTO STANDARD: costo interno de referencia para valorización de inventario','LANDED COST: costo real = standard + flete + seguro + aduana + otros cargos'],
-    integraciones:['Finanzas Internacional','Inventario','Contabilidad','ACME/ERP','Settlement'],
-    criticos:['Variaciones entre standard y landed no analizadas','Cargo de franquicia desactualizado','Landed cost calculado al cierre, no en tiempo real'],
-    oportunidad:'Motor de cálculo de landed cost en tiempo real desde el momento del embarque. Dashboard de variaciones standard vs real con drill-down por ítem.'}}
+  {id:'venta',label:'VENTA',sub:'Proceso Comercial',icon:'💼',x:280,y:540,theme:'green',
+   detail:{subtitle:'Gestión Comercial y Proceso de Venta',
+    procesos:['Cotización y propuestas comerciales','Emisión de OV en ERP','Verificación de disponibilidad de stock','Coordinación de despacho','Facturación y cobranza'],
+    integraciones:['ACME/ERP','Clientes','Bodega/Patio','Técnico','Contabilidad'],
+    criticos:['Sobreventa por desincronización de stock','Cotizaciones sin costo actualizado','Seguimiento manual de OVs pendientes'],
+    oportunidad:'CRM integrado al ERP con pipeline de ventas, cotización automática con costos reales y seguimiento de conversión.'}},
+  {id:'tecnico',label:'TÉCNICO',sub:'Servicio & Mantención',icon:'🔧',x:1080,y:540,theme:'red',
+   detail:{subtitle:'Área Técnica — Servicio y Mantención',
+    procesos:['Diagnóstico y reparación de equipos','Consumo de repuestos desde inventario','Registro de órdenes de trabajo (OT)','Garantías y posventa','Mantención preventiva y correctiva'],
+    integraciones:['Bodega/Patio','ACME/ERP','Clientes'],
+    criticos:['Repuestos consumidos sin registro en sistema','OTs sin costo real asociado','Tiempo de respuesta a clientes no medido'],
+    oportunidad:'App de OT para técnicos: consumo de repuestos con QR, tiempos de trabajo, estado en tiempo real visible al cliente.'}},
+  {id:'clientes',label:'CLIENTES',sub:'Cuenta & Relación',icon:'🤝',x:480,y:740,theme:'green',
+   detail:{subtitle:'Gestión de Clientes y Cuenta Corriente',
+    procesos:['Alta de clientes en ERP','Control de cuenta corriente','Gestión de crédito y límites','Historial de compras','Atención posventa y reclamos'],
+    integraciones:['ACME/ERP','Venta','Settlement','Contabilidad'],
+    criticos:['Clientes con deuda vencida sin bloqueo','Falta de segmentación de cartera','Historial de reclamos no centralizado'],
+    oportunidad:'Portal de clientes con acceso a estado de cuenta, historial de pedidos y documentos tributarios. Scoring automático de riesgo crediticio.'}},
+  {id:'settlement',label:'SETTLEMENT',sub:'Liquidación & Cierre',icon:'🧾',x:880,y:740,theme:'green',
+   detail:{subtitle:'Settlement — Cierre y Liquidación de Operaciones',
+    procesos:['Conciliación de pagos recibidos','Cierre de operaciones de venta','Aplicación de notas de crédito/débito','Reconciliación con contabilidad','Generación de informes de liquidación'],
+    integraciones:['Clientes','ACME/ERP','Contabilidad','Control Contable'],
+    criticos:['Diferencias de conciliación entre venta y contabilidad','Notas de crédito no aplicadas','Cierres de período con saldos abiertos'],
+    oportunidad:'Motor de conciliación automática que cruza cobros vs facturas y genera propuestas de cierre con un clic.'}}
 ];
 
 const EDGES_BASE = [
   {from:'comex',to:'aduana'},{from:'comex',to:'finanzas'},{from:'comex',to:'fabrica'},
   {from:'fabrica',to:'erp'},{from:'finanzas',to:'erp'},{from:'finanzas',to:'control_contable'},
-  {from:'aduana',to:'almacen'},{from:'aduana',to:'erp'},{from:'almacen',to:'erp'},
-  {from:'almacen',to:'bodega'},{from:'erp',to:'bodega'},{from:'erp',to:'venta'},
-  {from:'erp',to:'contabilidad'},{from:'bodega',to:'inventario_sys'},{from:'bodega',to:'tecnico'},
-  {from:'inventario_sys',to:'inu'},{from:'inventario_sys',to:'inventario'},{from:'inu',to:'inventario'},
-  {from:'inventario',to:'tecnico'},{from:'inventario',to:'control_contable'},
+  {from:'aduana',to:'erp'},{from:'erp',to:'bodega'},{from:'erp',to:'venta'},
+  {from:'erp',to:'contabilidad'},{from:'bodega',to:'tecnico'},
   {from:'venta',to:'clientes'},{from:'venta',to:'settlement'},{from:'clientes',to:'settlement'},
-  {from:'settlement',to:'contabilidad'},{from:'contabilidad',to:'control_contable'},{from:'tecnico',to:'erp'}
+  {from:'settlement',to:'contabilidad'},{from:'contabilidad',to:'control_contable'},
+  {from:'tecnico',to:'erp'}
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -1832,6 +1808,18 @@ function createNewWorkspace() {
 }
 
 async function loadState(){
+  // v4.59 — Force reset if DATA_VERSION changed (cleans duplicated nodes)
+  const storedVer = parseInt(localStorage.getItem('ocf-data-version') || '0');
+  if(storedVer < DATA_VERSION && S.activeWorkspace === 'default'){
+    console.log('DATA_VERSION bump: resetting default workspace to clean NODES_BASE');
+    localStorage.removeItem('ocf');
+    localStorage.removeItem('ocf-props');
+    localStorage.removeItem('ocf-comments');
+    localStorage.removeItem('ocf-notes');
+    localStorage.removeItem('ocf-frames');
+    localStorage.setItem('ocf-data-version', String(DATA_VERSION));
+  }
+
   // 1. Initial Defaults for 'default' workspace only
   if (S.activeWorkspace === 'default') {
     S.nodes=NODES_BASE.map(n=>({...n}));
@@ -1848,10 +1836,15 @@ async function loadState(){
       try {
         const data = JSON.parse(text);
         if(data && !data.empty) {
-          console.log('Loading state from Server (' + S.activeWorkspace + ')');
-          applyStateFromJSON(data);
-          loadAttachments();
-          return;
+          // v4.59 — Skip server data if version was bumped (force clean slate)
+          if(storedVer < DATA_VERSION && S.activeWorkspace === 'default'){
+            console.log('Skipping server data — DATA_VERSION reset active');
+          } else {
+            console.log('Loading state from Server (' + S.activeWorkspace + ')');
+            applyStateFromJSON(data);
+            loadAttachments();
+            return;
+          }
         }
       } catch(jsonErr) {
         console.warn('Server returned non-JSON response. Falling back.');
