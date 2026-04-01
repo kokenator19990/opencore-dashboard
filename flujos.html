@@ -2402,60 +2402,68 @@ function nodeBounds(id){
   return{x:n.x,y:n.y,w:sz.w,h:sz.h,cx:n.x+sz.w/2,cy:n.y+sz.h/2, shape:n.shape};
 }
 
+// v4.60 — Exact border intersection for professional edge connections
+function rectEdgePoint(rect, tx, ty){
+  const cx=rect.cx, cy=rect.cy;
+  const hw=rect.w/2, hh=rect.h/2;
+  const dx=tx-cx, dy=ty-cy;
+  if(dx===0&&dy===0) return {x:cx, y:cy-hh, side:'top'};
+  const scaleX = dx!==0 ? hw/Math.abs(dx) : Infinity;
+  const scaleY = dy!==0 ? hh/Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+  const side = scaleX<=scaleY ? (dx>0?'right':'left') : (dy>0?'bottom':'top');
+  return {x: cx+dx*scale, y: cy+dy*scale, side};
+}
+
+function nodeSide(A, B){
+  const dx=B.cx-A.cx, dy=B.cy-A.cy;
+  if(dx===0&&dy===0) return 'right';
+  const scaleX = dx!==0 ? (A.w/2)/Math.abs(dx) : Infinity;
+  const scaleY = dy!==0 ? (A.h/2)/Math.abs(dy) : Infinity;
+  return scaleX<=scaleY ? (dx>0?'right':'left') : (dy>0?'bottom':'top');
+}
+
 function getAnchors(fid,tid, sIdx=0, sTotal=1, eIdx=0, eTotal=1){
   const A=nodeBounds(fid),B=nodeBounds(tid);
   if(!A||!B)return null;
-  const dx=B.cx-A.cx,dy=B.cy-A.cy;
-  const ang=Math.atan2(dy,dx)*180/Math.PI;
-  const PAD = 8;
-  
-  let sx,sy,ex,ey;
-  
-  const getPos = (rect, side, idx, total) => {
-    const isD = rect.shape === 'diamond';
-    const marginX = rect.w * (isD ? 0.35 : 0.15);
-    const marginY = rect.h * (isD ? 0.35 : 0.15);
-    const availW = rect.w - 2 * marginX;
-    const availH = rect.h - 2 * marginY;
-    
-    if(side === 'right')  return { x: rect.x + rect.w + PAD, y: rect.y + marginY + (idx+1)*availH/(total+1) };
-    if(side === 'left')   return { x: rect.x - PAD, y: rect.y + marginY + (idx+1)*availH/(total+1) };
-    if(side === 'bottom') return { x: rect.x + marginX + (idx+1)*availW/(total+1), y: rect.y + rect.h + PAD };
-    if(side === 'top')    return { x: rect.x + marginX + (idx+1)*availW/(total+1), y: rect.y - PAD };
-  };
 
-  if(Math.abs(dx)>Math.abs(dy)){ // Horizontal primary
-    const sideA = dx > 0 ? 'right' : 'left';
-    const sideB = dx > 0 ? 'left' : 'right';
-    const pA = getPos(A, sideA, sIdx, sTotal);
-    const pB = getPos(B, sideB, eIdx, eTotal);
-    sx=pA.x; sy=pA.y; ex=pB.x; ey=pB.y;
-  } else { // Vertical primary
-    const sideA = dy > 0 ? 'bottom' : 'top';
-    const sideB = dy > 0 ? 'top' : 'bottom';
-    const pA = getPos(A, sideA, sIdx, sTotal);
-    const pB = getPos(B, sideB, eIdx, eTotal);
-    sx=pA.x; sy=pA.y; ex=pB.x; ey=pB.y;
+  const pA=rectEdgePoint(A, B.cx, B.cy);
+  const pB=rectEdgePoint(B, A.cx, A.cy);
+
+  // Multi-edge spread along the border
+  let sx=pA.x, sy=pA.y, ex=pB.x, ey=pB.y;
+  const spread=14;
+  if(sTotal>1){
+    const off=(sIdx-(sTotal-1)/2)*spread;
+    if(pA.side==='right'||pA.side==='left') sy+=off; else sx+=off;
   }
-  return{sx,sy,ex,ey,ang};
+  if(eTotal>1){
+    const off=(eIdx-(eTotal-1)/2)*spread;
+    if(pB.side==='right'||pB.side==='left') ey+=off; else ex+=off;
+  }
+
+  const ang=Math.atan2(B.cy-A.cy, B.cx-A.cx)*180/Math.PI;
+  return{sx,sy,ex,ey,ang, sideA:pA.side, sideB:pB.side};
 }
 
 function getCurvedPath(a){
-  const dx = Math.abs(a.ex - a.sx);
-  const dy = Math.abs(a.ey - a.sy);
-  if(dx >= dy) {
-    // Horizontal dominant: control points extend horizontally
-    const cpOff = Math.max(60, dx * 0.4);
-    const cp1x = a.sx + (a.ex > a.sx ? cpOff : -cpOff);
-    const cp2x = a.ex - (a.ex > a.sx ? cpOff : -cpOff);
-    return `M${a.sx},${a.sy} C${cp1x},${a.sy} ${cp2x},${a.ey} ${a.ex},${a.ey}`;
-  } else {
-    // Vertical dominant: control points extend vertically
-    const cpOff = Math.max(60, dy * 0.4);
-    const cp1y = a.sy + (a.ey > a.sy ? cpOff : -cpOff);
-    const cp2y = a.ey - (a.ey > a.sy ? cpOff : -cpOff);
-    return `M${a.sx},${a.sy} C${a.sx},${cp1y} ${a.ex},${cp2y} ${a.ex},${a.ey}`;
-  }
+  const dist=Math.sqrt((a.ex-a.sx)**2+(a.ey-a.sy)**2);
+  const cpOff=Math.max(40, dist*0.3);
+  let cp1x=a.sx, cp1y=a.sy, cp2x=a.ex, cp2y=a.ey;
+
+  // Control points extend perpendicular from each node's border
+  const sA=a.sideA||'right', sB=a.sideB||'left';
+  if(sA==='right')      cp1x+=cpOff;
+  else if(sA==='left')  cp1x-=cpOff;
+  else if(sA==='bottom')cp1y+=cpOff;
+  else                   cp1y-=cpOff;
+
+  if(sB==='left')        cp2x-=cpOff;
+  else if(sB==='right')  cp2x+=cpOff;
+  else if(sB==='top')    cp2y-=cpOff;
+  else                    cp2y+=cpOff;
+
+  return `M${a.sx},${a.sy} C${cp1x},${cp1y} ${cp2x},${cp2y} ${a.ex},${a.ey}`;
 }
 
 function getDirectPath(a){
@@ -2523,12 +2531,9 @@ function updateEdges(){
   S.edges.forEach((e, idx) => {
     const A = nodeBounds(e.from), B = nodeBounds(e.to);
     if(!A||!B) return;
-    const dx = B.cx - A.cx, dy = B.cy - A.cy;
-    let side;
-    if(Math.abs(dx) > Math.abs(dy)){ side = dx > 0 ? 'right' : 'left'; } 
-    else { side = dy > 0 ? 'bottom' : 'top'; }
     if(!sideGroups[e.from]) sideGroups[e.from] = {right:[],left:[],top:[],bottom:[]};
     if(!sideGroups[e.to]) sideGroups[e.to] = {right:[],left:[],top:[],bottom:[]};
+    const side = nodeSide(A, B);
     sideGroups[e.from][side].push({idx, type:'out', otherPos: (side==='right'||side==='left' ? B.cy : B.cx)});
     const opp = {right:'left', left:'right', bottom:'top', top:'bottom'}[side];
     sideGroups[e.to][opp].push({idx, type:'in', otherPos: (opp==='right'||opp==='left' ? A.cy : A.cx)});
@@ -2549,8 +2554,7 @@ function updateEdges(){
     let sIdx=0, sTotal=1, eIdx=0, eTotal=1;
     if(sgSrc){
        const A = nodeBounds(e.from), B = nodeBounds(e.to);
-       const dx = B.cx - A.cx, dy = B.cy - A.cy;
-       let side = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'bottom' : 'top');
+       const side = nodeSide(A, B);
        const group = sgSrc[side];
        sIdx = group.findIndex(g => g.idx === idx && g.type === 'out');
        sTotal = group.length;
