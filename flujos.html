@@ -313,7 +313,6 @@ body.light-mode [id*="grid"] {
 }
 .node.diamond .n-sub, .node.diamond .n-meta, .node.diamond .n-badge { display: none; }
 .node.diamond .n-status { top: 15px; right: 15px; }
-.node.diamond .n-lvl { top: 15px; left: 15px; right: auto; transform: none; }
 .node.diamond .n-panel-tab { border-radius: 0 0 14px 0; bottom: 10px; right: 10px; width: 32px; height: 24px; font-size: 11px; }
 
 .node.is-drag{
@@ -413,19 +412,15 @@ body.light-mode [id*="grid"] {
   }
 }
 .nc{position:relative}
-.n-lvl{
-  position:absolute;top:10px;left:10px;right:auto;z-index:5;
-  font-family:var(--font-h);font-size:.56rem;font-weight:800;letter-spacing:.6px;
-  padding:3px 8px;border-radius:6px;
-  background:rgba(0,0,0,0.6);
-  color:#fff;
-  border:1px solid rgba(255,255,255,0.3);
-  cursor:pointer;user-select:none;
-  transition:all .18s;white-space:nowrap;
-  box-shadow:0 3px 10px rgba(0,0,0,0.5);
+/* n-lvl-chip: subtle inline level indicator inside node */
+.n-lvl-chip{
+  display:inline-block;font-family:var(--font-h);font-size:.5rem;font-weight:800;letter-spacing:.5px;
+  padding:1px 5px;border-radius:4px;margin-left:6px;vertical-align:middle;
+  background:rgba(0,229,255,.1);color:var(--nc,#00E5FF);border:1px solid rgba(0,229,255,.2);
+  line-height:1.4;
 }
-.n-lvl:hover{background:rgba(255,255,255,.15);border-color:#fff;transform:scale(1.05);box-shadow:0 0 15px var(--nc,#00E5FF)}
-.n-lvl-unset:hover{opacity:1!important;background:rgba(0,0,0,0.6);border-color:rgba(255,255,255,.4)!important;}
+/* qt-lvl button in quick toolbar */
+.qt-lvl{font-family:var(--font-h);font-size:10px;font-weight:800;letter-spacing:.5px;white-space:nowrap;min-width:32px;}
 /* STORY BADGES ON NODES */
 .n-story-add-group {
   position: absolute; top: 10px; right: 10px; z-index: 5;
@@ -1205,6 +1200,8 @@ body.pmode #float-ctrl { display: none; }
   <button class="qt-btn" onclick="openPanel(S.selected,'info')" title="Información Detallada">📄</button>
   <button class="qt-btn" onclick="addToStory(S.selected)" title="Añadir a Historia">🎬</button>
   <button class="qt-btn" onclick="setMode('connect')" title="Conectar">🔗</button>
+  <div class="qt-sep"></div>
+  <button class="qt-btn qt-lvl" id="qt-lvl-btn" onclick="showLvlMenuFromQT(event)" title="Nivel del Nodo">LVL</button>
   <div class="qt-sep"></div>
   <button class="qt-btn qt-del" onclick="deleteSelectedNode()" title="Eliminar Nodo">🗑</button>
 </div>
@@ -2069,13 +2066,12 @@ function renderNodes(){
 
     const lvlVal=S.nodeProps[n.id]?.level;
     const lvlHasVal=lvlVal!==undefined&&lvlVal!==null&&lvlVal!=='';
-    const lvlBadge=`<span class="n-lvl${lvlHasVal?'':' n-lvl-unset'}" onclick="showLvlMenu(event,'${n.id}')" title="Ajustar Nivel del Nodo">${lvlHasVal?'L'+lvlVal:'L?'}</span>`;
+    const lvlChip=lvlHasVal?`<span class="n-lvl-chip">L${lvlVal}</span>`:'';
     el.innerHTML=`
       <div class="nc">
-        ${lvlBadge}
         <div class="nh">
           <span class="n-icon">${n.icon}</span>
-          <span class="n-lbl">${n.label}</span>
+          <span class="n-lbl">${n.label}${lvlChip}</span>
           <span class="n-status ns-${status}"></span>
         </div>
         ${n.sub?`<div class="n-sub">${n.sub}</div>`:''}
@@ -2843,7 +2839,6 @@ function showLvlMenu(e,id){
   lvlCtxNodeId=id;
   const ctx=document.getElementById('lvl-ctx');
   ctx.style.display='block';
-  // Position near badge
   ctx.style.left=e.clientX+'px';
   ctx.style.top=(e.clientY+10)+'px';
   // Mark active level
@@ -2852,6 +2847,23 @@ function showLvlMenu(e,id){
     const lText=btn.textContent.replace('L','');
     const isActive=(cur===lText || (cur===null && btn.classList.contains('clear')));
     btn.classList.toggle('active',isActive);
+  });
+}
+function showLvlMenuFromQT(e){
+  e.stopPropagation();e.preventDefault();
+  if(!S.selected)return;
+  lvlCtxNodeId=S.selected;
+  const btn=document.getElementById('qt-lvl-btn');
+  const rect=btn.getBoundingClientRect();
+  const ctx=document.getElementById('lvl-ctx');
+  ctx.style.display='block';
+  ctx.style.left=(rect.left - 40)+'px';
+  ctx.style.top=(rect.bottom + 6)+'px';
+  const cur=S.nodeProps[S.selected]?.level;
+  document.querySelectorAll('.lvl-item').forEach(b=>{
+    const lText=b.textContent.replace('L','');
+    const isActive=(cur===lText || (cur===null && b.classList.contains('clear')));
+    b.classList.toggle('active',isActive);
   });
 }
 function hideLvlMenu(){
@@ -2866,6 +2878,9 @@ function setNodeLvl(lvl){
   snapshot();
   hideLvlMenu();
   render();saveState();
+  // Update quick toolbar level button
+  const lvlBtn=document.getElementById('qt-lvl-btn');
+  if(lvlBtn) lvlBtn.textContent=lvl===null?'LVL':'L'+lvl;
   toast(lvl===null?'Nivel removido':'Nivel L'+lvl+' asignado','ok');
 }
 
@@ -4456,7 +4471,7 @@ cwrap.addEventListener('click',e=>{
 document.addEventListener('click',e=>{
   if(!e.target.closest('#edge-ctx')&&!e.target.closest('#asvg')&&edgeCtxIdx!=null)hideEdgeCtx();
   if(!e.target.closest('.tb-dropdown'))closeOrganize();
-  if(!e.target.closest('#lvl-ctx'))hideLvlMenu();
+  if(!e.target.closest('#lvl-ctx')&&!e.target.closest('#qt-lvl-btn'))hideLvlMenu();
 },true);
 
 document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault();submitModal();});
@@ -4694,11 +4709,17 @@ function showQuickToolbar(id){
   const qt = document.getElementById('quick-toolbar');
   const el = document.getElementById('node-'+id);
   if(!el) return;
-  
+
+  // Update level button label
+  const lvl=S.nodeProps[id]?.level;
+  const lvlBtn=document.getElementById('qt-lvl-btn');
+  if(lvlBtn) lvlBtn.textContent=(lvl!==undefined&&lvl!==null&&lvl!=='')?'L'+lvl:'LVL';
+
   const rect = el.getBoundingClientRect();
   qt.style.display = 'flex';
-  const left = (rect.left + rect.width/2 - 130/2); // approximate width
-  qt.style.left = Math.max(10, Math.min(left, window.innerWidth - 150)) + 'px';
+  const qtW = qt.offsetWidth || 180;
+  const left = (rect.left + rect.width/2 - qtW/2);
+  qt.style.left = Math.max(10, Math.min(left, window.innerWidth - qtW - 10)) + 'px';
   qt.style.top = (rect.top - 54) + 'px';
 }
 
