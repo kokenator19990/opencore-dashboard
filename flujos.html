@@ -373,6 +373,31 @@ body.light-mode [id*="grid"] {
 .n-badge{display:flex;gap:7px;align-items:center;padding:0 16px 12px}
 .n-badge-item{font-size:.95rem;color:var(--c-cyan);opacity:.7;display:flex;align-items:center;gap:3px}
 
+/* ── EXECUTION STATUS BADGE (v4.61 F3) ─────────── */
+.n-exec{display:flex;align-items:center;gap:5px;padding:6px 16px 10px;font-size:.78rem;font-weight:600;font-family:var(--font-h);letter-spacing:.3px}
+.n-exec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ne-idle{display:none}
+.ne-running .n-exec-dot{background:#E5FF00;box-shadow:0 0 8px rgba(229,255,0,.5);animation:execPulse 1.5s ease-in-out infinite}
+.ne-running .n-exec-lbl{color:#E5FF00}
+.ne-done .n-exec-dot{background:#00FF85;box-shadow:0 0 6px rgba(0,255,133,.4)}
+.ne-done .n-exec-lbl{color:#00FF85}
+.ne-blocked .n-exec-dot{background:#FF4444;box-shadow:0 0 8px rgba(255,68,68,.5);animation:crit .7s ease-in-out infinite}
+.ne-blocked .n-exec-lbl{color:#FF4444}
+@keyframes execPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ── OUTPUT PORTS (v4.61 F4) ────────────────────── */
+.n-ports{display:flex;gap:6px;justify-content:center;padding:4px 12px 0;position:relative;z-index:22}
+.n-port{display:flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:.65rem;font-family:var(--font-h);font-weight:600;color:rgba(255,255,255,.6);cursor:crosshair;transition:all .18s;white-space:nowrap}
+.n-port:hover{background:rgba(0,229,255,.12);border-color:rgba(0,229,255,.4);color:var(--c-cyan);transform:scale(1.05)}
+.n-port::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--nc,#00E5FF);flex-shrink:0;opacity:.6}
+.n-port:hover::before{opacity:1}
+#cwrap.mode-connect .n-port{opacity:1;pointer-events:auto}
+
+/* ── SUBFLOW BADGE (v4.61 F5) ──────────────────── */
+.n-children{position:absolute;bottom:-10px;right:12px;display:flex;align-items:center;gap:4px;background:rgba(13,15,20,.95);border:1px solid rgba(0,229,255,.25);border-radius:8px;padding:2px 8px;font-size:.6rem;font-weight:600;color:var(--c-cyan);cursor:pointer;z-index:25;transition:all .18s}
+.n-children:hover{background:rgba(0,229,255,.12);border-color:var(--c-cyan);transform:scale(1.08)}
+.n-children-icon{font-size:.7rem}
+
 /* ── CONNECT SOURCE ──────────────────────────────── */
 .node.c-source .nc{animation:pGlow 1s ease-in-out infinite}
 @keyframes pGlow{0%,100%{box-shadow:0 0 0 2px #00FF85,0 0 28px rgba(0,255,133,.45)}50%{box-shadow:0 0 0 2px #00FF85,0 0 48px rgba(0,255,133,.65)}}
@@ -1203,6 +1228,7 @@ body.pmode #float-ctrl { display: none; }
   <div class="qt-sep"></div>
   <button class="qt-btn qt-lvl" id="qt-lvl-btn" onclick="showLvlMenuFromQT(event)" title="Nivel del Nodo">LVL</button>
   <div class="qt-sep"></div>
+  <button class="qt-btn" onclick="reparentToSelected()" title="Mover dentro de este nodo (v4.61)">📥</button>
   <button class="qt-btn qt-del" onclick="deleteSelectedNode()" title="Eliminar Nodo">🗑</button>
 </div>
 
@@ -1261,6 +1287,10 @@ body.pmode #float-ctrl { display: none; }
       <button class="tb-dropdown-btn" id="btn-line-curved" onclick="setLineStyle('curved'); closeOrganize()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12c4-8 14-8 18 0"/></svg>
         Líneas Curvas
+      </button>
+      <button class="tb-dropdown-btn" id="btn-line-ortho" onclick="setLineStyle('orthogonal'); closeOrganize()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h6v-6h6"/><path d="m13 2 4 4-4 4"/></svg>
+        Líneas Ortogonales
       </button>
       <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0"></div>
       <button class="tb-dropdown-btn" onclick="addFrame(); closeOrganize()">
@@ -1598,7 +1628,7 @@ const S = {
   activeTab:'info',
   nodeDragMoved:false,
   snapGrid:false,
-  lineStyle:'curved', // curved, direct
+  lineStyle:'curved', // curved, direct, orthogonal
   showAllFlows:false,
   panelEditMode:false,
   inStoryMode:false,
@@ -1900,8 +1930,8 @@ function applyStateFromJSON(d) {
   
   if(d.activeStory) S.activeStory = d.activeStory;
   
-  // Migration for Line Styles (v4.53)
-  if(d.lineStyle && d.lineStyle !== 'orthogonal') S.lineStyle = d.lineStyle;
+  // v4.61 — Line style restoration (curved/direct/orthogonal)
+  if(d.lineStyle) S.lineStyle = d.lineStyle;
   
   // v4.54 Hierarchy Restoration
   if(d.viewContext) S.viewContext = d.viewContext;
@@ -2064,9 +2094,22 @@ function renderNodes(){
     if(cc>0) badgeHtml+=`<span class="n-badge-item" onclick="showNodeNotesQuickPop('${n.id}', event)" title="Ver notas rápidas (v4.43)">📝 ${cc}</span>`;
     if(fc>0) badgeHtml+=`<span class="n-badge-item">📎 ${fc}</span>`;
 
+    // v4.61 F3 — Execution status badge
+    const execSt=props.execStatus||'idle';
+    const EXEC_LABELS={idle:'',running:'En proceso',done:'Completado',blocked:'Bloqueado'};
+    const execHtml=execSt!=='idle'?`<div class="n-exec ne-${execSt}"><span class="n-exec-dot"></span><span class="n-exec-lbl">${EXEC_LABELS[execSt]}</span></div>`:'';
+
     const lvlVal=S.nodeProps[n.id]?.level;
     const lvlHasVal=lvlVal!==undefined&&lvlVal!==null&&lvlVal!=='';
     const lvlChip=lvlHasVal?`<span class="n-lvl-chip">L${lvlVal}</span>`:'';
+    // v4.61 F4 — Output ports
+    const outputs=props.outputs||[];
+    const portsHtml=outputs.length?`<div class="n-ports">${outputs.map(p=>`<span class="n-port" data-port="${esc(p.id)}" data-node="${n.id}" onclick="event.stopPropagation();portConnect('${n.id}','${esc(p.id)}','${esc(p.label)}')">${esc(p.label)}</span>`).join('')}</div>`:'';
+
+    // v4.61 F5 — Child count badge (subflow indicator)
+    const childCount=S.nodes.filter(c=>c.parentId===n.id).length;
+    const childBadge=childCount>0?`<div class="n-children" onclick="event.stopPropagation();enterNode('${n.id}')" title="Doble clic o clic aquí para entrar"><span class="n-children-icon">📂</span>${childCount} sub</div>`:'';
+
     el.innerHTML=`
       <div class="nc">
         <div class="nh">
@@ -2077,7 +2120,10 @@ function renderNodes(){
         ${n.sub?`<div class="n-sub">${n.sub}</div>`:''}
         ${metaHtml?`<div class="n-meta">${metaHtml}</div>`:''}
         ${badgeHtml?`<div class="n-badge">${badgeHtml}</div>`:''}
+        ${execHtml}
       </div>
+      ${portsHtml}
+      ${childBadge}
       <button class="n-panel-tab" onclick="openPanelFromCorner(event,'${n.id}')" title="Abrir panel de Información" data-tooltip="Abrir panel de Información">⊟</button>
       <div class="n-story-add-group">
         <button class="n-story-add" onclick="event.stopPropagation();addToStory('${n.id}',1)" title="Añadir a Historia 1">1</button>
@@ -2466,9 +2512,69 @@ function getDirectPath(a){
   return `M${a.sx},${a.sy} L${a.ex},${a.ey}`;
 }
 
+// v4.61 F6 — Orthogonal routing (right-angle connections like flowcharts)
+function getOrthogonalPath(a){
+  const sA=a.sideA||'right', sB=a.sideB||'left';
+  const gap=30; // min offset from node border before turning
+  let pts=[{x:a.sx,y:a.sy}];
+
+  // Extend out from start side
+  let mx1={x:a.sx,y:a.sy};
+  if(sA==='right')       mx1.x+=gap;
+  else if(sA==='left')   mx1.x-=gap;
+  else if(sA==='bottom') mx1.y+=gap;
+  else                    mx1.y-=gap;
+
+  // Extend out from end side
+  let mx2={x:a.ex,y:a.ey};
+  if(sB==='left')         mx2.x-=gap;
+  else if(sB==='right')   mx2.x+=gap;
+  else if(sB==='top')     mx2.y-=gap;
+  else                     mx2.y+=gap;
+
+  const horiz1=(sA==='right'||sA==='left');
+  const horiz2=(sB==='right'||sB==='left');
+
+  if(horiz1&&horiz2){
+    // Both exit horizontally → create a vertical bridge at midpoint
+    const midX=(mx1.x+mx2.x)/2;
+    pts.push(mx1, {x:midX,y:mx1.y}, {x:midX,y:mx2.y}, mx2);
+  }else if(!horiz1&&!horiz2){
+    // Both exit vertically → create a horizontal bridge at midpoint
+    const midY=(mx1.y+mx2.y)/2;
+    pts.push(mx1, {x:mx1.x,y:midY}, {x:mx2.x,y:midY}, mx2);
+  }else if(horiz1&&!horiz2){
+    // Start horizontal, end vertical → L-shape
+    pts.push(mx1, {x:mx2.x,y:mx1.y}, mx2);
+  }else{
+    // Start vertical, end horizontal → L-shape
+    pts.push(mx1, {x:mx1.x,y:mx2.y}, mx2);
+  }
+
+  pts.push({x:a.ex,y:a.ey});
+  return 'M'+pts.map(p=>p.x+','+p.y).join(' L');
+}
+
 function pathMid(a){
-  // Midpoint for curve labels
-  return {x:(a.sx+a.ex)/2, y:(a.sy+a.ey)/2};
+  // v4.61 — True Bézier midpoint (t=0.5) for accurate label placement on curves
+  if(S.lineStyle==='direct'||S.lineStyle==='orthogonal') return {x:(a.sx+a.ex)/2, y:(a.sy+a.ey)/2};
+  const dist=Math.sqrt((a.ex-a.sx)**2+(a.ey-a.sy)**2);
+  const cpOff=Math.max(40, dist*0.3);
+  let cp1x=a.sx, cp1y=a.sy, cp2x=a.ex, cp2y=a.ey;
+  const sA=a.sideA||'right', sB=a.sideB||'left';
+  if(sA==='right')       cp1x+=cpOff;
+  else if(sA==='left')   cp1x-=cpOff;
+  else if(sA==='bottom') cp1y+=cpOff;
+  else                    cp1y-=cpOff;
+  if(sB==='left')         cp2x-=cpOff;
+  else if(sB==='right')   cp2x+=cpOff;
+  else if(sB==='top')     cp2y-=cpOff;
+  else                     cp2y+=cpOff;
+  const t=0.5;
+  const mt=1-t;
+  const x=mt*mt*mt*a.sx + 3*mt*mt*t*cp1x + 3*mt*t*t*cp2x + t*t*t*a.ex;
+  const y=mt*mt*mt*a.sy + 3*mt*mt*t*cp1y + 3*mt*t*t*cp2y + t*t*t*a.ey;
+  return {x, y};
 }
 
 function updateEdges(){
@@ -2578,6 +2684,7 @@ function updateEdges(){
 
     let d = "";
     if(S.lineStyle==='direct') d = getDirectPath(a);
+    else if(S.lineStyle==='orthogonal') d = getOrthogonalPath(a);
     else d = getCurvedPath(a);
 
     // Hit area (invisible, wide for easy click)
@@ -2671,24 +2778,35 @@ function updateEdges(){
       }
     }
 
-    // Edge label (v4.38 Fix: Correctly refer to e.label)
+    // Edge label (v4.61 — Enhanced: larger font, pill badge, true bézier midpoint, always visible)
     const elbl = e.label || '';
     if(elbl){
       const mid=pathMid(a);
+      // Measure text width more accurately: ~6.5px per char at 11px Inter + padding
+      const tw=elbl.length*6.5+16;
+      const th=22;
+      const lblOpacity=isDimmed?0.35:(isEdgeSel?1:activeFlow?0.95:0.75);
+
       const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
-      const tw=elbl.length*5.8+10;
-      bg.setAttribute('x',mid.x-tw/2);bg.setAttribute('y',mid.y-10);
-      bg.setAttribute('width',tw);bg.setAttribute('height',16);
-      bg.setAttribute('rx','5');bg.setAttribute('fill','rgba(10,10,18,.9)');
-      bg.setAttribute('stroke',EDGE_COL_ACT);bg.setAttribute('stroke-width','0.6');bg.setAttribute('opacity','0.85');
+      bg.setAttribute('x',mid.x-tw/2);bg.setAttribute('y',mid.y-th/2);
+      bg.setAttribute('width',tw);bg.setAttribute('height',th);
+      bg.setAttribute('rx','11');
+      bg.setAttribute('fill','rgba(13,15,20,.95)');
+      bg.setAttribute('stroke',activeFlow?EDGE_COL_ACT:EDGE_COL);
+      bg.setAttribute('stroke-width',isEdgeSel?'1.2':'0.7');
+      bg.setAttribute('opacity',String(lblOpacity));
       bg.style.pointerEvents='none';
       svgEl.appendChild(bg);
 
       const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x',mid.x);txt.setAttribute('y',mid.y+2);
-      txt.setAttribute('text-anchor','middle');txt.setAttribute('dominant-baseline','middle');
-      txt.setAttribute('fill',EDGE_COL_ACT);txt.setAttribute('font-size','9');
-      txt.setAttribute('font-family','Inter,sans-serif');txt.setAttribute('opacity','0.85');
+      txt.setAttribute('x',mid.x);txt.setAttribute('y',mid.y);
+      txt.setAttribute('text-anchor','middle');txt.setAttribute('dominant-baseline','central');
+      txt.setAttribute('fill',activeFlow?EDGE_COL_ACT:EDGE_COL);
+      txt.setAttribute('font-size','11');
+      txt.setAttribute('font-weight','500');
+      txt.setAttribute('font-family','Inter,sans-serif');
+      txt.setAttribute('letter-spacing','0.3');
+      txt.setAttribute('opacity',String(lblOpacity));
       txt.style.pointerEvents='none';
       txt.textContent=elbl;
       svgEl.appendChild(txt);
@@ -3255,7 +3373,8 @@ document.addEventListener('fullscreenchange',()=>{
 function setLineStyle(style){
   S.lineStyle=style;
   render(); saveState();
-  toast(style==='direct'?'Estilo: Líneas Rectas':'Estilo: Líneas Curvas','info');
+  const labels={direct:'Líneas Rectas',curved:'Líneas Curvas',orthogonal:'Líneas Ortogonales'};
+  toast('Estilo: '+(labels[style]||style),'info');
 }
 // ─── NODE DRAG ────────────────────────────────────────────────────────────────
 function snapVal(v,g=40){return S.snapGrid?Math.round(v/g)*g:v;}
@@ -3425,6 +3544,10 @@ function onNodeClick(e,id){
   e.stopPropagation();
   if(S.nodeDragMoved)return;
   if(edgeCtxIdx!=null)hideEdgeCtx();
+  // v4.61 F5 — Reparent intercept
+  if(reparentTarget && S.mode==='select' && id!==reparentTarget){
+    if(executeReparent(id)) return;
+  }
   if(S.mode==='select'){selectNode(id);}
   else if(S.mode==='connect'){
     if(!S.connecting)startConnect(id);
@@ -3449,6 +3572,7 @@ function selectNode(id){
 
 function deselectAll(){
   if(S.selected){document.getElementById('node-'+S.selected)?.classList.remove('selected');S.selected=null;}
+  reparentTarget=null; // v4.61 F5
   closePanel();
   updateEdges(); // restore edge base state
 }
@@ -3491,14 +3615,33 @@ function deleteSelected(){
 // ─── CONNECT ─────────────────────────────────────────────────────────────────
 let prevLine=null;
 
-function startConnect(id){S.connecting=id;document.getElementById('node-'+id)?.classList.add('c-source');}
+function startConnect(id){S.connecting=id;S.connectingPort=null;document.getElementById('node-'+id)?.classList.add('c-source');}
+
+// v4.61 F4 — Port-based connection
+function portConnect(nodeId, portId, portLabel){
+  if(S.mode!=='connect'){
+    // Switch to connect mode automatically
+    S.mode='connect';
+    document.getElementById('cwrap')?.classList.add('mode-connect');
+  }
+  S.connecting=nodeId;
+  S.connectingPort={id:portId, label:portLabel};
+  document.getElementById('node-'+nodeId)?.classList.add('c-source');
+  toast('Puerto "'+portLabel+'" — clic en nodo destino','info');
+}
 
 function finishConnect(tid){
-  if(!S.edges.some(e=>e.from===S.connecting&&e.to===tid)){
-    S.edges.push({from:S.connecting,to:tid,custom:true,dir:'forward',label:''});
+  if(!S.edges.some(e=>e.from===S.connecting&&e.to===tid&&e.fromPort===(S.connectingPort?.id||''))){
+    const edge={from:S.connecting,to:tid,custom:true,dir:'forward',label:''};
+    // v4.61 F4 — Attach port info to edge
+    if(S.connectingPort){
+      edge.fromPort=S.connectingPort.id;
+      edge.label=S.connectingPort.label;
+    }
+    S.edges.push(edge);
     snapshot();
     saveState();
-    toast('Conexión creada','ok');
+    toast('Conexión creada'+(S.connectingPort?' ('+S.connectingPort.label+')':''),'ok');
     playSfx('connect');
   }
   const src=S.connecting;cancelConnect();updateEdges();
@@ -3507,7 +3650,7 @@ function finishConnect(tid){
 }
 
 function cancelConnect(){
-  if(S.connecting){document.getElementById('node-'+S.connecting)?.classList.remove('c-source');S.connecting=null;}
+  if(S.connecting){document.getElementById('node-'+S.connecting)?.classList.remove('c-source');S.connecting=null;S.connectingPort=null;}
   if(prevLine){prevLine.remove();prevLine=null;}
 }
 
@@ -3608,10 +3751,18 @@ function renderPanelBody(id,tab){
       const d = props.detail || n.detail;
       
       // Node Metadata Summary (Responsible & Budget)
+      // v4.61 F3 — Exec status in dashboard view
+      const execDash=props.execStatus||'idle';
+      const EXEC_DASH_MAP={idle:{label:'Sin iniciar',color:'rgba(255,255,255,.3)'},running:{label:'En proceso',color:'#E5FF00'},done:{label:'Completado',color:'#00FF85'},blocked:{label:'Bloqueado',color:'#FF4444'}};
+      const ed=EXEC_DASH_MAP[execDash];
       h+=`<div class="ps-dash-section">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
             <div><div class="ps-t" style="font-size:.55rem;opacity:.5;margin-bottom:4px">Responsable</div><div style="font-size:.75rem;font-weight:600;color:var(--c-cyan)">👤 ${esc(props.responsible||'Sin asignar')}</div></div>
             <div><div class="ps-t" style="font-size:.55rem;opacity:.5;margin-bottom:4px">Presupuesto</div><div style="font-size:.75rem;font-weight:600;color:var(--c-yellow)">💰 ${esc(props.budget||'---')}</div></div>
+          </div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+            <span style="width:8px;height:8px;border-radius:50%;background:${ed.color};display:inline-block${execDash==='running'?';animation:execPulse 1.5s ease-in-out infinite':''}"></span>
+            <span style="font-size:.7rem;font-weight:600;color:${ed.color}">Ejecución: ${ed.label}</span>
           </div>
         </div>`;
 
@@ -3668,6 +3819,14 @@ function renderPanelBody(id,tab){
           ${['active','planning','paused','critical'].map(s=>`<button class="st-btn${status===s?' active':''}" data-s="${s}" onclick="setNodeStatus('${id}','${s}')">${{active:'Activo',planning:'Plan',paused:'Pausado',critical:'Crítico'}[s]}</button>`).join('')}
         </div>
 
+        <label class="ef-label">Estado de Ejecución (v4.61)</label>
+        <div class="st-row">
+          ${['idle','running','done','blocked'].map(s=>{
+            const execCur=props.execStatus||'idle';
+            return `<button class="st-btn${execCur===s?' active':''}" data-es="${s}" onclick="setExecStatus('${id}','${s}')">${{idle:'—',running:'⏳',done:'✅',blocked:'❌'}[s]}</button>`;
+          }).join('')}
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0">
            <div>
              <label class="ef-label">Nivel Jerárquico</label>
@@ -3691,6 +3850,11 @@ function renderPanelBody(id,tab){
         <label class="ef-label">Icono de Identificación</label>
         <div class="ic-grid" id="ep-ic"></div>
         <input class="ef" id="ep-icon" value="${esc(n.icon)}" placeholder="Emoji" style="margin-top:4px">
+
+        <div class="ps-t" style="margin:1.8rem 0 .5rem;color:var(--c-green)">Puertos de Salida (v4.61)</div>
+        <label class="ef-label">Nombres separados por coma (ej: Sí, No)</label>
+        <input class="ef" id="ep-ports" value="${(props.outputs||[]).map(p=>p.label).join(', ')}" placeholder="ej: Aprobado, Rechazado, Pendiente">
+        <div style="font-size:.55rem;opacity:.3;margin-top:3px">Los puertos aparecen debajo del nodo. Clic en un puerto en modo Connect para crear una conexión etiquetada.</div>
 
         <div class="ps-t" style="margin:1.8rem 0 .5rem;color:var(--c-yellow)">Detalles de Negocio</div>
         <label class="ef-label">Procesos Clave (uno por línea)</label>
@@ -3937,7 +4101,7 @@ function goToStoryStep(idx){
       const a = getAnchors(edge.from, edge.to);
       if(a){
         const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const d_attr = (S.lineStyle==='direct') ? getDirectPath(a) : getCurvedPath(a);
+        const d_attr = S.lineStyle==='direct'?getDirectPath(a):S.lineStyle==='orthogonal'?getOrthogonalPath(a):getCurvedPath(a);
         p.setAttribute('d', d_attr);
         p.setAttribute('class','path-trace-anim');
         svgEl.appendChild(p);
@@ -4045,6 +4209,10 @@ function saveNodeProps(id){
   const detOpp=document.getElementById('ep-det-opp')?.value.trim()||(n.detail?.oportunidad||'');
   const logic=document.getElementById('ep-logic')?.value.trim();
   
+  // v4.61 F4 — Save output ports
+  const portsRaw=document.getElementById('ep-ports')?.value||'';
+  S.nodeProps[id].outputs=portsRaw.split(',').map(s=>s.trim()).filter(s=>s).map(s=>({id:s.toLowerCase().replace(/\s+/g,'-'),label:s}));
+
   S.nodeProps[id].logic = logic;
   S.nodeProps[id].detail = {
     subtitle: sub||(n.detail?.subtitle||''),
@@ -4076,6 +4244,14 @@ function setNodeStatus(id,status){
   const el=document.getElementById('node-'+id)?.querySelector('.n-status');
   if(el){el.className='n-status ns-'+status;}
   saveState();
+}
+
+// v4.61 F3 — Execution status per node
+function setExecStatus(id,es){
+  if(!S.nodeProps[id])S.nodeProps[id]={};
+  S.nodeProps[id].execStatus=es;
+  document.querySelectorAll('.st-btn[data-es]').forEach(el=>el.classList.toggle('active',el.dataset.es===es));
+  render(); saveState();
 }
 
 // ─── RESET TEXT COLOR ────────────────────────────────────────────────────────
@@ -4645,6 +4821,46 @@ console.log('%c [v4.55-WORKSPACES] LOADING... ', 'background:var(--c-cyan);color
   });
 })();
 // ─── HIERARCHY LOGIC (v4.54) ────────────────────────────────────────────────
+// v4.61 F5 — Reparent: move nodes into a parent (subflow grouping)
+let reparentTarget = null;
+function reparentToSelected(){
+  if(!S.selected) return;
+  if(reparentTarget === S.selected){
+    reparentTarget = null;
+    toast('Modo agrupar cancelado','info');
+    return;
+  }
+  reparentTarget = S.selected;
+  toast('Modo agrupar: clic en nodos para moverlos dentro de "'+S.nodes.find(n=>n.id===S.selected)?.label+'"','ok');
+}
+
+function executeReparent(childId){
+  if(!reparentTarget || childId === reparentTarget) return false;
+  const child = S.nodes.find(n=>n.id===childId);
+  if(!child) return false;
+  // Prevent circular: can't reparent a node into its own descendant
+  let cur = reparentTarget;
+  while(cur){
+    if(cur === childId) { toast('No puedes agrupar un nodo dentro de su propio hijo','error'); return false; }
+    const p = S.nodes.find(n=>n.id===cur);
+    cur = p?.parentId || null;
+  }
+  child.parentId = reparentTarget;
+  snapshot(); render(); saveState();
+  toast(child.label+' movido dentro de '+S.nodes.find(n=>n.id===reparentTarget)?.label,'ok');
+  playSfx('connect');
+  return true;
+}
+
+function unparentNode(id){
+  const n=S.nodes.find(n=>n.id===id);
+  if(!n||!n.parentId)return;
+  // Move to current view context's level
+  n.parentId = S.viewContext==='root'?null:S.viewContext;
+  snapshot(); render(); saveState();
+  toast(n.label+' extraído del grupo','info');
+}
+
 function enterNode(id){
   const n = S.nodes.find(n => n.id === id);
   if(!n) return;
