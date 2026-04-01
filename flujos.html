@@ -4437,7 +4437,7 @@ cwrap.addEventListener('wheel',e=>{
   e.preventDefault();
   const r=cwrap.getBoundingClientRect();
   const mx=e.clientX-r.left,my=e.clientY-r.top;
-  const f=e.deltaY<0?1.06:.94;
+  const f=e.deltaY<0?1.048:.952;
   S.tx=mx-(mx-S.tx)*f;S.ty=my-(my-S.ty)*f;
   S.scale=Math.min(3,Math.max(.15,S.scale*f));
   applyTransform(false);updateMinimap();
