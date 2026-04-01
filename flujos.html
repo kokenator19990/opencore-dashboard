@@ -1686,7 +1686,10 @@ function snapshot(){
     nodes:S.nodes.map(n=>({...n})),
     edges:S.edges.map(e=>({...e})),
     nodeProps:JSON.parse(JSON.stringify(S.nodeProps)),
-    notes:S.notes.map(n=>({...n}))
+    comments:JSON.parse(JSON.stringify(S.comments)),
+    stories:JSON.parse(JSON.stringify(S.stories)),
+    notes:S.notes.map(n=>({...n})),
+    frames:S.frames.map(f=>({...f}))
   });
   H.stack.splice(H.idx+1);
   H.stack.push(s);
@@ -1715,7 +1718,10 @@ function restoreSnap(json){
   S.nodes=s.nodes;
   S.edges=s.edges;
   S.nodeProps=s.nodeProps||{};
+  S.comments=s.comments||{};
+  S.stories=s.stories||{1:[],2:[],3:[]};
   S.notes=s.notes||[];
+  S.frames=s.frames||[];
   S.selected=null; S.selectedEdge=null;
   closePanel(); hideEdgeCtx();
   render(); saveState(); updateHistBtns();
@@ -1871,10 +1877,11 @@ async function loadState(){
     if(d.stories) S.stories=d.stories;
     if(d.activeStory) S.activeStory=d.activeStory;
     if(d.lineStyle) S.lineStyle = d.lineStyle;
-    S.nodeProps=JSON.parse(localStorage.getItem('ocf-props')||'{}');
-    S.comments=JSON.parse(localStorage.getItem('ocf-comments')||'{}');
-    S.notes = migrateNotes(JSON.parse(localStorage.getItem('ocf-notes')||'[]'));
-    S.frames = JSON.parse(localStorage.getItem('ocf-frames')||'[]');
+    // Read from main key first (saveState writes everything here), legacy keys as fallback
+    S.nodeProps = d.nodeProps || JSON.parse(localStorage.getItem('ocf-props')||'{}');
+    S.comments = d.comments || JSON.parse(localStorage.getItem('ocf-comments')||'{}');
+    S.notes = migrateNotes(d.notes || JSON.parse(localStorage.getItem('ocf-notes')||'[]'));
+    S.frames = d.frames || JSON.parse(localStorage.getItem('ocf-frames')||'[]');
   }catch(e){console.warn('LS load',e)}
   
   if(!S.nodes.length){
@@ -1976,6 +1983,8 @@ function saveFullStateToDB(){
     stories: S.stories,
     activeStory: S.activeStory,
     lineStyle: S.lineStyle,
+    viewContext: S.viewContext,
+    viewStack: S.viewStack,
     ts: new Date().toISOString()
   };
   
@@ -2739,28 +2748,7 @@ function setEdgeLabel(val){
   updateEdges(); saveState();
 }
 
-function deleteSelectedNode(){
-  if(!S.selected) return;
-  const id = S.selected;
-  const n = S.nodes.find(v=>v.id===id);
-  if(!n) return;
-  
-  // v4.54.5 Hierarchy Safety: Orphan children to the current context's parent level
-  const children = S.nodes.filter(v=>v.parentId===id);
-  children.forEach(c => {
-    c.parentId = S.viewContext === 'root' ? null : S.nodes.find(v=>v.id===S.viewContext)?.parentId;
-  });
-  
-  // Standard Delete Node logic
-  S.nodes = S.nodes.filter(v=>v.id!==id);
-  S.edges = S.edges.filter(e=>(e.from!==id && e.to!==id));
-  delete S.nodeProps[id];
-  delete S.comments[id];
-  delete S.attachments[id];
-  
-  snapshot(); deselectAll(); render(); saveState();
-  playSfx('delete'); toast('Nodo eliminado (Estructura preservada)','info');
-}
+function deleteSelectedNode(){ deleteSelected(); }
 
 function deleteSelectedEdge(){
   if(edgeCtxIdx==null)return;
@@ -3454,23 +3442,35 @@ function deselectAll(){
 function deleteSelected(){
   if(!S.selected)return;
   const id=S.selected;
+  const n=S.nodes.find(v=>v.id===id);
+  if(!n)return;
+
+  // v4.54.5 Hierarchy Safety: Orphan children to the current context's parent level
+  const children = S.nodes.filter(v=>v.parentId===id);
+  children.forEach(c => {
+    c.parentId = S.viewContext === 'root' ? null : S.nodes.find(v=>v.id===S.viewContext)?.parentId;
+  });
+
   S.edges=S.edges.filter(e=>e.from!==id&&e.to!==id);
-  S.nodes=S.nodes.filter(n=>n.id!==id);
-  // Vacuum metadata
-  S.story=S.story.filter(step=>step.id!==id);
-  delete S.comments[id]; 
-  delete S.attachments[id]; 
+  S.nodes=S.nodes.filter(v=>v.id!==id);
+
+  // Vacuum ALL metadata — stories, props, comments, attachments, cache
+  [1,2,3].forEach(slot=>{
+    if(S.stories[slot]) S.stories[slot]=S.stories[slot].filter(step=>(typeof step==='string'?step:step.id)!==id);
+  });
+  delete S.comments[id];
+  delete S.attachments[id];
   delete S.nodeProps[id];
   if(szCache[id]) delete szCache[id];
-  
+
   // v4.51 Storyteller safety
   if(S.inStoryMode) stopStoryteller();
-  
+
   S.selected=null;
   snapshot();
   closePanel(); render(); saveState();
   playSfx('delete');
-  toast('Nodo & Datos eliminados','info');
+  toast('Nodo eliminado','info');
 }
 
 // ─── CONNECT ─────────────────────────────────────────────────────────────────
@@ -3661,14 +3661,13 @@ function renderPanelBody(id,tab){
                ${[0,1,2,3,4,5,6,7].map(v=>`<option value="${v}"${(props.level===String(v)||props.level===v)?' selected':''}>L${v}</option>`).join('')}
              </select>
            </div>
-          </div>
-          <div>
+           <div>
              <label class="ef-label">Forma del Nodo (v4.46)</label>
              <div style="display:flex;gap:10px;margin-top:5px;height:40px;align-items:center">
                 <label style="color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="ep-shape" value="rect"${n.shape!=='diamond'?' checked':''}> PROCESO</label>
                 <label style="color:#fff;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="ep-shape" value="diamond"${n.shape==='diamond'?' checked':''}> DECISIÓN</label>
              </div>
-          </div>
+           </div>
         </div>
 
         <div class="ps-t" style="margin:1.4rem 0 .5rem">Personalización Visual</div>
@@ -4068,7 +4067,7 @@ function setNodeStatus(id,status){
 function resetTextColor(id){
   if(S.nodeProps[id]) delete S.nodeProps[id].textColor;
   saveState();
-  renderPanelBody(id,'props');
+  renderPanelBody(id,'info');
   renderNodes();
   updateEdges();
 }
@@ -4309,7 +4308,7 @@ function submitModal(){
   snapshot();
   hideModal();render();saveState();
   playSfx('create');
-  setTimeout(()=>{selectNode(id);openPanel(id,'props');},80);
+  setTimeout(()=>{selectNode(id);openPanel(id,'info');},80);
   toast('Nodo creado','ok');
 }
 
@@ -4441,7 +4440,7 @@ cwrap.addEventListener('wheel',e=>{
   e.preventDefault();
   const r=cwrap.getBoundingClientRect();
   const mx=e.clientX-r.left,my=e.clientY-r.top;
-  const f=e.deltaY<0?1.02:.98;
+  const f=e.deltaY<0?1.08:.92;
   S.tx=mx-(mx-S.tx)*f;S.ty=my-(my-S.ty)*f;
   S.scale=Math.min(3,Math.max(.15,S.scale*f));
   applyTransform(false);updateMinimap();
