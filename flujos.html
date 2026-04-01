@@ -4433,7 +4433,7 @@ cwrap.addEventListener('wheel',e=>{
   e.preventDefault();
   const r=cwrap.getBoundingClientRect();
   const mx=e.clientX-r.left,my=e.clientY-r.top;
-  const f=e.deltaY<0?1.08:.92;
+  const f=e.deltaY<0?1.06:.94;
   S.tx=mx-(mx-S.tx)*f;S.ty=my-(my-S.ty)*f;
   S.scale=Math.min(3,Math.max(.15,S.scale*f));
   applyTransform(false);updateMinimap();
@@ -4711,8 +4711,8 @@ function selectNode(id, silent){
   
   if(!silent){
     showQuickToolbar(id);
-    if(!panel.classList.contains('open')) openPanel(id, S.activeTab);
-    else renderPanelBody(id, S.activeTab);
+    // Solo actualizar panel si YA está abierto (no abrir al clicar nodo)
+    if(panel.classList.contains('open')) renderPanelBody(id, S.activeTab);
   } else {
     hideQuickToolbar();
   }
