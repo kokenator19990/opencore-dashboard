@@ -460,7 +460,7 @@ body.light-mode [id*="grid"] {
 
 /* ── LEVEL CONTEXT MENU ──────────────────────────── */
 #lvl-ctx{
-  position:fixed;z-index:450;
+  position:fixed;z-index:2200;
   background:rgba(12,12,18,.98);border:1px solid rgba(0,229,255,.2);border-radius:12px;
   padding:8px;display:none;
   backdrop-filter:blur(20px);box-shadow:0 12px 32px rgba(0,0,0,.6);
@@ -2850,15 +2850,17 @@ function showLvlMenu(e,id){
   });
 }
 function showLvlMenuFromQT(e){
-  e.stopPropagation();e.preventDefault();
+  e.stopPropagation();
   if(!S.selected)return;
   lvlCtxNodeId=S.selected;
   const btn=document.getElementById('qt-lvl-btn');
+  if(!btn)return;
   const rect=btn.getBoundingClientRect();
   const ctx=document.getElementById('lvl-ctx');
   ctx.style.display='block';
-  ctx.style.left=(rect.left - 40)+'px';
-  ctx.style.top=(rect.bottom + 6)+'px';
+  // Position below the quick toolbar button
+  ctx.style.left=Math.max(10, rect.left - 30)+'px';
+  ctx.style.top=(rect.bottom + 8)+'px';
   const cur=S.nodeProps[S.selected]?.level;
   document.querySelectorAll('.lvl-item').forEach(b=>{
     const lText=b.textContent.replace('L','');
@@ -3480,6 +3482,7 @@ function deleteSelected(){
 
   S.selected=null;
   snapshot();
+  hideQuickToolbar();
   closePanel(); render(); saveState();
   playSfx('delete');
   toast('Nodo eliminado','info');
@@ -4471,7 +4474,7 @@ cwrap.addEventListener('click',e=>{
 document.addEventListener('click',e=>{
   if(!e.target.closest('#edge-ctx')&&!e.target.closest('#asvg')&&edgeCtxIdx!=null)hideEdgeCtx();
   if(!e.target.closest('.tb-dropdown'))closeOrganize();
-  if(!e.target.closest('#lvl-ctx')&&!e.target.closest('#qt-lvl-btn'))hideLvlMenu();
+  if(!e.target.closest('#lvl-ctx')&&!e.target.closest('#quick-toolbar'))hideLvlMenu();
 },true);
 
 document.getElementById('m-form').addEventListener('submit',e=>{e.preventDefault();submitModal();});
